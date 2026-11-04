@@ -48,15 +48,12 @@ RESEARCH_FEED_TIMEOUT = float(os.getenv('RESEARCH_FEED_TIMEOUT', '20'))
 class ResearchGatherer(BaseGatherer):
     """Gathers research content from arXiv and research blogs."""
 
-    # arXiv categories relevant to AI
+    # Radar de Identidad: solo cs.CR (Cryptography and Security), ~35 papers/día,
+    # de los que ~8-12% tocan identidad. El analizador filtra por relevancia.
+    # Las categorías de IA del proyecto original (cs.AI, cs.LG, cs.CL, ...) generaban
+    # cientos de papers diarios sin ángulo de identidad.
     CATEGORIES = {
-        'cs.AI': 'Artificial Intelligence',
-        'cs.LG': 'Machine Learning',
-        'cs.CL': 'Computation and Language',
-        'cs.CV': 'Computer Vision',
-        'cs.NE': 'Neural and Evolutionary Computing',
-        'cs.RO': 'Robotics',
-        'stat.ML': 'Machine Learning (Statistics)'
+        'cs.CR': 'Cryptography and Security',
     }
 
     API_BASE = "https://export.arxiv.org/api/query"
@@ -401,7 +398,7 @@ class ResearchGatherer(BaseGatherer):
         items = []
         for paper in papers:
             try:
-                primary_cat = paper['categories'].split()[0] if paper.get('categories') else 'cs.AI'
+                primary_cat = paper['categories'].split()[0] if paper.get('categories') else 'cs.CR'
                 category_name = self.CATEGORIES.get(primary_cat, primary_cat)
 
                 # Clean title and abstract

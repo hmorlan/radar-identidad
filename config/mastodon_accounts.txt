@@ -1,12 +1,5 @@
-# Mastodon accounts to monitor (one per line)
-# Format: username@instance.social
-# IMPORTANT: Must use the correct instance where each user has an account
-
-# ===== AI/ML Researchers =====
-SebRaschka@mastodon.social
-
-# ===== Tech Community =====
-Gargron@mastodon.social
-
-# ===== AI Ethics & Policy =====
-timnitGebru@dair-community.social
+# Radar de Identidad — cuentas de Mastodon (username@instance), una por línea.
+# verificado 2026-11-04: NINGUNA cuenta quedó verificada como activa (últimos 60 días).
+# Con las herramientas disponibles no pude abrir https://<instancia>/@<user>.rss ni la API pública.
+# Candidatas (existen, actividad reciente NO confirmada) — descomentar tras probar el .rss:
+# briankrebs@infosec.exchange

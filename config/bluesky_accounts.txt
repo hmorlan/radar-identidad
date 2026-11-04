@@ -1,18 +1,4 @@
-# Bluesky accounts to monitor (one per line)
-# Format: handle or handle.bsky.social
-# Verified working accounts as of 2026-01-05
-
-# ===== AI Researchers & Leaders =====
-karpathy.bsky.social
-emollick.bsky.social
-hardmaru.bsky.social
-
-# ===== AI Companies & Labs =====
-huggingface.bsky.social
-mistral.bsky.social
-
-# ===== AI News & Commentary =====
-simonwillison.net
-swyx.io
-benthompson.bsky.social
-latentspace.bsky.social
+# Radar de Identidad — cuentas de Bluesky (handle), una por línea.
+# verificado 2026-11-04: NINGUNA cuenta quedó verificada como activa (últimos 60 días).
+# Candidatas (existen, actividad reciente NO confirmada) — descomentar tras probar la API pública:
+# aaronpk.com   # Aaron Parecki (OAuth WG, MCP auth); último post visto: 2025-11-25 en una copia de fecha incierta

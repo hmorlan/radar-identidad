@@ -1,31 +1,27 @@
-# AI research RSS/Atom feeds (one per line). Lines starting with # are comments.
-# Optional per-feed routing directive (default = proxied when a proxy is set):
-#   <url>            -> default routing
-#   <url>  proxy=off -> fetch direct, bypass the Mullvad/pipeline proxy
-#   <url>  proxy=on  -> force routing through the proxy
-https://www.lesswrong.com/feed.xml?view=frontpage-rss&karmaThreshold=2
-https://research.google/blog/rss/
-# The AI-category feed (category/artificial-intelligence/feed/) froze in 2020 —
-# still 200s but its latest post is 2020-04-13. The main MS Research blog feed is
-# live (predominantly AI/ML). Switched 2026-07-07.
-https://www.microsoft.com/en-us/research/blog/feed/
-# research.facebook.com / ai.meta.com RSS is dead: every candidate endpoint
-# (research.facebook.com/feed/ + /blog/rss/, ai.meta.com/blog/rss/ + /feed/) now
-# returns HTTP 400 even direct — Meta retired RSS, and the 2026-06-02 direct
-# workaround no longer works. Removed to silence the error. (verified 2026-07-07)
-# https://research.facebook.com/feed/  proxy=off
-https://www.amazon.science/index.rss
-https://allenai.org/rss.xml
-https://bair.berkeley.edu/blog/feed.xml
-https://metr.org/feed.xml
-https://www.alignmentforum.org/feed.xml?view=frontpage-rss&karmaThreshold=2
-https://news.mit.edu/rss/topic/artificial-intelligence2
-https://blog.ml.cmu.edu/feed/
-https://thegradient.pub/rss/
-https://importai.substack.com/feed
-https://www.interconnects.ai/feed
-https://lilianweng.github.io/index.xml
-https://huyenchip.com/feed.xml
-https://www.nature.com/subjects/machine-learning.rss
-https://www.nature.com/natmachintell.rss
-http://feeds.trendmicro.com/TrendMicroSimplySecurity
+# Radar de Identidad — feeds de investigación / estándares / blogs técnicos, uno por línea.
+# Directiva opcional por feed: <url>  proxy=off | proxy=on
+# verificado 2026-11-04 — ver informe-fuentes.md para método y evidencia.
+
+# ===== Estándares y gobierno =====
+# NIST Cybersecurity Insights (blog) — ~1/semana; feeder.co "Working"; publica sobre agent identity
+https://www.nist.gov/blogs/cybersecurity-insights/rss.xml
+# NIST CSRC — borradores abiertos a comentarios (aquí aparecerán revisiones de SP 800-63) — ~1-2/semana; feeder.co "Working"
+https://csrc.nist.gov/CSRC/media/feeds/pubs/drafts-open-for-comment.xml
+# INCIBE-CERT blog (España) — ~2-4/mes; feeder.co "Working", último post hace 20 días
+https://www.incibe.es/incibe-cert/blog/feed
+
+# ===== Vendors de identidad (sesgo comercial: marcar en el análisis) =====
+# Okta Threat Intelligence — ~1-3/mes; fetch directo OK, último 2026-11-01; relevancia alta
+https://www.okta.com/blog/threat-intelligence.rss
+# Auth0 blog (Okta) — ~5/semana; fetch directo OK, último 2026-11-03; mucho marketing CIAM
+https://auth0.com/blog/rss.xml
+
+# ===== PENDIENTE de verificar desde el pipeline =====
+# IETF OAuth WG — URL confirmada en datatracker (patrón de feed verificado en otro WG); cambios "significativos"
+# https://datatracker.ietf.org/group/oauth/documents/feed/?significant=1
+# OpenID Foundation — el sitio enlaza este feed; no pude hacer fetch
+# https://openid.net/feed/
+# Ping Identity developer blog — URL enlazada en su sitio (10 posts en oct-2026); no pude hacer fetch
+# https://developer.pingidentity.com/blog/rss.xml
+# Jumio — URL listada por FeedSpot, no verificada
+# https://www.jumio.com/feed/
