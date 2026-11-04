@@ -24,7 +24,7 @@ El código parte de [flyryan/ai-news-aggregator](https://github.com/flyryan/ai-n
 - **Sí entran:** ransomware que empezó por credenciales robadas o fatiga de MFA; agentes de IA que actúan con nuestros accesos; deepfakes que pasan la verificación de identidad; estándares (passkeys, OAuth, OpenID); regulación de identidad.
 - **No entran:** malware genérico, vulnerabilidades sin ángulo de identidad, noticias de IA sin relación con la confianza.
 - **Formato de cada nota:** Qué pasó (2–3 frases, con enlace a la fuente) · Por qué importa · La pregunta de fondo (solo cuando aplica) · Nivel de señal (baja, media o alta).
-- **Fuentes de proveedores** (Okta, Auth0, Jumio, etc.): tienen sesgo comercial; el análisis debe identificarlas como tales y preferir cobertura independiente para las afirmaciones.
+- **Agnóstico de proveedores.** No se usan blogs ni comunicados de empresas del sector como fuente. Una empresa (incluidos competidores o el empleador de Hiram) solo aparece cuando la cubre una fuente independiente: prensa, organismos de estándares (FIDO, OpenID, IETF, NIST) o reguladores. Tono factual, sin comparar productos ni recomendar proveedores. Las afirmaciones de una empresa se atribuyen ("según la empresa").
 
 ## Cadencia (planeada)
 
@@ -92,7 +92,7 @@ python3 scripts/check_feeds.py --pending  # incluye candidatas comentadas
 | Qué | Dónde |
 |---|---|
 | Fuentes de noticias | `config/rss_feeds.txt` |
-| Investigación, estándares y proveedores | `config/research_feeds.txt` |
+| Investigación y estándares | `config/research_feeds.txt` |
 | arXiv | `agents/gatherers/research_gatherer.py` (`CATEGORIES`, hoy solo `cs.CR`) |
 | Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
 | X y Reddit | Desactivados (APIs de pago) |

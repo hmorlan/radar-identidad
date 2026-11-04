@@ -10,11 +10,12 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 | Identidad | Biometric Update, FIDO Alliance | ~10 |
 | Español (LATAM y España) | WeLiveSecurity ES, Ciberseguridad LATAM, DPL News, Expansión Tecnología, Una al Día | ~19 |
 | Estándares y gobierno | NIST Cybersecurity Insights, NIST CSRC (borradores), IETF OAuth WG, OpenID Foundation | ~1 |
-| Proveedores (con sesgo comercial) | Okta Threat Intelligence, Auth0, Ping Identity (dev), Jumio | ~1.5 |
 | Redes | Brian Krebs (Mastodon), Aaron Parecki (Bluesky) | ~2 |
 | Investigación | arXiv cs.CR | ~35 |
 
-**Total: 22 feeds + arXiv cs.CR, ~90 entradas/día antes del filtro de relevancia.**
+**Total: 18 feeds + arXiv cs.CR, ~90 entradas/día antes del filtro de relevancia.**
+
+**Política agnóstica (2026-11-04):** no se usan blogs de proveedores (Okta, Auth0, Ping, Jumio y similares). Las empresas solo entran a través de fuentes independientes.
 
 **Descartadas:** El Financiero (100/día sin notas de identidad), CISA y El Economista (403), INCIBE-CERT (404), feed antiguo de ESET (dominio muerto), Microsoft Entra (inactivo desde hace más de un año), OWASP (inactivo desde junio).
 
