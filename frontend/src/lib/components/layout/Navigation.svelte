@@ -3,7 +3,8 @@
 	import { browser } from '$app/environment';
 	import { CATEGORY_CONFIG, type Category } from '$lib/types';
 
-	const categories: Category[] = ['news', 'research', 'social', 'reddit'];
+	// Reddit y redes sociales desactivados por ahora (APIs de pago / sin cuentas verificadas).
+	const categories: Category[] = ['news', 'research'];
 
 	// Guard searchParams access for prerendering compatibility
 	$: pathname = $page.url.pathname;
@@ -37,7 +38,7 @@
 					<a
 						href="/"
 						class="nav-link whitespace-nowrap hover:bg-transparent sm:hover:bg-radar-gray-200 {homeActive ? 'text-radar-accent sm:bg-radar-accent/10' : ''}"
-						aria-label="Home"
+						aria-label="Inicio"
 					>
 						<svg
 							class="w-5 h-5 sm:hidden"
@@ -48,7 +49,7 @@
 						>
 							<path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
 						</svg>
-						<span class="hidden sm:inline">Home</span>
+						<span class="hidden sm:inline">Inicio</span>
 					</a>
 				</li>
 
@@ -84,7 +85,7 @@
 					<a
 						href="/archive"
 						class="nav-link whitespace-nowrap hover:bg-transparent sm:hover:bg-radar-gray-200 {archiveActive ? 'text-radar-accent sm:bg-radar-accent/10' : ''}"
-						aria-label="Archive"
+						aria-label="Archivo"
 					>
 						<svg
 							class="w-5 h-5 sm:hidden"
@@ -95,7 +96,7 @@
 						>
 							<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
 						</svg>
-						<span class="hidden sm:inline">Archive</span>
+						<span class="hidden sm:inline">Archivo</span>
 					</a>
 				</li>
 
@@ -104,9 +105,9 @@
 					<a
 						href="/about"
 						class="nav-link whitespace-nowrap {aboutActive ? 'text-radar-accent bg-radar-accent/10' : ''}"
-						aria-label="About"
+						aria-label="Acerca de"
 					>
-						About
+						Acerca de
 					</a>
 				</li>
 			</ul>

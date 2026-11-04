@@ -79,3 +79,7 @@ node_modules/
 
 # CI-only Mullvad relay cache (persisted via actions/cache, never committed)
 .mullvad-state/
+
+# Salidas compiladas del frontend (las genera npm run build / Cloudflare Pages)
+/web/*
+!/web/data/

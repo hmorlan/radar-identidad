@@ -172,8 +172,8 @@
 	.prose-summary a.internal-link {
 		@apply text-radar-accent/90 underline decoration-radar-accent/50
 		       hover:text-radar-accent hover:decoration-radar-accent
-		       dark:text-red-300 dark:decoration-red-300/60
-		       dark:hover:text-red-200 dark:hover:decoration-red-200;
+		       dark:text-sky-300 dark:decoration-sky-300/60
+		       dark:hover:text-sky-200 dark:hover:decoration-sky-200;
 	}
 
 	/* Keep link color for bold text inside links */

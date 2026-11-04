@@ -103,30 +103,3 @@
 	</div>
 </header>
 
-<style>
-	.new-badge {
-		display: inline-block;
-		font-size: 0.625rem;
-		font-weight: 700;
-		letter-spacing: 0.05em;
-		line-height: 1;
-		padding: 2px 6px;
-		margin-left: 6px;
-		border-radius: 9999px;
-		background: rgba(255, 255, 255, 0.25);
-		color: white;
-		vertical-align: middle;
-		animation: badge-pulse 2s ease-in-out infinite;
-	}
-	@keyframes badge-pulse {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.6; }
-	}
-
-	/* The badge is decorative; it must not pulse for anyone who asked motion to stop. */
-	@media (prefers-reduced-motion: reduce) {
-		.new-badge {
-			animation: none;
-		}
-	}
-</style>

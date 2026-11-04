@@ -170,9 +170,9 @@ export const CATEGORY_CONFIG: Record<
 	}
 > = {
 	news: {
-		title: 'AI News',
-		singularTitle: 'AI News',
-		shortTitle: 'News',
+		title: 'Noticias',
+		singularTitle: 'Noticia',
+		shortTitle: 'Noticias',
 		color: '#667eea',
 		bgClass: 'bg-category-news',
 		textClass: 'text-category-news',
@@ -180,9 +180,9 @@ export const CATEGORY_CONFIG: Record<
 		accentClass: 'category-accent-news'
 	},
 	research: {
-		title: 'Research',
-		singularTitle: 'Research',
-		shortTitle: 'Research',
+		title: 'Investigación y estándares',
+		singularTitle: 'Investigación',
+		shortTitle: 'Investigación',
 		color: '#10b981',
 		bgClass: 'bg-category-research',
 		textClass: 'text-category-research',
@@ -190,9 +190,9 @@ export const CATEGORY_CONFIG: Record<
 		accentClass: 'category-accent-research'
 	},
 	social: {
-		title: 'Social Media',
-		singularTitle: 'Social Media',
-		shortTitle: 'Social',
+		title: 'Redes',
+		singularTitle: 'Redes',
+		shortTitle: 'Redes',
 		color: '#f59e0b',
 		bgClass: 'bg-category-social',
 		textClass: 'text-category-social',

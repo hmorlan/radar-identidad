@@ -207,6 +207,10 @@ class DetectTest(unittest.TestCase):
         self.assertIn("Mon", text)
 
 
+@unittest.skipUnless(
+    any((Path(__file__).resolve().parent.parent / "web" / "data").glob("*/summary.json")),
+    "Radar de Identidad: sin historial publicado todavía (se borró el del proyecto original)",
+)
 class RealHistoryRegressionTest(unittest.TestCase):
     """Pin the detector against the actual committed history.
 
