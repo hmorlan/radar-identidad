@@ -1,5 +1,5 @@
-# Radar de Identidad — cuentas de Mastodon (username@instance), una por línea.
-# verificado 2026-11-04: NINGUNA cuenta quedó verificada como activa (últimos 60 días).
-# Con las herramientas disponibles no pude abrir https://<instancia>/@<user>.rss ni la API pública.
-# Candidatas (existen, actividad reciente NO confirmada) — descomentar tras probar el .rss:
-# briankrebs@infosec.exchange
+# Radar de Identidad: cuentas de Mastodon (username@instance), una por línea.
+# Verificado 2026-11-04 con scripts/check_feeds.py.
+
+# ===== Prensa de seguridad =====
+briankrebs@infosec.exchange

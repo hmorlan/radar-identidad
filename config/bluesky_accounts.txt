@@ -1,4 +1,6 @@
-# Radar de Identidad — cuentas de Bluesky (handle), una por línea.
-# verificado 2026-11-04: NINGUNA cuenta quedó verificada como activa (últimos 60 días).
-# Candidatas (existen, actividad reciente NO confirmada) — descomentar tras probar la API pública:
-# aaronpk.com   # Aaron Parecki (OAuth WG, MCP auth); último post visto: 2025-11-25 en una copia de fecha incierta
+# Radar de Identidad: cuentas de Bluesky (handle), una por línea.
+# Verificado 2026-11-04 con scripts/check_feeds.py.
+
+# ===== Estándares de identidad =====
+# Aaron Parecki: editor de OAuth 2.1, trabaja en autorización para MCP
+aaronpk.com

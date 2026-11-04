@@ -1,3 +1,29 @@
+# Fuentes del radar
+
+## Estado actual (verificación real, 2026-11-04)
+
+Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó en los últimos 60 días. Esta tabla manda sobre el informe inicial de abajo, que se hizo sin acceso directo a los feeds y tenía errores (por ejemplo, decía que FIDO Alliance no tiene RSS y que INCIBE-CERT funcionaba).
+
+| Grupo | Fuentes activas | Notas/día aprox. |
+|---|---|---|
+| Prensa de seguridad | The Record, Krebs on Security, Dark Reading, SecurityWeek, BleepingComputer | ~24 |
+| Identidad | Biometric Update, FIDO Alliance | ~10 |
+| Español (LATAM y España) | WeLiveSecurity ES, Ciberseguridad LATAM, DPL News, Expansión Tecnología, Una al Día | ~19 |
+| Estándares y gobierno | NIST Cybersecurity Insights, NIST CSRC (borradores), IETF OAuth WG, OpenID Foundation | ~1 |
+| Proveedores (con sesgo comercial) | Okta Threat Intelligence, Auth0, Ping Identity (dev), Jumio | ~1.5 |
+| Redes | Brian Krebs (Mastodon), Aaron Parecki (Bluesky) | ~2 |
+| Investigación | arXiv cs.CR | ~35 |
+
+**Total: 22 feeds + arXiv cs.CR, ~90 entradas/día antes del filtro de relevancia.**
+
+**Descartadas:** El Financiero (100/día sin notas de identidad), CISA y El Economista (403), INCIBE-CERT (404), feed antiguo de ESET (dominio muerto), Microsoft Entra (inactivo desde hace más de un año), OWASP (inactivo desde junio).
+
+**Pendiente:** DOF, CNBV y Banxico no tienen RSS utilizable; para cubrirlos hace falta un recolector propio que lea sus páginas de comunicados.
+
+---
+
+## Informe inicial (sin acceso directo a los feeds; conservado como referencia)
+
 # Radar de Identidad: informe de verificación de fuentes
 
 **Fecha de verificación:** 2026-11-04

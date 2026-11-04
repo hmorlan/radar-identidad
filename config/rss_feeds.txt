@@ -1,33 +1,41 @@
-# Radar de Identidad — feeds de noticias (RSS/Atom), uno por línea. '#' = comentario.
-# Directiva opcional por feed (igual que el upstream): <url>  proxy=off | proxy=on
-# verificado 2026-11-04 — ver informe-fuentes.md para método y evidencia.
-# Solo hay líneas activas para feeds verificados (fetch directo o monitor independiente
-# con fecha reciente). Las líneas "# PENDIENTE" requieren prueba desde el pipeline.
+# Radar de Identidad: feeds de noticias (RSS/Atom), uno por línea. '#' = comentario.
+# Directiva opcional por feed: <url>  proxy=off | proxy=on
+# Verificado 2026-11-04 con scripts/check_feeds.py (respuesta 200 y publicación reciente).
+# Volumen estimado total de este archivo: ~45 notas/día antes del filtro de relevancia.
 
-# ===== Prensa de seguridad (incluir con filtro: relevancia de identidad baja-media) =====
-# The Record (Recorded Future News) — ~4/día; feeder.co "Working" + threatfilter.dev ok 2026-10-30
+# ===== Prensa de seguridad (relevancia de identidad media: el triage filtra) =====
+# The Record (Recorded Future News), ~4/día
 https://therecord.media/feed/
-# Krebs on Security — ~1-2/semana; feeder.co "Working", último post hace 4 días
+# Krebs on Security, ~1-2/semana
 https://krebsonsecurity.com/feed/
-# Dark Reading — ~6/día; threatfilter.dev ok 2026-10-30 (el viejo rss_simple.asp está muerto desde 2023)
+# Dark Reading, ~6/día
 https://www.darkreading.com/rss.xml
-# SecurityWeek — ~7-8/día (41-58/semana); feed listado por feeder.co, threatfilter.dev "not modified" 2026-10-30
+# SecurityWeek, ~7/día
 https://www.securityweek.com/feed/
+# BleepingComputer, ~7/día; ~25% con ángulo de identidad (sesiones, MFA, contraseñas)
+https://www.bleepingcomputer.com/feed/
 
 # ===== Prensa especializada en identidad =====
-# Biometric Update — ~9/día (64 en 7 días); feeder.co "Working"; relevancia alta (IDV, KYC, digital ID, agentes)
+# Biometric Update, ~9/día; relevancia alta (verificación de identidad, KYC, ID digital, agentes)
 https://feeds.feedburner.com/biometricupdate
+# FIDO Alliance (noticias y cobertura de passkeys), ~5/semana; relevancia muy alta
+https://fidoalliance.org/feed/
 
-# ===== Español (España / LATAM) =====
-# Una al Día (Hispasec, España) — ~4/semana; feeder.co "Working"; relevancia baja (vulns), filtrar
+# ===== Español: Latinoamérica y España =====
+# WeLiveSecurity (ESET) en español, ~4/semana; fraude, phishing, suplantación
+https://www.welivesecurity.com/es/rss/feed/
+# Ciberseguridad LATAM, ~5/día; enfoque frecuente en identidad y agentes de IA (vigilar calidad)
+https://www.ciberseguridadlatam.com/feed/
+# DPL News (telecom y tecnología LATAM), ~10/día; relevancia baja, aporta casos regionales
+https://www.dplnews.com/feed/
+# Expansión, sección Tecnología (México), ~3/día; relevancia baja, aporta fraude digital en México
+https://expansion.mx/rss/tecnologia
+# Una al Día (Hispasec, España), ~4/semana; relevancia baja (vulnerabilidades)
 https://unaaldia.hispasec.com/feed/
 
-# ===== PENDIENTE de verificar desde el pipeline (no pude hacer fetch directo) =====
-# BleepingComputer: threatfilter.dev reportó HTTP 403 (2026-10-30); probar con proxy=off
-# https://www.bleepingcomputer.com/feed/
-# WeLiveSecurity en español (ESET LATAM) — URL listada por feeder.co, no verificada
-# http://feeds.feedburner.com/esetla-laboratorio
-# El Financiero (general, sin sección tech confirmada) — requeriría filtro fuerte
-# https://www.elfinanciero.com.mx/rss
-# CISA — mayoría avisos ICS, relevancia baja; descartado en arranque
-# https://www.cisa.gov/cybersecurity-advisories/all.xml
+# ===== Descartadas (2026-11-04) =====
+# El Financiero general: ~100/día y 0 notas de identidad en la muestra; su sección tech casi no publica.
+# CISA (advisories y news): responde 403 a lectores automáticos; las alertas relevantes llegan por la prensa.
+# El Economista: responde 403.
+# ESET feedburner antiguo (esetla-laboratorio): el dominio ya no resuelve.
+# DOF, CNBV y Banxico: sin RSS utilizable; requieren un recolector propio (pendiente).

@@ -3,8 +3,8 @@
 	import { browser } from '$app/environment';
 	import { CATEGORY_CONFIG, type Category } from '$lib/types';
 
-	// Reddit y redes sociales desactivados por ahora (APIs de pago / sin cuentas verificadas).
-	const categories: Category[] = ['news', 'research'];
+	// Reddit desactivado por ahora (API de pago).
+	const categories: Category[] = ['news', 'research', 'social'];
 
 	// Guard searchParams access for prerendering compatibility
 	$: pathname = $page.url.pathname;
