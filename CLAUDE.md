@@ -25,6 +25,7 @@ El código parte de [flyryan/ai-news-aggregator](https://github.com/flyryan/ai-n
 - **No entran:** malware genérico, vulnerabilidades sin ángulo de identidad, noticias de IA sin relación con la confianza.
 - **Formato de cada nota:** Qué pasó (2–3 frases, con enlace a la fuente) · Por qué importa · La pregunta de fondo (solo cuando aplica) · Nivel de señal (baja, media o alta).
 - **Agnóstico de proveedores.** No se usan blogs ni comunicados de empresas del sector como fuente. Una empresa (incluidos competidores o el empleador de Hiram) solo aparece cuando la cubre una fuente independiente: prensa, organismos de estándares (FIDO, OpenID, IETF, NIST) o reguladores. Tono factual, sin comparar productos ni recomendar proveedores. Las afirmaciones de una empresa se atribuyen ("según la empresa").
+- **Análisis de autor.** Los blogs personales de expertos independientes (p. ej. Cybersecurity Compass) se tratan como opinión y se citan por nombre del autor, no como noticia.
 
 ## Cadencia (planeada)
 

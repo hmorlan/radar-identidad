@@ -57,6 +57,12 @@
 				<a href="https://github.com/flyryan/ai-news-aggregator" target="_blank" rel="noopener noreferrer">ai-news-aggregator</a>
 				(licencia Apache 2.0), adaptado para este fin.
 			</p>
+			<p>
+				<strong>Declaración de interés:</strong> el autor trabaja en la industria de identidad digital.
+				Este es un proyecto personal; las opiniones son propias. El radar es agnóstico: no usa
+				blogs ni comunicados de empresas del sector como fuente, y las empresas solo aparecen
+				cuando las cubre una fuente independiente.
+			</p>
 		</div>
 	</section>
 </div>

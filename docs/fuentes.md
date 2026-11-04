@@ -11,9 +11,10 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 | Español (LATAM y España) | WeLiveSecurity ES, Ciberseguridad LATAM, DPL News, Expansión Tecnología, Una al Día | ~19 |
 | Estándares y gobierno | NIST Cybersecurity Insights, NIST CSRC (borradores), IETF OAuth WG, OpenID Foundation | ~1 |
 | Redes | Brian Krebs (Mastodon), Aaron Parecki (Bluesky) | ~2 |
+| Análisis de autor | Juan Pablo Castro, Cybersecurity Compass (inglés, ensayos largos) | ~0.1 |
 | Investigación | arXiv cs.CR | ~35 |
 
-**Total: 18 feeds + arXiv cs.CR, ~90 entradas/día antes del filtro de relevancia.**
+**Total: 19 feeds + arXiv cs.CR, ~90 entradas/día antes del filtro de relevancia.**
 
 **Política agnóstica (2026-11-04):** no se usan blogs de proveedores (Okta, Auth0, Ping, Jumio y similares). Las empresas solo entran a través de fuentes independientes.
 

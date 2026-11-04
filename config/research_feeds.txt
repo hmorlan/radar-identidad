@@ -12,6 +12,11 @@ https://datatracker.ietf.org/group/oauth/documents/feed/?significant=1
 # OpenID Foundation, ~3/semana; relevancia alta (p. ej. modelo de amenazas para agentes de IA)
 https://openid.net/feed/
 
+# ===== Análisis de autor (opinión de expertos independientes; citar por nombre) =====
+# Juan Pablo Castro, Cybersecurity Compass (Medium), ~2-4/mes, en inglés; ensayos largos sobre
+# riesgo cibernético y agentes de IA. Útil para "La pregunta de fondo" y el análisis semanal.
+https://cybersecuritycompass.org/feed/
+
 # ===== Descartadas (2026-11-04) =====
 # Blogs de proveedores (Okta Threat Intelligence, Auth0, Ping Identity, Jumio): fuera por
 # política editorial agnóstica. Las empresas solo entran cuando las cubre una fuente
