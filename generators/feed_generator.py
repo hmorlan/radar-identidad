@@ -87,9 +87,9 @@ def make_urls_absolute(html: str, base_url: str) -> str:
     """
     if not html:
         return ''
-    # Convert href="/ to href="https://ainews.aatf.dev/
+    # Convert href="/ to href="https://radar.hirammorlan.com/
     html = re.sub(r'href="/', f'href="{base_url}/', html)
-    # Convert href="# to href="https://ainews.aatf.dev/#
+    # Convert href="# to href="https://radar.hirammorlan.com/#
     html = re.sub(r'href="#', f'href="{base_url}/#', html)
     return html
 
@@ -131,15 +131,15 @@ class FeedGenerator:
     # Size variants for category feeds
     SIZE_VARIANTS = [25, 50, 100, None]  # None = full/all items
 
-    FEED_TITLE = "AATF AI News Aggregator"
-    FEED_SUBTITLE = "Daily AI/ML news powered by Claude Opus 5"
+    FEED_TITLE = "Radar de Identidad"
+    FEED_SUBTITLE = "Identidad digital, IA y ciberseguridad: en quién y en qué confiar"
 
     def _extract_first_external_link(self, html: str) -> Optional[str]:
         """
         Extract first external href from HTML content.
 
         Used to find a representative source link for summary entries. Summary
-        entries keep the AATF briefing as the primary alternate/canonical URL,
+        entries keep the edition as the primary alternate/canonical URL,
         while this external URL is emitted as secondary Feedly-compatible
         metadata and as the semantic source via link.
         """
@@ -160,7 +160,7 @@ class FeedGenerator:
         Args:
             output_dir: Base output directory (typically web/)
             rolling_window_days: Number of days to include in feeds
-            base_url: Base URL for feed links (defaults to https://news.aatf.ai)
+            base_url: Base URL for feed links (defaults to https://radar.hirammorlan.com)
             subtitle: Feed subtitle override; when omitted the current model is
                 resolved leniently from config/providers.yaml, falling back to
                 the legacy hard-coded subtitle if nothing resolvable is found
@@ -169,7 +169,7 @@ class FeedGenerator:
         self.data_dir = os.path.join(output_dir, 'data')
         self.feeds_dir = os.path.join(self.data_dir, 'feeds')
         self.rolling_window_days = rolling_window_days
-        self.base_url = (base_url or "https://news.aatf.ai").rstrip('/')
+        self.base_url = (base_url or "https://radar.hirammorlan.com").rstrip('/')
         self.feed_subtitle = (
             subtitle
             or build_feed_subtitle(resolve_llm_display_name())
@@ -726,10 +726,10 @@ class FeedGenerator:
   <updated>{now}</updated>
   <icon>{self.base_url}/assets/logo.webp</icon>
   <author>
-    <name>AATF AI News Aggregator</name>
+    <name>Radar de Identidad</name>
     <uri>{self.base_url}</uri>
   </author>
-  <generator>AATF AI News Aggregator</generator>
+  <generator>Radar de Identidad</generator>
 {''.join(entries)}
 </feed>'''
 
@@ -817,7 +817,7 @@ class FeedGenerator:
             hero_img_html = f'<p><img src="{hero_full_url}" alt="Daily briefing hero image" style="max-width:100%;height:auto;border-radius:8px;margin-bottom:16px;"/></p>\n'
             summary_html = hero_img_html + summary_html
 
-        # Keep the AATF briefing URL as the primary alternate/canonical link.
+        # Keep the edition URL as the primary alternate/canonical link.
         # The representative external URL remains as a secondary alternate for
         # Feedly compatibility, while rel="via" identifies it semantically.
         external_url = item.get('_external_url')
@@ -855,7 +855,7 @@ class FeedGenerator:
     {links}
     <published>{published}</published>
     <updated>{published}</updated>
-    <author><name>AATF AI News Aggregator</name></author>
+    <author><name>Radar de Identidad</name></author>
     <summary type="html"><![CDATA[{summary_html}]]></summary>
     <content type="html"><![CDATA[{summary_html}]]></content>
     <category term="daily-summary"/>{media_element}

@@ -39,7 +39,7 @@ export const PROFILE_COLORS: Record<ReplayProfile, string> = {
 	QUICK: '#10b981',
 	STANDARD: '#3b82f6',
 	DEEP: '#8b5cf6',
-	ULTRATHINK: '#E63946'
+	ULTRATHINK: '#2F5F9E'
 };
 
 export function profileColor(profile: string | null | undefined): string {
@@ -56,7 +56,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 const KIND_COLORS: Record<string, string> = {
 	gatherer: '#0ea5e9',
 	analyzer: '#8b5cf6',
-	synthesizer: '#E63946',
+	synthesizer: '#2F5F9E',
 	enricher: '#14b8a6',
 	imagegen: '#ec4899'
 };

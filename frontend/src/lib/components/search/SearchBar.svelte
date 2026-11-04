@@ -141,7 +141,7 @@
 			{#if query}
 				<button
 					on:click={clearSearch}
-					class="absolute right-3 top-1/2 -translate-y-1/2 text-trend-gray-400 hover:text-trend-gray-600"
+					class="absolute right-3 top-1/2 -translate-y-1/2 text-radar-gray-400 hover:text-radar-gray-600"
 					aria-label="Clear search"
 				>
 					<svg
@@ -156,7 +156,7 @@
 					</svg>
 				</button>
 			{:else}
-				<span class="absolute right-3 top-1/2 -translate-y-1/2 text-trend-gray-400">
+				<span class="absolute right-3 top-1/2 -translate-y-1/2 text-radar-gray-400">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						class="w-5 h-5"
@@ -184,8 +184,8 @@
 			on:select={(e) => selectResult(e.detail)}
 		/>
 	{:else if isOpen && query.length >= 2 && results.length === 0}
-		<div class="absolute z-[60] w-full mt-2 p-4 bg-white dark:bg-trend-gray-800 rounded-xl shadow-lg border border-trend-gray-200 dark:border-trend-gray-700">
-			<p class="text-sm text-trend-gray-500 text-center">
+		<div class="absolute z-[60] w-full mt-2 p-4 bg-white dark:bg-radar-gray-800 rounded-xl shadow-lg border border-radar-gray-200 dark:border-radar-gray-700">
+			<p class="text-sm text-radar-gray-500 text-center">
 				No results found for "{query}"
 			</p>
 		</div>

@@ -22,8 +22,8 @@
 		disabled={!$navigation.hasPrevious}
 		class="p-2 rounded-lg transition-colors
 		       {$navigation.hasPrevious
-			? 'hover:bg-trend-gray-200 dark:hover:bg-trend-gray-700 text-trend-gray-700 dark:text-trend-gray-300'
-			: 'text-trend-gray-400 cursor-not-allowed'}"
+			? 'hover:bg-radar-gray-200 dark:hover:bg-radar-gray-700 text-radar-gray-700 dark:text-radar-gray-300'
+			: 'text-radar-gray-400 cursor-not-allowed'}"
 		aria-label="Previous day"
 	>
 		<svg
@@ -41,17 +41,17 @@
 	<!-- Date display -->
 	<div class="text-center flex-1">
 		<div>
-			<span class="font-medium text-trend-gray-800 dark:text-trend-gray-200">
+			<span class="font-medium text-radar-gray-800 dark:text-radar-gray-200">
 				{dateDisplay}
 			</span>
 			{#if isLatest}
-				<span class="ml-2 text-xs bg-trend-red text-white px-2 py-0.5 rounded-full">
+				<span class="ml-2 text-xs bg-radar-accent text-white px-2 py-0.5 rounded-full">
 					Latest
 				</span>
 			{/if}
 		</div>
 		{#if coverageDisplay}
-			<div class="text-sm text-trend-gray-500 dark:text-trend-gray-400 mt-1">
+			<div class="text-sm text-radar-gray-500 dark:text-radar-gray-400 mt-1">
 				Coverage: {coverageDisplay}, 00:00–23:59 ET
 			</div>
 		{/if}
@@ -63,8 +63,8 @@
 		disabled={!$navigation.hasNext}
 		class="p-2 rounded-lg transition-colors
 		       {$navigation.hasNext
-			? 'hover:bg-trend-gray-200 dark:hover:bg-trend-gray-700 text-trend-gray-700 dark:text-trend-gray-300'
-			: 'text-trend-gray-400 cursor-not-allowed'}"
+			? 'hover:bg-radar-gray-200 dark:hover:bg-radar-gray-700 text-radar-gray-700 dark:text-radar-gray-300'
+			: 'text-radar-gray-400 cursor-not-allowed'}"
 		aria-label="Next day"
 	>
 		<svg
@@ -84,7 +84,7 @@
 	<div class="text-center mt-2">
 		<button
 			on:click={() => goToLatestDate(currentCategory || undefined)}
-			class="text-sm text-trend-red hover:text-guardian-red transition-colors"
+			class="text-sm text-radar-accent hover:text-radar-accent-dark transition-colors"
 		>
 			Jump to latest &rarr;
 		</button>

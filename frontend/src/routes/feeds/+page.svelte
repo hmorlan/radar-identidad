@@ -92,30 +92,30 @@
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-	<h1 class="text-2xl font-bold text-trend-gray-800 dark:text-trend-gray-100 mb-2">
+	<h1 class="text-2xl font-bold text-radar-gray-800 dark:text-radar-gray-100 mb-2">
 		RSS Feeds
 	</h1>
-	<p class="text-trend-gray-600 dark:text-trend-gray-400 mb-8">
+	<p class="text-radar-gray-600 dark:text-radar-gray-400 mb-8">
 		Subscribe to AI news in your favorite RSS reader. All feeds use Atom 1.0 format and include the last 7 days of content.
 	</p>
 
 	<!-- Main Feed (Recommended) -->
-	<div class="card mb-8 border-2 border-trend-red">
+	<div class="card mb-8 border-2 border-radar-accent">
 		<div class="flex items-start justify-between gap-4">
 			<div>
 				<div class="flex items-center gap-2 mb-1">
-					<h2 class="text-lg font-semibold text-trend-gray-800 dark:text-trend-gray-100">
+					<h2 class="text-lg font-semibold text-radar-gray-800 dark:text-radar-gray-100">
 						{feeds.main.name}
 					</h2>
-					<span class="text-xs px-2 py-0.5 bg-trend-red text-white rounded-full">Recommended</span>
+					<span class="text-xs px-2 py-0.5 bg-radar-accent text-white rounded-full">Recommended</span>
 				</div>
-				<p class="text-sm text-trend-gray-600 dark:text-trend-gray-400">
+				<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400">
 					{feeds.main.description}
 				</p>
 			</div>
 			<a
 				href={feeds.main.url}
-				class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-trend-red text-white rounded-lg hover:bg-guardian-red transition-colors"
+				class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-radar-accent text-white rounded-lg hover:bg-radar-accent-dark transition-colors"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 					<circle cx="6.18" cy="17.82" r="2.18"/>
@@ -127,30 +127,30 @@
 	</div>
 
 	<!-- Summary Feeds -->
-	<h2 class="text-lg font-semibold text-trend-gray-800 dark:text-trend-gray-100 mb-4">
+	<h2 class="text-lg font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-4">
 		Summary Feeds
 	</h2>
-	<p class="text-sm text-trend-gray-600 dark:text-trend-gray-400 mb-6">
+	<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400 mb-6">
 		Just the summaries, no individual items. Great for a quick daily overview.
 	</p>
 
 	<!-- Daily Briefing (Recommended Summary Feed) -->
-	<div class="card mb-4 border-2 border-trend-red/50">
+	<div class="card mb-4 border-2 border-radar-accent/50">
 		<div class="flex items-start justify-between gap-4">
 			<div>
 				<div class="flex items-center gap-2 mb-1">
-					<h3 class="font-semibold text-trend-gray-800 dark:text-trend-gray-100">
+					<h3 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100">
 						{summaryFeeds.executive.name}
 					</h3>
-					<span class="text-xs px-2 py-0.5 bg-trend-red/80 text-white rounded-full">Most Popular</span>
+					<span class="text-xs px-2 py-0.5 bg-radar-accent/80 text-white rounded-full">Most Popular</span>
 				</div>
-				<p class="text-sm text-trend-gray-600 dark:text-trend-gray-400">
+				<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400">
 					{summaryFeeds.executive.description}
 				</p>
 			</div>
 			<a
 				href={summaryFeeds.executive.url}
-				class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-trend-red/80 text-white rounded-lg hover:bg-trend-red transition-colors"
+				class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-radar-accent/80 text-white rounded-lg hover:bg-radar-accent transition-colors"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 					<circle cx="6.18" cy="17.82" r="2.18"/>
@@ -164,19 +164,19 @@
 	<!-- All Summaries (Full Width) -->
 	<a
 		href={summaryFeeds.all.url}
-		class="block card p-3 hover:border-trend-red/50 transition-colors group mb-3"
+		class="block card p-3 hover:border-radar-accent/50 transition-colors group mb-3"
 		style="border-left: 3px solid #6b7280"
 	>
 		<div class="flex items-center justify-between gap-2">
 			<div>
-				<h4 class="font-medium text-trend-gray-800 dark:text-trend-gray-100 text-sm">
+				<h4 class="font-medium text-radar-gray-800 dark:text-radar-gray-100 text-sm">
 					{summaryFeeds.all.name}
 				</h4>
-				<p class="text-xs text-trend-gray-500 dark:text-trend-gray-400 mt-0.5">
+				<p class="text-xs text-radar-gray-500 dark:text-radar-gray-400 mt-0.5">
 					{summaryFeeds.all.description}
 				</p>
 			</div>
-			<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-trend-gray-400 group-hover:text-trend-red transition-colors shrink-0" fill="currentColor" viewBox="0 0 24 24">
+			<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-radar-gray-400 group-hover:text-radar-accent transition-colors shrink-0" fill="currentColor" viewBox="0 0 24 24">
 				<circle cx="6.18" cy="17.82" r="2.18"/>
 				<path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/>
 			</svg>
@@ -190,19 +190,19 @@
 			{@const color = getCategoryColor(key)}
 			<a
 				href={feed.url}
-				class="block card p-3 hover:border-trend-red/50 transition-colors group"
+				class="block card p-3 hover:border-radar-accent/50 transition-colors group"
 				style="border-left: 3px solid {color}"
 			>
 				<div class="flex items-center justify-between gap-2">
 					<div>
-						<h4 class="font-medium text-trend-gray-800 dark:text-trend-gray-100 text-sm">
+						<h4 class="font-medium text-radar-gray-800 dark:text-radar-gray-100 text-sm">
 							{feed.name}
 						</h4>
-						<p class="text-xs text-trend-gray-500 dark:text-trend-gray-400 mt-0.5">
+						<p class="text-xs text-radar-gray-500 dark:text-radar-gray-400 mt-0.5">
 							{feed.description}
 						</p>
 					</div>
-					<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-trend-gray-400 group-hover:text-trend-red transition-colors shrink-0" fill="currentColor" viewBox="0 0 24 24">
+					<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-radar-gray-400 group-hover:text-radar-accent transition-colors shrink-0" fill="currentColor" viewBox="0 0 24 24">
 						<circle cx="6.18" cy="17.82" r="2.18"/>
 						<path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/>
 					</svg>
@@ -212,10 +212,10 @@
 	</div>
 
 	<!-- Category Feeds -->
-	<h2 class="text-lg font-semibold text-trend-gray-800 dark:text-trend-gray-100 mb-4">
+	<h2 class="text-lg font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-4">
 		Category Feeds
 	</h2>
-	<p class="text-sm text-trend-gray-600 dark:text-trend-gray-400 mb-6">
+	<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400 mb-6">
 		Subscribe to specific categories. Choose how many items you want in your feed.
 	</p>
 
@@ -226,10 +226,10 @@
 			{#if 'variants' in feed}
 				<div class="card" style="border-left: 4px solid {color}">
 					<div class="mb-3">
-						<h3 class="font-semibold text-trend-gray-800 dark:text-trend-gray-100">
+						<h3 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100">
 							{feed.name}
 						</h3>
-						<p class="text-sm text-trend-gray-600 dark:text-trend-gray-400">
+						<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400">
 							{feed.description}
 						</p>
 					</div>
@@ -239,8 +239,8 @@
 								href={variant.url}
 								class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors
 									{'default' in variant && variant.default
-										? 'bg-trend-gray-100 dark:bg-trend-gray-700 border-trend-gray-300 dark:border-trend-gray-600 text-trend-gray-800 dark:text-trend-gray-100 hover:border-trend-red'
-										: 'border-trend-gray-200 dark:border-trend-gray-700 text-trend-gray-600 dark:text-trend-gray-400 hover:border-trend-gray-400 dark:hover:border-trend-gray-500'
+										? 'bg-radar-gray-100 dark:bg-radar-gray-700 border-radar-gray-300 dark:border-radar-gray-600 text-radar-gray-800 dark:text-radar-gray-100 hover:border-radar-accent'
+										: 'border-radar-gray-200 dark:border-radar-gray-700 text-radar-gray-600 dark:text-radar-gray-400 hover:border-radar-gray-400 dark:hover:border-radar-gray-500'
 									}"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -249,7 +249,7 @@
 								</svg>
 								{variant.name}
 								{#if 'default' in variant && variant.default}
-									<span class="text-xs text-trend-gray-500">(default)</span>
+									<span class="text-xs text-radar-gray-500">(default)</span>
 								{/if}
 							</a>
 						{/each}
@@ -260,16 +260,16 @@
 	</div>
 
 	<!-- Help Section -->
-	<div class="mt-8 p-4 bg-trend-gray-50 dark:bg-trend-gray-800 rounded-lg">
-		<h3 class="font-semibold text-trend-gray-800 dark:text-trend-gray-100 mb-2">
+	<div class="mt-8 p-4 bg-radar-gray-50 dark:bg-radar-gray-800 rounded-lg">
+		<h3 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-2">
 			How to Subscribe
 		</h3>
-		<ol class="list-decimal list-inside text-sm text-trend-gray-600 dark:text-trend-gray-400 space-y-1">
+		<ol class="list-decimal list-inside text-sm text-radar-gray-600 dark:text-radar-gray-400 space-y-1">
 			<li>Click a feed link above to open it</li>
 			<li>Copy the URL from your browser's address bar</li>
 			<li>Paste the URL into your RSS reader (Feedly, Inoreader, NetNewsWire, etc.)</li>
 		</ol>
-		<p class="text-sm text-trend-gray-500 mt-3">
+		<p class="text-sm text-radar-gray-500 mt-3">
 			Most browsers will show raw XML when you click a feed link. That's normal! Just copy the URL and add it to your reader.
 		</p>
 	</div>

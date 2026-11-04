@@ -563,7 +563,7 @@
 		gap: 0.35rem;
 		padding: 0.5rem 0.75rem;
 		border-radius: 8px;
-		background: #e63946;
+		background: #2F5F9E;
 		color: #fff;
 		font-size: 0.875rem;
 		font-weight: 600;
@@ -589,7 +589,7 @@
 		cursor: pointer;
 	}
 	.secondary:hover {
-		color: #e63946;
+		color: #2F5F9E;
 	}
 	:global(.dark) .secondary {
 		color: #a3a3a3;

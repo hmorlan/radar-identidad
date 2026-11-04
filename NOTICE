@@ -1,0 +1,18 @@
+Radar de Identidad
+Copyright 2026 Hiram Morlan
+
+Este proyecto es una obra derivada de "ai-news-aggregator"
+(https://github.com/flyryan/ai-news-aggregator), distribuido bajo la
+Apache License, Version 2.0. Se conserva la licencia original en LICENSE.
+
+Cambios principales respecto al proyecto original:
+- Se retiró la marca del proyecto original (nombre, logotipos, mascota,
+  colores, URLs y enlaces) y se sustituyó por la de Radar de Identidad.
+- Se eliminaron las ediciones publicadas por el proyecto original (web/data)
+  y las salidas compiladas del sitio.
+- Se eliminó el panel de administración del frontend y se desactivaron los
+  workflows programados ligados a la infraestructura del proyecto original.
+- El generador de imágenes ya no usa la mascota; el estilo visual se lee de
+  config/hero_style.md.
+- Se añadió una portada de "Próximamente" y textos del sitio en español.
+- Se reorientaron las fuentes y el enfoque editorial hacia identidad digital.

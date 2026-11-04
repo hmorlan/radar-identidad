@@ -98,7 +98,7 @@
 	}
 	.chip.now {
 		opacity: 1;
-		border-color: #E63946;
+		border-color: #2F5F9E;
 		background: rgb(230 57 70 / 0.09);
 	}
 
@@ -123,7 +123,7 @@
 		font-size: 0.55rem;
 		font-weight: 800;
 		font-variant-numeric: tabular-nums;
-		color: #E63946;
+		color: #2F5F9E;
 		flex: none;
 	}
 	.chip-label {

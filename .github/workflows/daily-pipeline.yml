@@ -1,12 +1,9 @@
 name: Daily Pipeline
 
 on:
-  schedule:
-    # GitHub cron is UTC-only. These two entries cover 3 AM America/New_York
-    # across daylight saving time; the ET gate below lets only the nominal
-    # 3 AM run continue even when GitHub starts the runner late.
-    - cron: "0 7 * * *"
-    - cron: "0 8 * * *"
+  # Radar de Identidad: sin horario automático por ahora. Solo se ejecuta a mano
+  # (workflow_dispatch). La cadencia L-M-V + domingo se configura al terminar las
+  # pruebas en local.
   workflow_dispatch:
     inputs:
       target_date:
@@ -44,7 +41,7 @@ concurrency:
 jobs:
   daily-pipeline:
     name: Generate and publish daily data
-    if: github.repository == 'flyryan/ai-news-aggregator'
+    if: github.repository == 'hmorlan/radar-identidad'
     # Pinned 2026-10-20: `ubuntu-latest` began its gradual rollout to Ubuntu
     # 26.04 on Oct 19. 26.04 runners mount /tmp as a private tmpfs with
     # `usrquota`; root-owned configs written into the runner's mktemp dir then
@@ -79,13 +76,13 @@ jobs:
       SCRAPECREATORS_API_KEY: ${{ secrets.SCRAPECREATORS_API_KEY }}
       SCRAPECREATORS_BASE: ${{ vars.SCRAPECREATORS_BASE || 'https://api.scrapecreators.com' }}
       REDDIT_PROXY_URL: ${{ secrets.REDDIT_PROXY_URL }}
-      REDDIT_USER_AGENT: ${{ vars.REDDIT_USER_AGENT || 'AI-News-Aggregator/1.0 (by u/flyryan)' }}
+      REDDIT_USER_AGENT: ${{ vars.REDDIT_USER_AGENT || 'Radar-de-Identidad/1.0' }}
       LESSWRONG_PROXY_URL: ${{ secrets.LESSWRONG_PROXY_URL }}
       PIPELINE_PROXY_URL: ${{ secrets.PIPELINE_PROXY_URL }}
       MULLVAD_ACCOUNT: ${{ secrets.MULLVAD_ACCOUNT }}
       MULLVAD_WG_PRIVATE_KEY: ${{ secrets.MULLVAD_WG_PRIVATE_KEY }}
       MULLVAD_RELAY_FILTER: ${{ vars.MULLVAD_RELAY_FILTER || 'us' }}
-      PIPELINE_BASE_URL: ${{ vars.PIPELINE_BASE_URL || 'https://news.aatf.ai' }}
+      PIPELINE_BASE_URL: ${{ vars.PIPELINE_BASE_URL || 'https://radar.hirammorlan.com' }}
       PIPELINE_COMMIT_PATHS: ${{ vars.PIPELINE_COMMIT_PATHS || 'web/data config/model_releases.yaml config/ecosystem_context.yaml' }}
       # `gemini-3-pro-image-preview` was retired from the endpoint and now 400s
       # ("Invalid model name"), which failed Phase 4.7 on 2026-07-28. The GA name
@@ -129,7 +126,7 @@ jobs:
       ANALYZER_MAX_CONCURRENT_BATCHES: ${{ vars.ANALYZER_MAX_CONCURRENT_BATCHES || '8' }}
       ANALYZER_RESULT_MAX_ATTEMPTS: ${{ vars.ANALYZER_RESULT_MAX_ATTEMPTS || '3' }}
       PIPELINE_ALERT_TOKEN: ${{ secrets.PIPELINE_ALERT_TOKEN }}
-      PIPELINE_ALERT_URL: ${{ vars.PIPELINE_ALERT_URL || 'https://flybotwebhook.duffplex.com/alert/pipeline' }}
+      PIPELINE_ALERT_URL: ${{ vars.PIPELINE_ALERT_URL || '' }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       TARGET_DATE_INPUT: ${{ inputs.target_date || '' }}
       RESUME_FROM_INPUT: ${{ inputs.resume_from || '' }}
@@ -201,7 +198,7 @@ jobs:
             echo "Actual runner start time was $actual_et."
           fi
 
-      - name: Check out flyryan main
+      - name: Check out main
         if: steps.schedule_gate.outputs.should_run == 'true'
         uses: actions/checkout@v4
         with:
@@ -805,7 +802,7 @@ jobs:
         shell: bash
         env:
           PIPELINE_ALERT_TOKEN: ${{ secrets.PIPELINE_ALERT_TOKEN }}
-          PIPELINE_ALERT_URL: ${{ vars.PIPELINE_ALERT_URL || 'https://flybotwebhook.duffplex.com/alert/pipeline' }}
+          PIPELINE_ALERT_URL: ${{ vars.PIPELINE_ALERT_URL || '' }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           TARGET_DATE_INPUT: ${{ inputs.target_date }}
         run: |
@@ -882,7 +879,7 @@ jobs:
         shell: bash
         env:
           PIPELINE_ALERT_TOKEN: ${{ secrets.PIPELINE_ALERT_TOKEN }}
-          PIPELINE_ALERT_URL: ${{ vars.PIPELINE_ALERT_URL || 'https://flybotwebhook.duffplex.com/alert/pipeline' }}
+          PIPELINE_ALERT_URL: ${{ vars.PIPELINE_ALERT_URL || '' }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -uo pipefail

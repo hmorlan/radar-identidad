@@ -406,13 +406,6 @@ const DEMO_HERO_PROMPT = `You are generating a daily hero image for an AI news a
 ## Your Goal
 Create a playful, colorful editorial illustration that visually represents today's top AI news stories. The scene should immediately convey the themes of the day's news to readers.
 
-## The Mascot (CRITICAL)
-The attached image shows our skunk mascot. You MUST:
-- Keep the EXACT circuit board pattern on the skunk's body and tail - this is a core part of the brand identity
-- Maintain the skunk's white and black coloring with the tech circuit pattern visible
-- The skunk must be ACTIVELY DOING SOMETHING related to the topics - typing on a keyboard, reading papers, adjusting equipment, pointing at a screen, holding tools, etc. NOT just standing and smiling at the camera!
-- Position the skunk in the lower-left or lower-right portion, engaged with the scene
-
 ## Today's Stories
 
 **Topic 1: Inference Economics Squeeze**
@@ -427,12 +420,11 @@ Practitioners treated the pricing move as straightforwardly good news; community
 ## Visual Direction
 Create a scene that represents these stories. You must include Topic 1 (the top story), then pick 2-3 others that would make the best scene together. Consider:
 - What visual metaphors could represent these themes?
-- How can the skunk mascot interact with or observe these elements?
 - Suggested scene elements: throughput gauges, stacked server racks, cost curves bending downward, comparison charts
 
 ## Style Requirements
 - Playful cartoon illustration, tech editorial art style
-- Vibrant colors with Trend Red (#E63946) accents
+- Restrained palette: deep blues with bronze highlights
 - Energetic, forward-looking, tech-optimistic mood
 - No company logos or watermarks - but topic-relevant company logos are encouraged when relevant to the stories
 - 21:9 ultra-wide banner composition`;
@@ -550,7 +542,7 @@ const DESK: [string, string, ReplayIndex['agents'][number]['kind'], string, stri
 	['orchestrator', 'Editor in Chief', 'synthesizer', 'Finds the threads running across categories and writes the brief.', ['phase-3', 'phase-4']],
 	['link_enricher', 'Copy Editor', 'enricher', 'Wires every claim in the prose back to the item it came from.', ['phase-4.5']],
 	['ecosystem', 'Archivist', 'enricher', 'Watches for model releases worth recording.', ['phase-4.6']],
-	['hero', 'Illustrator', 'imagegen', "Paints the day's scene around the AATF skunk.", ['phase-4.7']]
+	['hero', 'Illustrator', 'imagegen', "Paints the edition's hero image.", ['phase-4.7']]
 ];
 for (const [id, label, kind, blurb, phase_ids] of DESK) {
 	agents.push({

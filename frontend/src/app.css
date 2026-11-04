@@ -4,8 +4,8 @@
 
 @layer base {
 	:root {
-		--color-trend-red: #E63946;
-		--color-guardian-red: #C1272D;
+		--color-radar-accent: #2F5F9E;
+		--color-radar-accent-dark: #1F4373;
 	}
 
 	html {
@@ -20,11 +20,11 @@
 @layer components {
 	/* Card component */
 	.card {
-		@apply bg-white dark:bg-trend-gray-800
+		@apply bg-white dark:bg-radar-gray-800
 		       rounded-xl p-6
 		       shadow-card hover:shadow-card-hover
 		       transition-shadow duration-200
-		       border border-trend-gray-200 dark:border-trend-gray-700;
+		       border border-radar-gray-200 dark:border-radar-gray-700;
 	}
 
 	/* Category accent borders */
@@ -47,7 +47,7 @@
 	/* Primary button */
 	.btn-primary {
 		@apply px-4 py-2 rounded-lg
-		       bg-trend-red hover:bg-guardian-red
+		       bg-radar-accent hover:bg-radar-accent-dark
 		       text-white font-medium
 		       transition-colors duration-200;
 	}
@@ -55,9 +55,9 @@
 	/* Secondary button */
 	.btn-secondary {
 		@apply px-4 py-2 rounded-lg
-		       bg-trend-gray-200 hover:bg-trend-gray-300
-		       dark:bg-trend-gray-700 dark:hover:bg-trend-gray-600
-		       text-trend-dark dark:text-trend-gray-100
+		       bg-radar-gray-200 hover:bg-radar-gray-300
+		       dark:bg-radar-gray-700 dark:hover:bg-radar-gray-600
+		       text-radar-dark dark:text-radar-gray-100
 		       font-medium transition-colors duration-200;
 	}
 
@@ -85,11 +85,11 @@
 	/* Input field */
 	.input {
 		@apply w-full px-4 py-2 rounded-lg
-		       border border-trend-gray-200 dark:border-trend-gray-700
-		       bg-white dark:bg-trend-gray-800
-		       text-trend-dark dark:text-trend-gray-100
-		       placeholder-trend-gray-400
-		       focus:border-trend-red focus:ring-2 focus:ring-trend-red/20
+		       border border-radar-gray-200 dark:border-radar-gray-700
+		       bg-white dark:bg-radar-gray-800
+		       text-radar-dark dark:text-radar-gray-100
+		       placeholder-radar-gray-400
+		       focus:border-radar-accent focus:ring-2 focus:ring-radar-accent/20
 		       outline-none transition-all duration-200;
 	}
 
@@ -98,18 +98,18 @@
 	   all seven items and needs tighter gutters than the desktop layout to fit. */
 	.nav-link {
 		@apply px-1.5 sm:px-2.5 lg:px-4 py-2 rounded-lg
-		       text-trend-gray-600 dark:text-trend-gray-400
-		       hover:bg-trend-gray-200 dark:hover:bg-trend-gray-700
+		       text-radar-gray-600 dark:text-radar-gray-400
+		       hover:bg-radar-gray-200 dark:hover:bg-radar-gray-700
 		       transition-colors duration-200;
 	}
 
 	.nav-link-active {
-		@apply text-trend-red bg-trend-red/10;
+		@apply text-radar-accent bg-radar-accent/10;
 	}
 
 	/* Importance-driven card tiers */
 	.card-importance-high {
-		@apply shadow-lg border-l-4 border-l-trend-red
+		@apply shadow-lg border-l-4 border-l-radar-accent
 		       hover:-translate-y-0.5 transition-all duration-200;
 	}
 
@@ -119,31 +119,31 @@
 	}
 
 	.card-importance-standard {
-		@apply shadow-card border-l-4 border-l-trend-gray-300 dark:border-l-trend-gray-600
+		@apply shadow-card border-l-4 border-l-radar-gray-300 dark:border-l-radar-gray-600
 		       hover:-translate-y-0.5 transition-all duration-200;
 	}
 
 	.card-importance-low {
-		@apply shadow-sm border-l-2 border-l-trend-gray-200 dark:border-l-trend-gray-700 opacity-90;
+		@apply shadow-sm border-l-2 border-l-radar-gray-200 dark:border-l-radar-gray-700 opacity-90;
 	}
 }
 
 @layer utilities {
 	/* Summary prose styling - for formatted markdown content */
 	.prose-summary {
-		@apply text-trend-gray-700 dark:text-trend-gray-300;
+		@apply text-radar-gray-700 dark:text-radar-gray-300;
 	}
 
 	.prose-summary h2 {
-		@apply font-bold text-trend-gray-800 dark:text-trend-gray-100 text-lg mt-5 mb-2;
+		@apply font-bold text-radar-gray-800 dark:text-radar-gray-100 text-lg mt-5 mb-2;
 	}
 
 	.prose-summary h3 {
-		@apply font-semibold text-trend-gray-800 dark:text-trend-gray-100 text-base mt-4 mb-2;
+		@apply font-semibold text-radar-gray-800 dark:text-radar-gray-100 text-base mt-4 mb-2;
 	}
 
 	.prose-summary h4 {
-		@apply font-semibold text-trend-gray-800 dark:text-trend-gray-100 text-base mt-4 mb-2;
+		@apply font-semibold text-radar-gray-800 dark:text-radar-gray-100 text-base mt-4 mb-2;
 	}
 
 	.prose-summary h2:first-child,
@@ -153,7 +153,7 @@
 	}
 
 	.prose-summary strong {
-		@apply text-trend-gray-900 dark:text-white font-semibold;
+		@apply text-radar-gray-900 dark:text-white font-semibold;
 	}
 
 	.prose-summary ul {
@@ -161,17 +161,17 @@
 	}
 
 	.prose-summary li {
-		@apply text-trend-gray-700 dark:text-trend-gray-300;
+		@apply text-radar-gray-700 dark:text-radar-gray-300;
 	}
 
 	.prose-summary a {
-		@apply text-trend-red hover:text-guardian-red underline;
+		@apply text-radar-accent hover:text-radar-accent-dark underline;
 	}
 
 	/* Internal links (to items on our site) - WCAG compliant contrast */
 	.prose-summary a.internal-link {
-		@apply text-trend-red/90 underline decoration-trend-red/50
-		       hover:text-trend-red hover:decoration-trend-red
+		@apply text-radar-accent/90 underline decoration-radar-accent/50
+		       hover:text-radar-accent hover:decoration-radar-accent
 		       dark:text-red-300 dark:decoration-red-300/60
 		       dark:hover:text-red-200 dark:hover:decoration-red-200;
 	}
@@ -182,7 +182,7 @@
 	}
 
 	.prose-summary p {
-		@apply mb-3 leading-relaxed text-trend-gray-700 dark:text-trend-gray-300;
+		@apply mb-3 leading-relaxed text-radar-gray-700 dark:text-radar-gray-300;
 	}
 
 	/* Inline code. `.prose` blocks get this from @tailwindcss/typography;
@@ -190,8 +190,8 @@
 	   render as ordinary prose. */
 	.prose-summary code {
 		@apply px-1 py-0.5 rounded text-[0.9em] font-mono
-		       bg-trend-gray-100 dark:bg-trend-gray-700
-		       text-trend-gray-800 dark:text-trend-gray-200;
+		       bg-radar-gray-100 dark:bg-radar-gray-700
+		       text-radar-gray-800 dark:text-radar-gray-200;
 	}
 
 	.prose-summary p:last-child {
@@ -200,7 +200,7 @@
 
 	/* Text gradient */
 	.text-gradient {
-		@apply bg-gradient-to-r from-trend-red to-guardian-red bg-clip-text text-transparent;
+		@apply bg-gradient-to-r from-radar-accent to-radar-accent-dark bg-clip-text text-transparent;
 	}
 
 	/* Scroll shadows */

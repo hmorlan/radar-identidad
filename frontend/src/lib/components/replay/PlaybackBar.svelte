@@ -231,14 +231,14 @@
 		width: 2rem;
 		height: 2rem;
 		border-radius: 999px;
-		background: #E63946;
+		background: #2F5F9E;
 		color: #fff;
 		flex: none;
 		transition: background 150ms ease, transform 120ms ease;
 	}
 	@media (hover: hover) and (pointer: fine) {
 		.btn-play:hover {
-			background: #C1272D;
+			background: #1F4373;
 		}
 	}
 	.btn-play:active {
@@ -254,7 +254,7 @@
 	}
 	@media (hover: hover) and (pointer: fine) {
 		.btn-step:hover {
-			color: #E63946;
+			color: #2F5F9E;
 			background: rgb(230 57 70 / 0.1);
 		}
 	}
@@ -304,7 +304,7 @@
 		background: rgb(255 255 255 / 0.06);
 	}
 	.scrub:focus-visible {
-		outline: 2px solid #E63946;
+		outline: 2px solid #2F5F9E;
 		outline-offset: 1px;
 	}
 
@@ -383,7 +383,7 @@
 		bottom: 0;
 		left: -1px;
 		width: 2px;
-		background: #E63946;
+		background: #2F5F9E;
 	}
 	.thumb-count {
 		position: absolute;
@@ -393,7 +393,7 @@
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
 		color: #fff;
-		background: #E63946;
+		background: #2F5F9E;
 		border-radius: 3px;
 		padding: 0 3px;
 		white-space: nowrap;
@@ -431,12 +431,12 @@
 	   mouse behaviour untouched. */
 	@media (hover: hover) and (pointer: fine) {
 		.speeds button:hover {
-			color: #E63946;
+			color: #2F5F9E;
 			background: rgb(230 57 70 / 0.08);
 		}
 	}
 	.speeds button.on {
-		background: #E63946;
+		background: #2F5F9E;
 		color: #fff;
 	}
 	.speeds button.realtime {

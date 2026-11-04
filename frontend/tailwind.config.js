@@ -5,20 +5,23 @@ export default {
 	theme: {
 		extend: {
 			colors: {
-				// AATF Brand Colors
-				'trend-red': '#E63946',
-				'guardian-red': '#C1272D',
-				'trend-dark': '#1a1a1a',
-				'trend-gray': {
-					100: '#f5f5f5',
-					200: '#e5e5e5',
-					300: '#d4d4d4',
-					400: '#a3a3a3',
-					500: '#737373',
-					600: '#525252',
-					700: '#404040',
-					800: '#262626',
-					900: '#171717'
+				// Paleta PROVISIONAL de Radar de Identidad (azul profundo + bronce).
+				// Se reemplaza cuando cerremos el mockup visual.
+				'radar-accent': '#2F5F9E',
+				'radar-accent-dark': '#1F4373',
+				'radar-bronze': '#B8925A',
+				'radar-dark': '#0F1A2A',
+				'radar-gray': {
+					50: '#f8fafc',
+					100: '#f1f4f8',
+					200: '#e2e7ee',
+					300: '#cbd3de',
+					400: '#94a0b2',
+					500: '#64718a',
+					600: '#475468',
+					700: '#334155',
+					800: '#1e293b',
+					900: '#111827'
 				},
 				// Category accent colors
 				'category-news': '#667eea',

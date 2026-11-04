@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Radar de Identidad">
+  <!-- Marca provisional: se reemplaza al cerrar el diseño visual. -->
+  <circle cx="32" cy="32" r="30" fill="#14243B"/>
+  <circle cx="32" cy="32" r="21" fill="none" stroke="#5B8DC9" stroke-width="2" opacity=".55"/>
+  <circle cx="32" cy="32" r="12" fill="none" stroke="#5B8DC9" stroke-width="2" opacity=".8"/>
+  <path d="M32 32 L32 4 A28 28 0 0 1 56.2 18 Z" fill="#B8925A" opacity=".35"/>
+  <line x1="32" y1="32" x2="56.2" y2="18" stroke="#D9B47A" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="32" cy="32" r="3.5" fill="#D9B47A"/>
+</svg>

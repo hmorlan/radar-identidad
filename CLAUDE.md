@@ -1,5 +1,20 @@
 # CLAUDE.md
 
+## Radar de Identidad (léelo primero)
+
+Este repo es **Radar de Identidad**, un fork personal de flyryan/ai-news-aggregator reorientado a un radar de inteligencia **en español** sobre identidad digital, IA y ciberseguridad. Proyecto personal de Hiram: solo fuentes públicas, nunca información de su empleador.
+
+- **Idioma:** textos del sitio y prompts editoriales en español; se conservan en inglés los términos de la industria (passkey, token, OAuth, MFA, SSO, CIAM, deepfake, account takeover) y los prompts de imagen.
+- **Regla editorial:** ¿la noticia cambia cómo decidimos en quién o en qué confiar? Formato de nota: Qué pasó, Por qué importa, La pregunta de fondo (opcional), Nivel de señal (baja/media/alta).
+- **Costos:** Claude ~US$80/mes (créditos del plan Max), imágenes < US$10/mes. Estima el impacto y pide confirmación antes de cualquier cambio que suba el costo.
+- **Acciones con efecto real:** no hagas push, despliegues ni corridas del pipeline sin confirmación explícita de Hiram.
+- **Identidad visual:** ver `docs/identidad-visual.md`. Estilo de imágenes en `config/hero_style.md`.
+- **Infraestructura heredada:** las secciones de abajo sobre el host de AATF (admin service, `webhook.aatf.ai`, `trigger_rebuild.sh`, firma de commits para `deploy.sh`, Mullvad, Reddit, Twitter) describen el proyecto original y **no aplican aquí**. El despliegue de este proyecto será Cloudflare Pages. Los directorios `admin_service/`, `deploy/`, `webhook/` y `shadow/` siguen en el repo porque parte del pipeline y de los tests dependen de ellos; se limpiarán cuando se puedan correr los tests.
+
+---
+
+## Referencia técnica heredada del proyecto original
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview

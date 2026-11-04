@@ -24,7 +24,7 @@
 </script>
 
 <div
-	class="absolute z-[60] w-full mt-2 bg-white dark:bg-trend-gray-800 rounded-xl shadow-lg border border-trend-gray-200 dark:border-trend-gray-700 max-h-96 overflow-y-auto"
+	class="absolute z-[60] w-full mt-2 bg-white dark:bg-radar-gray-800 rounded-xl shadow-lg border border-radar-gray-200 dark:border-radar-gray-700 max-h-96 overflow-y-auto"
 >
 	<ul class="py-2">
 		{#each results as result, i (result.ref)}
@@ -35,8 +35,8 @@
 				<li>
 					<button
 						on:click={() => handleClick(result)}
-						class="w-full px-4 py-3 text-left hover:bg-trend-gray-50 dark:hover:bg-trend-gray-700 transition-colors
-						       {i === selectedIndex ? 'bg-trend-gray-50 dark:bg-trend-gray-700' : ''}"
+						class="w-full px-4 py-3 text-left hover:bg-radar-gray-50 dark:hover:bg-radar-gray-700 transition-colors
+						       {i === selectedIndex ? 'bg-radar-gray-50 dark:bg-radar-gray-700' : ''}"
 					>
 						<div class="flex items-start gap-3">
 							<!-- Category indicator -->
@@ -47,19 +47,19 @@
 
 							<div class="flex-1 min-w-0">
 								<!-- Title -->
-								<p class="font-medium text-trend-gray-800 dark:text-trend-gray-100 line-clamp-1">
+								<p class="font-medium text-radar-gray-800 dark:text-radar-gray-100 line-clamp-1">
 									{doc.title}
 								</p>
 
 								<!-- Summary preview -->
 								{#if doc.summary}
-									<p class="text-sm text-trend-gray-500 dark:text-trend-gray-400 line-clamp-2 mt-1">
+									<p class="text-sm text-radar-gray-500 dark:text-radar-gray-400 line-clamp-2 mt-1">
 										{doc.summary}
 									</p>
 								{/if}
 
 								<!-- Metadata -->
-								<div class="flex items-center gap-2 mt-2 text-xs text-trend-gray-400">
+								<div class="flex items-center gap-2 mt-2 text-xs text-radar-gray-400">
 									<span class="badge {config.badgeClass}">
 										{config.title}
 									</span>
@@ -71,7 +71,7 @@
 
 							<!-- Score indicator -->
 							<span
-								class="text-xs px-1.5 py-0.5 rounded bg-trend-gray-100 dark:bg-trend-gray-700 text-trend-gray-500"
+								class="text-xs px-1.5 py-0.5 rounded bg-radar-gray-100 dark:bg-radar-gray-700 text-radar-gray-500"
 								title="Relevance score"
 							>
 								{Math.round(doc.importance)}
@@ -84,8 +84,8 @@
 	</ul>
 
 	{#if results.length > 0}
-		<div class="px-4 py-2 border-t border-trend-gray-100 dark:border-trend-gray-700">
-			<p class="text-xs text-trend-gray-400 text-center">
+		<div class="px-4 py-2 border-t border-radar-gray-100 dark:border-radar-gray-700">
+			<p class="text-xs text-radar-gray-400 text-center">
 				{results.length} result{results.length === 1 ? '' : 's'} found
 			</p>
 		</div>

@@ -46,7 +46,7 @@ llm:
   # base_url: "https://api.anthropic.com"
 
   # Model identifier. Use whatever Opus 5 alias your endpoint expects.
-  # AATF's hosted proxy currently uses claude-5-opus-aws as the
+  # The original project's hosted proxy used claude-5-opus-aws as the
   # single-provider fallback.
   model: "claude-5-opus-aws"
 
@@ -88,7 +88,7 @@ llm:
 # -----------------------------------------------------------------------------
 # Image Provider Configuration (Optional)
 # -----------------------------------------------------------------------------
-# Generates a daily hero image featuring the AATF skunk mascot.
+# Generates the hero image for each edition (style: config/hero_style.md).
 # Comment out this entire section to skip hero image generation.
 #
 # Supports three modes:
@@ -148,9 +148,9 @@ pipeline:
   # Base URL for RSS feed links
   # Set this to your deployment domain for production
   # Examples:
-  #   - https://news.aatf.ai (production default)
+  #   - https://radar.hirammorlan.com (provisional; subdomain not final)
   #   - https://news.example.com (alternate production domain)
-  base_url: "https://news.aatf.ai"
+  base_url: "https://radar.hirammorlan.com"
 
   # Data collection window in hours (1-168)
   # How far back to look for news items
@@ -210,7 +210,7 @@ pipeline:
 #       model: "z-ai/GLM-5.3-Flash"
 #
 # Image: uses OpenRouter's dedicated images endpoint, which natively supports
-# 21:9 aspect ratios, resolution tiers, and reference images (the skunk mascot).
+# 21:9 aspect ratios, resolution tiers, and reference images (optional style reference: assets/hero-reference.png).
 #
 # image:
 #   mode: "openrouter"

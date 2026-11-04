@@ -23,15 +23,15 @@
 	disabled={!available}
 	class="
 		relative aspect-square p-1 rounded-lg text-sm transition-all
-		{inMonth ? 'text-trend-gray-700 dark:text-trend-gray-300' : 'text-trend-gray-400 dark:text-trend-gray-600'}
+		{inMonth ? 'text-radar-gray-700 dark:text-radar-gray-300' : 'text-radar-gray-400 dark:text-radar-gray-600'}
 		{available
-			? 'cursor-pointer hover:bg-trend-red/10'
+			? 'cursor-pointer hover:bg-radar-accent/10'
 			: 'cursor-default'}
 		{selected
-			? 'bg-trend-red text-white hover:bg-trend-red'
+			? 'bg-radar-accent text-white hover:bg-radar-accent'
 			: ''}
 		{today && !selected
-			? 'ring-2 ring-trend-red ring-inset'
+			? 'ring-2 ring-radar-accent ring-inset'
 			: ''}
 	"
 >
@@ -40,7 +40,7 @@
 	<!-- Data indicator dot -->
 	{#if available && !selected}
 		<span
-			class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-trend-red"
+			class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-radar-accent"
 		></span>
 	{/if}
 </button>

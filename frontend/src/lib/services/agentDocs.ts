@@ -244,8 +244,8 @@ const DESK_DOCS: Record<string, AgentDoc> = {
 	},
 	hero: {
 		summary:
-			"Paints the day's banner: the AATF skunk in a scene built out of the day's top stories.",
-		input: 'The detected topics, a set of keyword-to-visual mappings, and the skunk reference image.',
+			"Paints the edition's hero image from its top stories.",
+		input: 'The detected topics, a set of keyword-to-visual mappings, and the style brief in config/hero_style.md.',
 		output: 'A 21:9 banner image, and the prompt that produced it.',
 		matters:
 			'The hero is the visual identity of each day and the image RSS readers show. It is also the one output in the whole replay you can simply look at.',

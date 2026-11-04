@@ -31,7 +31,7 @@
 </svelte:head>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-	<h1 class="text-2xl font-bold text-trend-gray-800 dark:text-trend-gray-100 mb-8">
+	<h1 class="text-2xl font-bold text-radar-gray-800 dark:text-radar-gray-100 mb-8">
 		News Archive
 	</h1>
 
@@ -48,7 +48,7 @@
 
 			<!-- Date List -->
 			<div class="lg:col-span-2">
-				<h2 class="font-semibold text-trend-gray-800 dark:text-trend-gray-100 mb-4">
+				<h2 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-4">
 					Available Reports ({$availableDates.length})
 				</h2>
 
@@ -63,14 +63,14 @@
 						{#each index?.dates || [] as dateEntry}
 							<a
 								href="/?date={dateEntry.date}"
-								class="card block hover:border-trend-red transition-colors"
+								class="card block hover:border-radar-accent transition-colors"
 							>
 								<div class="flex items-center justify-between">
 									<div>
-										<h3 class="font-medium text-trend-gray-800 dark:text-trend-gray-100">
+										<h3 class="font-medium text-radar-gray-800 dark:text-radar-gray-100">
 											{formatDate(dateEntry.date, 'EEEE, MMMM d, yyyy')}
 										</h3>
-										<p class="text-sm text-trend-gray-500 mt-1">
+										<p class="text-sm text-radar-gray-500 mt-1">
 											{dateEntry.total_items} items analyzed
 										</p>
 									</div>
@@ -81,7 +81,7 @@
 											{@const config = CATEGORY_CONFIG[category as Category]}
 											{#if config}
 												<span
-													class="text-xs px-2 py-1 rounded-full bg-trend-gray-100 dark:bg-trend-gray-700 text-trend-gray-600 dark:text-trend-gray-400 border"
+													class="text-xs px-2 py-1 rounded-full bg-radar-gray-100 dark:bg-radar-gray-700 text-radar-gray-600 dark:text-radar-gray-400 border"
 													style="border-color: {config.color}"
 												>
 													{info.count}

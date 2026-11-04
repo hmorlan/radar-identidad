@@ -153,7 +153,7 @@ def generate_pipeline_outputs(
         pipeline_config = provider_config.get_pipeline_config()
         base_url = pipeline_config.base_url
     else:
-        base_url = "https://news.aatf.ai"
+        base_url = "https://radar.hirammorlan.com"
     feed_generator = FeedGenerator(web_dir, rolling_window_days=7, base_url=base_url)
     feed_generator.generate_feeds()
 

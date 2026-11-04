@@ -2,8 +2,10 @@
 """
 Hero Image Generator
 
-Generates daily hero images with the AATF skunk mascot via configured image provider.
-The mascot is placed in topic-related scenes based on the day's top topics.
+Generates the hero image for each Radar de Identidad edition via the configured
+image provider. The visual style lives in config/hero_style.md so it can be tuned
+without touching code; an optional reference image (assets/hero-reference.png)
+is sent for style guidance when present.
 
 Supports two initialization modes:
 1. New: HeroGenerator.from_config(config) - uses unified ImageClient abstraction
@@ -28,9 +30,13 @@ logger = logging.getLogger(__name__)
 
 
 class HeroGenerator:
-    """Generates daily hero images with skunk mascot via configured image provider."""
+    """Generates edition hero images via the configured image provider."""
 
-    SKUNK_REFERENCE = Path(__file__).parent.parent / "assets" / "skunk-reference.png"
+    # Optional style reference. If the file is absent the image is generated from
+    # the text prompt alone.
+    STYLE_REFERENCE = Path(__file__).parent.parent / "assets" / "hero-reference.png"
+    # Editable visual-style brief appended to every hero prompt.
+    STYLE_FILE = Path(__file__).parent.parent / "config" / "hero_style.md"
 
     # Topic-to-visual mapping for scene generation
     VISUAL_MAPPINGS = {
@@ -107,9 +113,6 @@ class HeroGenerator:
                 "or pass client parameter directly."
             )
 
-        # Verify skunk reference exists
-        if not self.SKUNK_REFERENCE.exists():
-            raise FileNotFoundError(f"Skunk reference image not found at {self.SKUNK_REFERENCE}")
 
     @classmethod
     def from_config(cls, config: 'ImageProviderConfig') -> 'HeroGenerator':
@@ -231,33 +234,44 @@ class HeroGenerator:
                 section += f"\n{summary['description']}"
             topic_sections.append(section)
 
-        return f"""You are generating a daily hero image for an AI news aggregator website.
+        style = self._load_style()
+
+        return f"""You are generating the hero image for an edition of "Radar de Identidad", a Spanish-language intelligence briefing on digital identity, authentication and trust.
 
 ## Your Goal
-Create a playful, colorful editorial illustration that visually represents today's top AI news stories. The scene should immediately convey the themes of the day's news to readers.
+Create a single editorial image that conveys the central tension of this edition's stories: who or what can be trusted, and what is at stake.
 
-## The Mascot (CRITICAL)
-The attached image shows our skunk mascot. You MUST:
-- Keep the EXACT circuit board pattern on the skunk's body and tail - this is a core part of the brand identity
-- Maintain the skunk's white and black coloring with the tech circuit pattern visible
-- The skunk must be ACTIVELY DOING SOMETHING related to the topics - typing on a keyboard, reading papers, adjusting equipment, pointing at a screen, holding tools, etc. NOT just standing and smiling at the camera!
-- Position the skunk in the lower-left or lower-right portion, engaged with the scene
-
-## Today's Stories
+## This Edition's Stories
 
 {chr(10).join(topic_sections)}
 
 ## Visual Direction
-Create a scene that represents these stories. You must include Topic 1 (the top story), then pick 2-3 others that would make the best scene together. Consider:
-- What visual metaphors could represent these themes?
-- How can the skunk mascot interact with or observe these elements?
+Build the scene around Topic 1 (the lead story) and weave in 1-2 others only if they fit naturally. Prefer one strong metaphor over a collage.
 - Suggested scene elements: {', '.join(visual_elements)}
 
-## Style Requirements
-- Playful cartoon illustration, tech editorial art style
-- Vibrant colors with Trend Red (#E63946) accents
-- Energetic, forward-looking, tech-optimistic mood
-- No company logos or watermarks - but topic-relevant company logos (OpenAI, Anthropic, Google, etc.) are encouraged when relevant to the stories"""
+## Style
+{style}
+
+## Hard Rules
+- No text, letters, numbers, logos or watermarks anywhere in the image.
+- No recognizable faces or real people.
+- Ultra-wide 21:9 composition with the focal point slightly off-center."""
+
+    def _load_style(self) -> str:
+        """Read the visual-style brief, falling back to a neutral default."""
+        try:
+            text = self.STYLE_FILE.read_text(encoding="utf-8")
+            # Drop comment lines so notes for humans don't reach the model.
+            lines = [l for l in text.splitlines() if not l.lstrip().startswith("#")]
+            style = "\n".join(lines).strip()
+            if style:
+                return style
+        except OSError as e:
+            logger.warning(f"Hero style file not readable ({e}); using default style")
+        return (
+            "Cinematic, painterly editorial illustration with high contrast and a "
+            "restrained palette. Serious, thoughtful mood; something is visibly at stake."
+        )
 
     async def generate(
         self,
@@ -278,13 +292,13 @@ Create a scene that represents these stories. You must include Topic 1 (the top 
         Returns:
             Dict with 'path' (relative URL path) and 'prompt' (used prompt), or None on failure
         """
-        # Read skunk reference image
-        try:
-            with open(self.SKUNK_REFERENCE, "rb") as f:
-                skunk_bytes = f.read()
-        except Exception as e:
-            logger.error(f"Failed to read skunk reference image: {e}")
-            return None
+        # Optional style reference image
+        reference_bytes = None
+        if self.STYLE_REFERENCE.exists():
+            try:
+                reference_bytes = self.STYLE_REFERENCE.read_bytes()
+            except OSError as e:
+                logger.warning(f"Could not read style reference image: {e}")
 
         # Extract visual elements and topic summaries from all available topics
         visual_elements = self._extract_visuals(top_topics)
@@ -303,7 +317,7 @@ Create a scene that represents these stories. You must include Topic 1 (the top 
             # Use ImageClient for generation
             response = await self.client.generate(
                 prompt=instructions,
-                reference_image=skunk_bytes,
+                reference_image=reference_bytes,
                 aspect_ratio="21:9",
                 image_size="2K"
             )
