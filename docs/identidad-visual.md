@@ -1,13 +1,31 @@
 # Identidad visual: qué hay y dónde se cambia
 
-**Estado: provisional.** La paleta y el estilo se están definiendo; este documento lista todas las piezas visuales para cambiarlas en un solo pase cuando cerremos el mockup.
+**Estado: dirección cerrada; falta aplicarla al código.** Este documento lista todas las piezas visuales para cambiarlas en un solo pase.
 
 ## Dirección acordada
 
-- **Imágenes de cada edición:** una civilización grecorromana con tecnología imposiblemente avanzada (mármol, bronce, túnicas y armaduras), sin pantallas ni cyberpunk, con rostros ocultos y sin texto. Cada imagen tiene tensión: algo está mal o en juego.
+- **Imágenes de cada edición:** una civilización grecorromana con tecnología imposiblemente avanzada (mármol, bronce, túnicas y armaduras), con rostros ocultos y sin texto. Cada imagen tiene tensión: algo está mal o en juego.
+  - La tecnología se ve como luz, no como pantallas: hologramas que flotan, geometría luminosa, grecas del piso y los muros por las que corre luz como datos, naves monolíticas de piedra al fondo y autómatas de mármol con vetas de oro tipo kintsugi.
+  - Sin cyberpunk, sin neón y sin pantallas ni tabletas con hologramas.
 - **Símbolos:** symbolon y tessera hospitalis (tokens de autenticación), Jano (accesos y umbrales), Hermes (agentes de IA y delegación), Argos Panoptes (monitoreo), máscaras y sombras (deepfakes).
-- **Paleta:** en revisión. La idea es salir del "todo dorado" y combinar bronce y ámbar con azules.
-- **Sitio:** la propuesta es una banda superior oscura para la imagen de la edición y un cuerpo de lectura claro (pendiente de mockup).
+- **Paleta de las imágenes ("Oro y zafiro"):** el mundo físico se queda en mármol, bronce envejecido y ámbar; solo la tecnología que emite luz brilla en oro eléctrico (casi blanco en el núcleo) y zafiro o azul eléctrico.
+
+  | Rol | Color | HEX |
+  |---|---|---|
+  | Base (sombras) | Obsidiana | `#0E0B08` |
+  | Base (metal) | Bronce antiguo | `#7A4E26` |
+  | Base (luz ambiente) | Ámbar | `#C98A3A` |
+  | Base (arquitectura) | Mármol | `#E9E2D4` |
+  | Acento principal | Oro eléctrico | `#FFD23F` |
+  | Centro de la luz | Núcleo incandescente | `#FFF6C8` |
+  | Acento secundario | Zafiro | `#1E5BFF` |
+  | Chispas y bordes | Azul eléctrico | `#4FC3FF` |
+
+  Los HEX sirven para el sitio y para revisar las imágenes; no se le pasan al modelo, que recibe la descripción en palabras.
+- **Generación:** Gemini 3 Pro Image, 21:9 nativo a 2K (3168×1344). Costo medido en pruebas locales: ~US$0.141 por imagen, incluido el pensamiento del modelo. Con una imagen de referencia, el prompt debe decir que solo tome el color, la luz y los materiales; si no, copia la composición.
+- **Sitio (maqueta "Editorial"):** imagen de la edición a pantalla completa con el titular encima, notas numeradas y barra lateral con el análisis semanal. Fondo casi negro (`#050608`) con azul eléctrico y zafiro como acentos; el oro solo marca la señal alta. Modo claro y oscuro con un botón de sol/luna (oscuro por defecto si el sistema no indica otra cosa); el hero se queda oscuro en ambos.
+- **Tipografía:** Trajan Sans (Adobe Fonts, con el código de inserción de un web project) para titulares e Inter para el texto.
+- **Portada del repositorio:** `docs/img/portada.jpg`, un observatorio con una esfera armilar que escanea la ciudad; una de las huellas del haz se fractura.
 
 ## Inventario de piezas
 
@@ -29,9 +47,11 @@
 
 ## Pendientes
 
-- [ ] Paleta final (bronce + azules) y tipografía.
+- [ ] Aplicar la paleta y la tipografía de la maqueta "Editorial" a `tailwind.config.js` y `app.css`.
+- [ ] Pasar el prompt de imagen final a `config/hero_style.md` y decidir si se agrega `assets/hero-reference.png`.
+- [ ] Tabla de mapeo de símbolos según el tema de la nota principal.
 - [ ] Logotipo definitivo.
-- [ ] Mockup de portada de edición y de nota individual.
+- [ ] Mockup de nota individual.
 - [ ] Traducir al español el resto de la interfaz (calendario, búsqueda, categorías, feeds, replay).
 - [ ] `og:image` y `og:url` cuando exista el subdominio.
 - [ ] Ajustar las categorías heredadas (news, research, social, reddit) a las del radar.

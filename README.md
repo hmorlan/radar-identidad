@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/img/portada.jpg" alt="Radar de Identidad: un observatorio clásico escanea la ciudad en busca de identidades comprometidas" width="100%"></p>
+
 # Radar de Identidad
 
 > **Estado: próximamente.** El sitio está en construcción y todavía no publica ediciones.
