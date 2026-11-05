@@ -20,7 +20,18 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 
 **Descartadas:** El Financiero (100/día sin notas de identidad), CISA y El Economista (403), INCIBE-CERT (404), feed antiguo de ESET (dominio muerto), Microsoft Entra (inactivo desde hace más de un año), OWASP (inactivo desde junio).
 
-**Pendiente:** DOF, CNBV y Banxico no tienen RSS utilizable; para cubrirlos hace falta un recolector propio que lea sus páginas de comunicados.
+## Reguladores sin RSS (recolector propio, 2026-11-04)
+
+`config/regulators.txt` lista 18 reguladores de México, España, Colombia, Argentina y Chile. `agents/gatherers/regulator_sources.py` los recolecta por dos vías y les aplica el mismo filtro de palabras clave (identidad, suplantación, fraude, autenticación, biometría, ciberseguridad, datos personales, IA):
+
+- **Página de prensa directa** (más fresca y confiable): CNBV, CONDUSEF, BCRA y AAIP.
+- **Google News** (búsqueda `site:` y resolución del enlace original del regulador): el resto.
+
+Una caché (`data/regulators_seen.json`) evita repetir páginas que Google vuelve a indexar.
+
+**Rendimiento medido (últimos 14 días):** 8 notas relevantes, sobre todo alertas de suplantación de la CONDUSEF, sanciones de la AAIP, la guía de la AEPD sobre asistentes y agentes de IA, su análisis de datos biométricos y el trabajo del Banco de España en criptografía poscuántica.
+
+**Limitación:** Google News casi no tiene notas recientes de CNMV, CCN-CERT, INCIBE, SIC, ColCERT, CMF, ANCI, Banco Central de Chile y CSIRT. Si alguno resulta clave, se agrega su página de prensa directa cuando sea legible (CNMV, CCN-CERT y ANCI bloquean a los lectores automáticos).
 
 ---
 

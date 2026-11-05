@@ -1,0 +1,35 @@
+# Radar de Identidad: reguladores y organismos públicos sin RSS utilizable.
+# Se consultan a través de Google News (búsqueda "site:" + palabras clave de identidad,
+# fraude y ciberseguridad) y se resuelve el enlace original del regulador.
+# Formato: PAÍS | Nombre | dominio o ruta del sitio (sin https://) [| página de prensa]
+# Si se indica la página de prensa, se lee directo (más fresco y confiable); si no, por Google News.
+# A ambos se les aplica el mismo filtro de palabras clave de identidad, fraude y ciberseguridad.
+# Revisar qué traería (sin LLM ni costo): python3 -m agents.gatherers.regulator_sources --hours 72
+
+# ===== México =====
+MX | DOF | dof.gob.mx
+MX | CNBV | gob.mx/cnbv | https://www.gob.mx/cnbv/archivo/prensa
+MX | Banxico | banxico.org.mx
+MX | CONDUSEF | gob.mx/condusef | https://www.gob.mx/condusef/archivo/prensa
+
+# ===== España =====
+ES | AEPD | aepd.es
+ES | Banco de España | bde.es
+ES | CNMV | cnmv.es
+ES | CCN-CERT | ccn-cert.cni.es
+ES | INCIBE | incibe.es
+
+# ===== Colombia =====
+CO | Superintendencia Financiera (SFC) | superfinanciera.gov.co
+CO | Superintendencia de Industria y Comercio (SIC) | sic.gov.co
+CO | ColCERT | colcert.gov.co
+
+# ===== Argentina =====
+AR | BCRA | bcra.gob.ar | https://www.bcra.gob.ar/noticias/
+AR | AAIP (protección de datos) | argentina.gob.ar/aaip | https://www.argentina.gob.ar/aaip/noticias
+
+# ===== Chile =====
+CL | CMF | cmfchile.cl
+CL | ANCI (Agencia Nacional de Ciberseguridad) | anci.gob.cl
+CL | Banco Central de Chile | bcentral.cl
+CL | CSIRT de Gobierno | csirt.gob.cl

@@ -8,6 +8,7 @@ import asyncio
 import logging
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -18,6 +19,7 @@ from dateutil import parser as date_parser
 from ..base import BaseGatherer, CollectedItem, deduplicate_items, step_label_for_url
 from ..llm_client import AnthropicClient
 from .link_follower import LinkFollower
+from .regulator_sources import SeenCache, collect as collect_regulators, load_regulators
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +85,9 @@ class NewsGatherer(BaseGatherer):
         if not self.feeds:
             logger.warning("No RSS feeds configured")
 
+        # Reguladores sin RSS (config/regulators.txt), vía página de prensa o Google News.
+        self.regulators = load_regulators(config_dir)
+
     @property
     def category(self) -> str:
         return 'news'
@@ -107,6 +112,17 @@ class NewsGatherer(BaseGatherer):
             rss_articles = await self._collect_rss()
         all_articles.extend(rss_articles)
         logger.info(f"Collected {len(rss_articles)} articles from RSS")
+
+        # Phase 1b: Regulators without usable RSS
+        if self.regulators:
+            logger.info(f"Collecting from {len(self.regulators)} regulators")
+            with self.time_source('regulators'):
+                regulator_articles = await asyncio.get_event_loop().run_in_executor(
+                    None, self._collect_regulators
+                )
+            self.source_counts['regulators'] = len(regulator_articles)
+            all_articles.extend(regulator_articles)
+            logger.info(f"Collected {len(regulator_articles)} regulator items")
 
         # Phase 2: Extract linked articles from social posts
         if social_posts:
@@ -247,6 +263,48 @@ class NewsGatherer(BaseGatherer):
             logger.error(f"Error fetching feed {feed_url}: {e}")
 
         return articles
+
+    def _collect_regulators(self) -> List[CollectedItem]:
+        """Collect regulator press items as CollectedItems (source_type 'regulator')."""
+        seen = SeenCache(Path(self.data_dir) / 'regulators_seen.json')
+        session = requests.Session()
+        if PIPELINE_PROXY_URL:
+            session.proxies.update({"http": PIPELINE_PROXY_URL, "https": PIPELINE_PROXY_URL})
+
+        def note(spec, found):
+            logger.debug(f"Regulator {spec.label}: {found} items")
+
+        try:
+            found = collect_regulators(
+                self.regulators, self.start_time, self.end_time,
+                session=session, seen=seen, today=self.report_date, on_spec=note,
+            )
+        except Exception as e:  # never let this source break the news phase
+            logger.error(f"Regulator collection failed: {e}")
+            self.note_degradation("reguladores: falló la recolección")
+            return []
+        seen.save(self.report_date)
+
+        items = []
+        for it in found:
+            items.append(CollectedItem(
+                id=self.generate_id(it.url, it.title),
+                title=it.title,
+                content=f"Comunicado de {it.spec.label}: {it.title}",
+                url=it.url,
+                author=it.spec.name,
+                published=it.published.isoformat(),
+                source=it.spec.label,
+                source_type='regulator',
+                tags=['regulador', it.spec.country],
+                metadata={
+                    'regulator': it.spec.name,
+                    'country': it.spec.country,
+                    'via': 'press_page' if it.spec.page else 'google_news',
+                },
+                keywords=self.extract_keywords(it.title),
+            ))
+        return items
 
     def _parse_date(self, date_struct) -> datetime:
         """Parse date from feedparser date structure."""

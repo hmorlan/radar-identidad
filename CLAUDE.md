@@ -95,6 +95,7 @@ python3 scripts/check_feeds.py --pending  # incluye candidatas comentadas
 | Fuentes de noticias | `config/rss_feeds.txt` |
 | Investigación y estándares | `config/research_feeds.txt` |
 | arXiv | `agents/gatherers/research_gatherer.py` (`CATEGORIES`, hoy solo `cs.CR`) |
+| Reguladores sin RSS (MX, ES, CO, AR, CL) | `config/regulators.txt` → `agents/gatherers/regulator_sources.py` (página de prensa directa o Google News; vista previa: `python3 -m agents.gatherers.regulator_sources --hours 72`) |
 | Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
 | X y Reddit | Desactivados (APIs de pago) |
 | Prompts editoriales | `config/prompts.yaml` (pendiente pasar a español) |

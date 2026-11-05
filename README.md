@@ -34,6 +34,7 @@ Un pipeline en Python recolecta fuentes públicas (RSS, arXiv, Mastodon y Bluesk
 |---|---|
 | Fuentes de noticias | `config/rss_feeds.txt` |
 | Fuentes de investigación | `config/research_feeds.txt` |
+| Reguladores sin RSS | `config/regulators.txt` |
 | Cuentas de Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
 | Prompts editoriales | `config/prompts.yaml` |
 | Modelos y API keys (local, no se sube) | `config/providers.yaml` (copia de `providers.yaml.example`) |
