@@ -188,6 +188,51 @@ class BaseImageClient(ABC):
         pass
 
 
+def native_usage_to_openai_shape(meta: Any) -> Optional[Dict[str, Any]]:
+    """Normalise google-genai ``usage_metadata`` to the openai-compatible shape.
+
+    Gemini reports thinking separately (``thoughts_token_count``) from the
+    candidate output, and breaks the candidates down by modality. Thinking is
+    billed (at the text rate), so it must be part of ``completion_tokens``, and
+    the modality split lets ``price_image_usage`` charge image and text tokens
+    at their own rates.
+    """
+    if meta is None:
+        return None
+
+    def _n(value: Any) -> int:
+        return int(value) if isinstance(value, (int, float)) else 0
+
+    candidates = _n(getattr(meta, "candidates_token_count", None))
+    thoughts = _n(getattr(meta, "thoughts_token_count", None))
+    image_tokens = text_tokens = 0
+    for detail in getattr(meta, "candidates_tokens_details", None) or []:
+        modality = str(getattr(detail, "modality", "")).upper()
+        count = _n(getattr(detail, "token_count", None))
+        if "IMAGE" in modality:
+            image_tokens += count
+        elif "TEXT" in modality:
+            text_tokens += count
+    if not image_tokens and not text_tokens:
+        image_tokens = candidates
+
+    usage: Dict[str, Any] = {}
+    prompt = getattr(meta, "prompt_token_count", None)
+    if prompt is not None:
+        usage["prompt_tokens"] = _n(prompt)
+    if candidates or thoughts:
+        usage["completion_tokens"] = candidates + thoughts
+        usage["completion_tokens_details"] = {
+            "image_tokens": image_tokens,
+            "text_tokens": text_tokens,
+            "reasoning_tokens": thoughts,
+        }
+    total = getattr(meta, "total_token_count", None)
+    if total is not None:
+        usage["total_tokens"] = _n(total)
+    return usage or None
+
+
 class NativeGeminiClient(BaseImageClient):
     """
     Image client using google-genai SDK (native mode).
@@ -268,18 +313,7 @@ class NativeGeminiClient(BaseImageClient):
 
         # The SDK exposes counts as `usage_metadata`; normalise to the same key
         # names the openai-compatible path yields so downstream code sees one shape.
-        usage = None
-        meta = getattr(response, "usage_metadata", None)
-        if meta is not None:
-            usage = {
-                k: v
-                for k, v in (
-                    ("prompt_tokens", getattr(meta, "prompt_token_count", None)),
-                    ("completion_tokens", getattr(meta, "candidates_token_count", None)),
-                    ("total_tokens", getattr(meta, "total_token_count", None)),
-                )
-                if v is not None
-            } or None
+        usage = native_usage_to_openai_shape(getattr(response, "usage_metadata", None))
         logger.info(
             f"Image usage reported: {usage}"
             if usage

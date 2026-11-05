@@ -42,7 +42,7 @@ Hoy el workflow `.github/workflows/daily-pipeline.yml` **no tiene horario**: sol
 | Triage diario | Claude Haiku 5.5 |
 | Redacción | Claude Opus 5.5 con pensamiento adaptativo |
 | Verificación y edición | Segunda pasada de Claude Opus 5.5 |
-| Imágenes | Gemini 3 Pro Image (`gemini-3-pro-image`; el nombre `-preview` fue retirado) |
+| Imágenes | Gemini 3 Pro Image, `gemini-3-pro-image-preview` en modo `native` (API de Google; probado el 2026-11-05). `gemini-3-pro-image` era el alias del proxy del proyecto original y no aplica |
 
 Usar Batch API donde no se necesite respuesta inmediata. **No usar Fable en el pipeline** (costo).
 
@@ -82,6 +82,8 @@ python3 run_pipeline.py --resume-from 4.7 ...              # regenerar solo la i
 python3 -m unittest discover -s tests -p '*_test.py'   # tests de Python (sin red)
 python3 scripts/check_feeds.py            # estado de cada fuente, sin costo
 python3 scripts/check_feeds.py --pending  # incluye candidatas comentadas
+GOOGLE_API_KEY=... python3 scripts/check_image_model.py              # confirma el modelo de imagen, sin costo
+GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una imagen de prueba (~US$0.14)
 ```
 
 `tests/admin_auth_test.py` necesita además `pip install -r admin_service/requirements.txt`.

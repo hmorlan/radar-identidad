@@ -84,10 +84,10 @@ jobs:
       MULLVAD_RELAY_FILTER: ${{ vars.MULLVAD_RELAY_FILTER || 'us' }}
       PIPELINE_BASE_URL: ${{ vars.PIPELINE_BASE_URL || 'https://radar.hirammorlan.com' }}
       PIPELINE_COMMIT_PATHS: ${{ vars.PIPELINE_COMMIT_PATHS || 'web/data config/model_releases.yaml config/ecosystem_context.yaml' }}
-      # `gemini-3-pro-image-preview` was retired from the endpoint and now 400s
-      # ("Invalid model name"), which failed Phase 4.7 on 2026-07-28. The GA name
-      # is the correct default; verify against /v1/models before changing it.
-      PIPELINE_IMAGE_MODEL: ${{ vars.PIPELINE_IMAGE_MODEL || 'gemini-3-pro-image' }}
+      # Radar de Identidad usa la API de Google directa (image mode "native"), donde el
+      # modelo se llama `gemini-3-pro-image-preview` (probado el 2026-11-05: 17 imágenes
+      # sin error). `gemini-3-pro-image` era el alias del proxy del proyecto original.
+      PIPELINE_IMAGE_MODEL: ${{ vars.PIPELINE_IMAGE_MODEL || 'gemini-3-pro-image-preview' }}
       LLM_TRUST_ENV_PROXY: ${{ vars.LLM_TRUST_ENV_PROXY || 'false' }}
       LLM_TIMEOUT_SECONDS: ${{ vars.LLM_TIMEOUT_SECONDS || '240' }}
       # Paid-model defaults: 16 in flight, paced at 60 requests/minute.
@@ -249,6 +249,7 @@ jobs:
             echo "ANTHROPIC_API_KEY is required unless PIPELINE_PROVIDERS_YAML is set." >&2
             exit 1
           elif [[ -n "${ANTHROPIC_API_BASE:-}" ]]; then
+            # Rama heredada del proxy del proyecto original (rutas aws/gcp); no aplica aquí.
             cat > config/providers.yaml <<YAML
           llm:
             mode: "openai-compatible"
