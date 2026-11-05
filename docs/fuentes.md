@@ -8,13 +8,13 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 |---|---|---|
 | Prensa de seguridad | The Record, Krebs on Security, Dark Reading, SecurityWeek, BleepingComputer | ~24 |
 | Identidad | Biometric Update, FIDO Alliance | ~10 |
-| Español (LATAM y España) | WeLiveSecurity ES, Ciberseguridad LATAM, DPL News, Expansión Tecnología, Una al Día | ~19 |
-| Estándares y gobierno | NIST Cybersecurity Insights, NIST CSRC (borradores), IETF OAuth WG, OpenID Foundation | ~1 |
-| Redes | Brian Krebs (Mastodon), Aaron Parecki (Bluesky) | ~2 |
-| Análisis de autor | Juan Pablo Castro, Cybersecurity Compass (inglés, ensayos largos) | ~0.1 |
+| Español (LATAM y España) | WeLiveSecurity ES, Ciberseguridad LATAM, DPL News, Expansión Tecnología, iupana, Una al Día | ~20 |
+| Estándares y gobierno | NIST Cybersecurity Insights, NIST CSRC (borradores), IETF OAuth WG, IETF WIMSE WG, OpenID Foundation, W3C, UK NCSC | ~1.5 |
+| Redes | Brian Krebs (Mastodon) | ~1 |
+| Análisis de autor | Juan Pablo Castro (Cybersecurity Compass), Heather Flanagan (Spherical Cow), Mike Jones (self-issued.info) | ~0.3 |
 | Investigación | arXiv cs.CR | ~35 |
 
-**Total: 19 feeds + arXiv cs.CR, ~90 entradas/día antes del filtro de relevancia.**
+**Total: 24 feeds + arXiv cs.CR, ~90 entradas/día antes del filtro de relevancia.**
 
 **Política agnóstica (2026-11-04):** no se usan blogs de proveedores (Okta, Auth0, Ping, Jumio y similares). Las empresas solo entran a través de fuentes independientes.
 

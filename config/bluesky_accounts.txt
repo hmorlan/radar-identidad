@@ -1,6 +1,3 @@
 # Radar de Identidad: cuentas de Bluesky (handle), una por línea.
-# Verificado 2026-11-04 con scripts/check_feeds.py.
-
-# ===== Estándares de identidad =====
-# Aaron Parecki: editor de OAuth 2.1, trabaja en autorización para MCP
-aaronpk.com
+# Sin cuentas activas por ahora. Aaron Parecki se retiró (trabaja en un proveedor de identidad;
+# política agnóstica). Se agregan solo autores independientes, verificados con scripts/check_feeds.py.

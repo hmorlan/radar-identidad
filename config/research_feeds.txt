@@ -11,16 +11,28 @@ https://csrc.nist.gov/CSRC/media/feeds/pubs/drafts-open-for-comment.xml
 https://datatracker.ietf.org/group/oauth/documents/feed/?significant=1
 # OpenID Foundation, ~3/semana; relevancia alta (p. ej. modelo de amenazas para agentes de IA)
 https://openid.net/feed/
+# W3C News, ~2/semana; fuente primaria de WebAuthn y Verifiable Credentials
+https://www.w3.org/news/feed/
+# IETF WIMSE WG: identidad de workloads y agentes (cambios significativos)
+https://datatracker.ietf.org/group/wimse/documents/feed/?significant=1
+# UK NCSC (gobierno del Reino Unido), ~1.5/semana; guías e incidentes
+https://www.ncsc.gov.uk/api/1/services/v1/all-rss-feed.xml
 
 # ===== Análisis de autor (opinión de expertos independientes; citar por nombre) =====
 # Juan Pablo Castro, Cybersecurity Compass (Medium), ~2-4/mes, en inglés; ensayos largos sobre
 # riesgo cibernético y agentes de IA. Útil para "La pregunta de fondo" y el análisis semanal.
 https://cybersecuritycompass.org/feed/
+# Heather Flanagan, Spherical Cow Consulting, ~1/semana; estándares de identidad para agentes y workloads
+https://sphericalcowconsulting.com/feed/
+# Mike Jones, self-issued.info, ~2/mes; anuncia estándares publicados (OpenID, JOSE, FIDO, WebAuthn)
+https://self-issued.info/?feed=rss2
 
 # ===== Descartadas (2026-11-04) =====
 # Blogs de proveedores (Okta Threat Intelligence, Auth0, Ping Identity, Jumio): fuera por
 # política editorial agnóstica. Las empresas solo entran cuando las cubre una fuente
 # independiente (prensa, organismos de estándares o reguladores).
+# Blogs y cuentas de autores que trabajan en empresas de identidad, fraude o verificación
+# (p. ej. Aaron Parecki, Start with Identity): fuera por la misma política.
 # INCIBE-CERT blog: el feed responde 404 (se probaron 4 rutas alternativas).
 # Microsoft Entra (Tech Community): sin publicaciones en más de un año.
 # OWASP: sin publicaciones desde junio de 2026.

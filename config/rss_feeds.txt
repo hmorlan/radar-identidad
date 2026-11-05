@@ -30,6 +30,8 @@ https://www.ciberseguridadlatam.com/feed/
 https://www.dplnews.com/feed/
 # Expansión, sección Tecnología (México), ~3/día; relevancia baja, aporta fraude digital en México
 https://expansion.mx/rss/tecnologia
+# iupana (fintech y banca digital LATAM), ~6/semana; fraude y seguridad bancaria
+https://www.iupana.com/feed/
 # Una al Día (Hispasec, España), ~4/semana; relevancia baja (vulnerabilidades)
 https://unaaldia.hispasec.com/feed/
 
