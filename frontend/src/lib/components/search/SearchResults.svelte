@@ -65,7 +65,7 @@
 									</span>
 									<span>{doc.source}</span>
 									<span>&middot;</span>
-									<span>{formatDate(doc.date, 'MMM d')}</span>
+									<span>{formatDate(doc.date, "d 'de' MMM")}</span>
 								</div>
 							</div>
 

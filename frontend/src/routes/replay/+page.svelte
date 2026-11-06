@@ -464,7 +464,7 @@
 		engine?.speed.set(s);
 	}
 
-	$: prettyDate = index ? formatDate(index.date, 'EEEE, MMMM d, yyyy') : '';
+	$: prettyDate = index ? formatDate(index.date, "EEEE d 'de' MMMM 'de' yyyy") : '';
 
 	// Count distinct LLM routes actually used, not distinct model names: the three
 	// provider routes (aws/gcp/anthropic) can all report the same model string, which

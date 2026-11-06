@@ -3,9 +3,34 @@
 @tailwind utilities;
 
 @layer base {
+	/* Radar de Identidad — tokens del design system (claro / oscuro).
+	   Canales RGB para que Tailwind pueda aplicar transparencias. */
 	:root {
-		--color-radar-accent: #2F5F9E;
-		--color-radar-accent-dark: #1F4373;
+		--ground: 244 245 247;       /* #F4F5F7 */
+		--surface: 255 255 255;      /* #FFFFFF */
+		--line: 220 224 230;         /* #DCE0E6 */
+		--ink: 11 13 16;             /* #0B0D10 */
+		--ink-body: 58 66 80;        /* #3A4250 */
+		--ink-muted: 91 100 114;     /* #5B6472 */
+		--electric-blue: 11 99 206;  /* #0B63CE */
+		--sapphire: 30 91 255;       /* #1E5BFF */
+		--signal-gold: 138 99 0;     /* #8A6300 */
+		--core-glow: 11 13 16;       /* #0B0D10 */
+		color-scheme: light;
+	}
+
+	.dark {
+		--ground: 5 6 8;             /* #050608 */
+		--surface: 12 14 18;         /* #0C0E12 */
+		--line: 29 35 44;            /* #1D232C */
+		--ink: 241 242 244;          /* #F1F2F4 */
+		--ink-body: 195 201 209;     /* #C3C9D1 */
+		--ink-muted: 141 150 163;    /* #8D96A3 */
+		--electric-blue: 79 195 255; /* #4FC3FF */
+		--sapphire: 30 91 255;       /* #1E5BFF */
+		--signal-gold: 255 210 63;   /* #FFD23F */
+		--core-glow: 255 246 200;    /* #FFF6C8 */
+		color-scheme: dark;
 	}
 
 	html {
@@ -13,18 +38,44 @@
 	}
 
 	body {
-		@apply font-sans antialiased;
+		@apply font-sans antialiased bg-ground text-ink;
+	}
+
+	/* Estilos de texto del design system */
+	.t-display-hero {
+		@apply font-display text-[32px] sm:text-[48px] lg:text-[64px] leading-[1.08] tracking-[1px];
+	}
+	.t-display-note {
+		@apply font-display text-[22px] sm:text-[26px] leading-[1.25];
+	}
+	.t-question {
+		@apply font-display text-[20px] leading-[1.4];
+	}
+	.t-wordmark {
+		@apply font-display text-[13px] tracking-[3px] sm:text-[16px] sm:tracking-[6px] leading-[1.2] uppercase;
+	}
+	.t-body {
+		@apply text-[15.5px] leading-[1.6];
+	}
+	.t-meta {
+		@apply text-[13px] leading-[1.5];
+	}
+	.t-kicker {
+		@apply text-[12px] leading-[1.4] font-medium tracking-[3px] uppercase;
+	}
+	.t-label {
+		@apply text-[11px] leading-[1.4] font-semibold tracking-[2px] uppercase;
+	}
+	.t-numeral {
+		@apply font-sans text-[40px] leading-none font-light tabular-nums;
 	}
 }
 
 @layer components {
 	/* Card component */
+	/* Bordes, no sombras: superficie + filete. */
 	.card {
-		@apply bg-white dark:bg-radar-gray-800
-		       rounded-xl p-6
-		       shadow-card hover:shadow-card-hover
-		       transition-shadow duration-200
-		       border border-radar-gray-200 dark:border-radar-gray-700;
+		@apply bg-surface rounded-lg p-6 border border-line;
 	}
 
 	/* Category accent borders */
@@ -47,7 +98,7 @@
 	/* Primary button */
 	.btn-primary {
 		@apply px-4 py-2 rounded-lg
-		       bg-radar-accent hover:bg-radar-accent-dark
+		       bg-sapphire hover:bg-sapphire/90
 		       text-white font-medium
 		       transition-colors duration-200;
 	}
@@ -97,53 +148,45 @@
 	   Three padding tiers, not two: the tablet band (sm–lg) carries text labels for
 	   all seven items and needs tighter gutters than the desktop layout to fit. */
 	.nav-link {
-		@apply px-1.5 sm:px-2.5 lg:px-4 py-2 rounded-lg
-		       text-radar-gray-600 dark:text-radar-gray-400
-		       hover:bg-radar-gray-200 dark:hover:bg-radar-gray-700
-		       transition-colors duration-200;
+		@apply px-2 sm:px-3 py-2 t-label text-ink-muted hover:text-ink transition-colors duration-200;
 	}
 
 	.nav-link-active {
-		@apply text-radar-accent bg-radar-accent/10;
+		@apply text-electric;
 	}
 
 	/* Importance-driven card tiers */
+	/* Niveles de importancia: sin sombras ni bordes laterales de color. */
 	.card-importance-high {
-		@apply shadow-lg border-l-4 border-l-radar-accent
-		       hover:-translate-y-0.5 transition-all duration-200;
+		@apply border-electric/40;
 	}
 
-	.card-importance-medium {
-		@apply shadow-md border-l-4 border-l-amber-500
-		       hover:-translate-y-0.5 transition-all duration-200;
-	}
-
+	.card-importance-medium,
 	.card-importance-standard {
-		@apply shadow-card border-l-4 border-l-radar-gray-300 dark:border-l-radar-gray-600
-		       hover:-translate-y-0.5 transition-all duration-200;
+		@apply border-line;
 	}
 
 	.card-importance-low {
-		@apply shadow-sm border-l-2 border-l-radar-gray-200 dark:border-l-radar-gray-700 opacity-90;
+		@apply border-line opacity-90;
 	}
 }
 
 @layer utilities {
 	/* Summary prose styling - for formatted markdown content */
 	.prose-summary {
-		@apply text-radar-gray-700 dark:text-radar-gray-300;
+		@apply text-ink-body;
 	}
 
 	.prose-summary h2 {
-		@apply font-bold text-radar-gray-800 dark:text-radar-gray-100 text-lg mt-5 mb-2;
+		@apply font-display text-ink text-xl mt-5 mb-2;
 	}
 
 	.prose-summary h3 {
-		@apply font-semibold text-radar-gray-800 dark:text-radar-gray-100 text-base mt-4 mb-2;
+		@apply t-label text-electric mt-5 mb-2;
 	}
 
 	.prose-summary h4 {
-		@apply font-semibold text-radar-gray-800 dark:text-radar-gray-100 text-base mt-4 mb-2;
+		@apply t-label text-electric mt-5 mb-2;
 	}
 
 	.prose-summary h2:first-child,
@@ -153,7 +196,7 @@
 	}
 
 	.prose-summary strong {
-		@apply text-radar-gray-900 dark:text-white font-semibold;
+		@apply text-ink font-semibold;
 	}
 
 	.prose-summary ul {
@@ -161,19 +204,17 @@
 	}
 
 	.prose-summary li {
-		@apply text-radar-gray-700 dark:text-radar-gray-300;
+		@apply text-ink-body;
 	}
 
 	.prose-summary a {
-		@apply text-radar-accent hover:text-radar-accent-dark underline;
+		@apply text-electric underline decoration-electric/40 hover:decoration-electric;
 	}
 
 	/* Internal links (to items on our site) - WCAG compliant contrast */
 	.prose-summary a.internal-link {
-		@apply text-radar-accent/90 underline decoration-radar-accent/50
-		       hover:text-radar-accent hover:decoration-radar-accent
-		       dark:text-sky-300 dark:decoration-sky-300/60
-		       dark:hover:text-sky-200 dark:hover:decoration-sky-200;
+		@apply text-electric underline decoration-electric/50
+		       hover:decoration-electric;
 	}
 
 	/* Keep link color for bold text inside links */
@@ -182,7 +223,7 @@
 	}
 
 	.prose-summary p {
-		@apply mb-3 leading-relaxed text-radar-gray-700 dark:text-radar-gray-300;
+		@apply mb-3 leading-relaxed text-ink-body;
 	}
 
 	/* Inline code. `.prose` blocks get this from @tailwindcss/typography;
@@ -190,8 +231,7 @@
 	   render as ordinary prose. */
 	.prose-summary code {
 		@apply px-1 py-0.5 rounded text-[0.9em] font-mono
-		       bg-radar-gray-100 dark:bg-radar-gray-700
-		       text-radar-gray-800 dark:text-radar-gray-200;
+		       bg-line/60 text-ink;
 	}
 
 	.prose-summary p:last-child {

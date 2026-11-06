@@ -7,8 +7,8 @@
 	// Optional coverage date prop from parent
 	export let coverageDate: string | undefined = undefined;
 
-	$: dateDisplay = $currentDate ? formatDate($currentDate, 'EEEE, MMMM d, yyyy') : '';
-	$: coverageDisplay = coverageDate ? formatDate(coverageDate, 'EEEE, MMMM d, yyyy') : '';
+	$: dateDisplay = $currentDate ? formatDate($currentDate, "EEEE d 'de' MMMM 'de' yyyy") : '';
+	$: coverageDisplay = coverageDate ? formatDate(coverageDate, "EEEE d 'de' MMMM 'de' yyyy") : '';
 	$: isLatest = !$navigation.hasNext;
 
 	// Read current category from URL to preserve it during navigation
@@ -24,7 +24,7 @@
 		       {$navigation.hasPrevious
 			? 'hover:bg-radar-gray-200 dark:hover:bg-radar-gray-700 text-radar-gray-700 dark:text-radar-gray-300'
 			: 'text-radar-gray-400 cursor-not-allowed'}"
-		aria-label="Previous day"
+		aria-label="Edición anterior"
 	>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
@@ -46,13 +46,13 @@
 			</span>
 			{#if isLatest}
 				<span class="ml-2 text-xs bg-radar-accent text-white px-2 py-0.5 rounded-full">
-					Latest
+					Más reciente
 				</span>
 			{/if}
 		</div>
 		{#if coverageDisplay}
 			<div class="text-sm text-radar-gray-500 dark:text-radar-gray-400 mt-1">
-				Coverage: {coverageDisplay}, 00:00–23:59 ET
+				Noticias hasta el {coverageDisplay}
 			</div>
 		{/if}
 	</div>
@@ -65,7 +65,7 @@
 		       {$navigation.hasNext
 			? 'hover:bg-radar-gray-200 dark:hover:bg-radar-gray-700 text-radar-gray-700 dark:text-radar-gray-300'
 			: 'text-radar-gray-400 cursor-not-allowed'}"
-		aria-label="Next day"
+		aria-label="Edición siguiente"
 	>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +86,7 @@
 			on:click={() => goToLatestDate(currentCategory || undefined)}
 			class="text-sm text-radar-accent hover:text-radar-accent-dark transition-colors"
 		>
-			Jump to latest &rarr;
+			Ir a la más reciente &rarr;
 		</button>
 	</div>
 {/if}

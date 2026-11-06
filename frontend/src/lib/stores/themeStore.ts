@@ -8,7 +8,12 @@ import { browser } from '$app/environment';
 export type Theme = 'light' | 'dark' | 'system';
 
 // Stored theme preference
-const storedTheme = browser ? (localStorage.getItem('theme') as Theme) : null;
+let storedTheme: Theme | null = null;
+try {
+	storedTheme = browser ? (localStorage.getItem('theme') as Theme) : null;
+} catch {
+	storedTheme = null;
+}
 export const themePreference = writable<Theme>(storedTheme || 'system');
 
 // Actual resolved theme based on preference and system
@@ -16,7 +21,8 @@ export const resolvedTheme = derived(themePreference, ($preference) => {
 	if (!browser) return 'light';
 
 	if ($preference === 'system') {
-		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		// Oscuro por defecto, salvo que el sistema pida claro explícitamente.
+		return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 	}
 
 	return $preference;
@@ -32,7 +38,11 @@ export function setTheme(theme: Theme): void {
 	themePreference.set(theme);
 
 	if (browser) {
-		localStorage.setItem('theme', theme);
+		try {
+			localStorage.setItem('theme', theme);
+		} catch {
+			/* sin almacenamiento: el modo dura solo esta visita */
+		}
 		applyTheme(theme);
 	}
 }
@@ -46,8 +56,8 @@ export function toggleTheme(): void {
 
 	// If system, detect current and toggle to opposite
 	if (current === 'system') {
-		const systemDark = browser && window.matchMedia('(prefers-color-scheme: dark)').matches;
-		setTheme(systemDark ? 'light' : 'dark');
+		const systemLight = browser && window.matchMedia('(prefers-color-scheme: light)').matches;
+		setTheme(systemLight ? 'dark' : 'light');
 	} else {
 		setTheme(current === 'dark' ? 'light' : 'dark');
 	}
@@ -60,7 +70,7 @@ function applyTheme(theme: Theme): void {
 	if (!browser) return;
 
 	const isDark =
-		theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+		theme === 'dark' || (theme === 'system' && !window.matchMedia('(prefers-color-scheme: light)').matches);
 
 	document.documentElement.classList.toggle('dark', isDark);
 }
@@ -77,7 +87,7 @@ export function initializeTheme(): void {
 	applyTheme(theme);
 
 	// Listen for system theme changes
-	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+	window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
 		let current: Theme = 'system';
 		themePreference.subscribe((v) => (current = v))();
 

@@ -28,16 +28,16 @@
 	}
 </script>
 
-<nav class="bg-white dark:bg-radar-gray-800 border-b border-gray-200 dark:border-radar-gray-700 sticky top-0 z-50">
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-		<div class="flex items-center h-14">
+<nav class="bg-ground/90 backdrop-blur border-b border-line sticky top-0 z-50">
+	<div class="max-w-7xl mx-auto px-4 sm:px-10">
+		<div class="flex items-center h-12">
 			<!-- Main navigation -->
 			<ul class="flex w-full items-center justify-evenly sm:justify-start sm:w-auto sm:gap-1">
 				<!-- Home: icon on mobile (no bg), text+bg on desktop -->
 				<li>
 					<a
 						href="/"
-						class="nav-link whitespace-nowrap hover:bg-transparent sm:hover:bg-radar-gray-200 {homeActive ? 'text-radar-accent sm:bg-radar-accent/10' : ''}"
+						class="nav-link whitespace-nowrap hover:bg-transparent {homeActive ? 'nav-link-active' : ''}"
 						aria-label="Inicio"
 					>
 						<svg
@@ -60,10 +60,6 @@
 							href={getCategoryHref(category)}
 							class="nav-link whitespace-nowrap {isCategoryActive(category) ? 'nav-link-active' : ''}"
 						>
-							<span
-								class="w-2 h-2 rounded-full inline-block mr-1"
-								style="background-color: {CATEGORY_CONFIG[category].color}"
-							></span>
 							<!--
 								Long labels are held back to `lg:`, not `sm:`.
 
@@ -84,7 +80,7 @@
 				<li>
 					<a
 						href="/archive"
-						class="nav-link whitespace-nowrap hover:bg-transparent sm:hover:bg-radar-gray-200 {archiveActive ? 'text-radar-accent sm:bg-radar-accent/10' : ''}"
+						class="nav-link whitespace-nowrap hover:bg-transparent {archiveActive ? 'nav-link-active' : ''}"
 						aria-label="Archivo"
 					>
 						<svg
@@ -104,7 +100,7 @@
 				<li class="hidden sm:block">
 					<a
 						href="/about"
-						class="nav-link whitespace-nowrap {aboutActive ? 'text-radar-accent bg-radar-accent/10' : ''}"
+						class="nav-link whitespace-nowrap {aboutActive ? 'nav-link-active' : ''}"
 						aria-label="Acerca de"
 					>
 						Acerca de

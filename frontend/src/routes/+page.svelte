@@ -18,6 +18,7 @@
 	import ErrorMessage from '$lib/components/common/ErrorMessage.svelte';
 	import EmptyState from '$lib/components/common/EmptyState.svelte';
 	import ComingSoon from '$lib/components/common/ComingSoon.svelte';
+	import EditionView from '$lib/components/edition/EditionView.svelte';
 	import { safeHtml } from '$lib/services/safeHtml';
 	import { hasReplayData } from '$lib/services/replayLoader';
 	import { dataUrl } from '$lib/services/dataBase';
@@ -31,6 +32,8 @@
 	let lastHandledRouteKey = '';
 
 	const validCategories: Category[] = ['news', 'research', 'social', 'reddit'];
+	// Categorías visibles en el radar (Reddit está desactivado).
+	const navCategories: Category[] = ['news', 'research', 'social'];
 
 	// Read query params
 	$: dateParam = $page.url.searchParams.get('date');
@@ -241,7 +244,7 @@
 		if (html) {
 			return html;
 		}
-		let formatted = text.replace(/^##\s*Executive Summary[^\n]*\n+/i, '');
+		let formatted = text.replace(/^##\s*Resumen de la edición[^\n]*\n+/i, '');
 		formatted = formatted.split(/\n\n+/).map(p => `<p class="mb-4 last:mb-0">${p.trim()}</p>`).join('');
 		return formatted;
 	}
@@ -259,27 +262,26 @@
      so mounting it here scopes it to this route. -->
 <LinkPreview fallbackDate={effectiveDate} />
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+{#if !showComingSoon && !categoryParam && !loading && !error && summary}
+	<EditionView
+		{summary}
+		heroImageUrl={summary.hero_image_url ? dataUrl(summary.hero_image_url) : null}
+		{categoryHref}
+		validCategories={navCategories}
+		executiveSummaryHtml={formatExecutiveSummary(summary.executive_summary, summary.executive_summary_html)}
+	/>
+{:else}
+<div class="max-w-7xl mx-auto px-4 sm:px-10 py-8">
 	{#if showComingSoon}
 		<ComingSoon />
 	{:else}
 	{#if categoryParam && config}
 		<!-- Category View Header -->
-		<div
-			class="rounded-xl p-6 mb-8 text-white"
-			style="background: linear-gradient(135deg, {config.color} 0%, {config.color}dd 100%)"
-		>
-			<div class="flex items-center gap-3 mb-2">
-				<a
-					href={overviewHref}
-					class="text-white/80 hover:text-white transition-colors"
-				>
-					&larr; Back
-				</a>
-			</div>
-			<h1 class="text-2xl font-bold">{config.title}</h1>
+		<div class="mb-8 pb-6 border-b border-line">
+			<a href={overviewHref} class="t-meta text-electric hover:underline">&larr; Volver a la edición</a>
+			<h1 class="t-display-hero text-ink mt-3">{config.title}</h1>
 			{#if categoryData}
-				<p class="text-white/80 mt-1">{categoryData.total_items} items for {effectiveDate}</p>
+				<p class="t-meta text-ink-muted mt-2">{categoryData.total_items} fuentes revisadas · {effectiveDate}</p>
 			{/if}
 		</div>
 	{/if}
@@ -326,8 +328,8 @@
 
 		{#if categoryData.items.length === 0}
 			<EmptyState
-				title="No {config?.title.toLowerCase()} found"
-				message="No items in this category for {effectiveDate}."
+				title="Sin notas en esta categoría"
+				message="No hay notas en esta categoría para {effectiveDate}."
 			/>
 		{:else}
 			<!-- Category Summary -->
@@ -335,7 +337,7 @@
 				<section class="mb-8">
 					<div class="card border-l-4" style="border-left-color: {config?.color}">
 						<h2 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-3">
-							{config?.title} Summary
+							Resumen: {config?.title}
 						</h2>
 						<div class="prose-summary max-w-none">
 							{@html safeHtml(categoryData.category_summary_html || categoryData.category_summary)}
@@ -348,7 +350,7 @@
 			{#if categoryData.themes && categoryData.themes.length > 0}
 				<section class="mb-8">
 					<h2 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-4">
-						Key Themes
+						Temas
 					</h2>
 					<div class="flex flex-wrap gap-2">
 						{#each categoryData.themes as theme}
@@ -366,7 +368,7 @@
 			<!-- All Items -->
 			<section>
 				<h2 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-6">
-					All Items ({categoryData.items.length})
+					Todas las notas ({categoryData.items.length})
 				</h2>
 				<NewsList items={categoryData.items} category={categoryParam} date={effectiveDate || ''} />
 			</section>
@@ -388,15 +390,15 @@
 			/>
 		</section>
 
-		<!-- Executive Summary -->
+		<!-- Resumen de la edición -->
 		<section class="mb-12">
 			<div class="card border-l-4 border-radar-accent dark:border-radar-accent">
 				<div class="flex items-center justify-between mb-4">
 					<h2 class="text-xl font-bold text-radar-gray-800 dark:text-radar-gray-100">
-						Executive Summary
+						Resumen de la edición
 					</h2>
 					<span class="text-sm text-radar-gray-500 dark:text-radar-gray-400">
-						{summary.total_items_analyzed} items analyzed
+						{summary.total_items_analyzed} fuentes revisadas
 					</span>
 				</div>
 				<div class="prose-summary max-w-none">
@@ -409,7 +411,7 @@
 		{#if summary.top_topics && summary.top_topics.length > 0}
 			<section class="mb-12">
 				<h2 class="text-xl font-bold text-radar-gray-800 dark:text-radar-gray-100 mb-6">
-					Top Topics Today
+					Temas
 				</h2>
 				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{#each summary.top_topics as topic}
@@ -434,14 +436,14 @@
 								{CATEGORY_CONFIG[category].title}
 							</h2>
 							<span class="text-sm text-radar-gray-500">
-								({catSummary.count} items)
+								({catSummary.count})
 							</span>
 						</div>
 						<a
 							href={categoryHref(category)}
 							class="text-sm font-medium text-radar-accent hover:text-radar-accent-dark transition-colors"
 						>
-							View All &rarr;
+							Ver todo &rarr;
 						</a>
 					</div>
 
@@ -457,3 +459,4 @@
 	{/if}
 	{/if}
 </div>
+{/if}

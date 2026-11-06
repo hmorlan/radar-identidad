@@ -4,15 +4,15 @@
 
 <button
 	on:click={toggleTheme}
-	class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-	aria-label={$isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-	title={$isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+	class="toggle"
+	aria-label={$isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+	title={$isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
 >
 	{#if $isDark}
 		<!-- Sun icon -->
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
-			class="w-5 h-5"
+			class="w-[18px] h-[18px]"
 			fill="none"
 			viewBox="0 0 24 24"
 			stroke="currentColor"
@@ -28,7 +28,7 @@
 		<!-- Moon icon -->
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
-			class="w-5 h-5"
+			class="w-[18px] h-[18px]"
 			fill="none"
 			viewBox="0 0 24 24"
 			stroke="currentColor"
@@ -42,3 +42,25 @@
 		</svg>
 	{/if}
 </button>
+
+<style>
+	.toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 38px;
+		height: 38px;
+		border-radius: 999px;
+		border: 1px solid rgb(255 255 255 / 0.14);
+		color: #f1f2f4;
+		transition: border-color 150ms, background-color 150ms;
+	}
+	.toggle:hover {
+		border-color: rgb(255 255 255 / 0.32);
+		background: rgb(255 255 255 / 0.06);
+	}
+	.toggle:focus-visible {
+		outline: 2px solid #4fc3ff;
+		outline-offset: 2px;
+	}
+</style>

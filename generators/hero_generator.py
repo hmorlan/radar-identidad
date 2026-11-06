@@ -4,7 +4,7 @@ Hero Image Generator
 
 Generates the hero image for each Radar de Identidad edition via the configured
 image provider. The visual style lives in config/hero_style.md so it can be tuned
-without touching code; an optional reference image (assets/hero-reference.png)
+without touching code; an optional reference image (assets/hero-reference.jpg|png|webp)
 is sent for style guidance when present.
 
 Supports two initialization modes:
@@ -34,34 +34,49 @@ class HeroGenerator:
 
     # Optional style reference. If the file is absent the image is generated from
     # the text prompt alone.
-    STYLE_REFERENCE = Path(__file__).parent.parent / "assets" / "hero-reference.png"
+    STYLE_REFERENCE = next(
+        (p for p in (Path(__file__).parent.parent / "assets" / f"hero-reference.{ext}"
+                     for ext in ("jpg", "png", "webp")) if p.exists()),
+        Path(__file__).parent.parent / "assets" / "hero-reference.jpg",
+    )
     # Editable visual-style brief appended to every hero prompt.
     STYLE_FILE = Path(__file__).parent.parent / "config" / "hero_style.md"
 
-    # Topic-to-visual mapping for scene generation
+    # Tabla de símbolos del radar (v1). Clave: fragmento del nombre del tema en
+    # español o inglés (minúsculas). Se usa la primera coincidencia por tema.
     VISUAL_MAPPINGS = {
-        "infrastructure": "server racks, cooling systems, blue LED glow, data center",
-        "datacenter": "server racks, cooling systems, blue LED glow",
-        "safety": "shield icons, protective barriers, guardrails",
-        "alignment": "scales of balance, alignment targets",
-        "research": "floating papers, neural network diagrams, lab setting",
-        "papers": "scientific documents, equations, research environment",
-        "robotics": "robot arms, mechanical components, factory setting",
-        "model": "neural network visualization, glowing nodes, architecture",
-        "release": "rocket launch, celebration confetti, announcement banners",
-        "regulation": "gavel, scales of justice, official documents",
-        "funding": "growth charts, money symbols, investment visuals",
-        "multimodal": "eyes, cameras, sound waves, multiple sensory inputs",
-        "agent": "autonomous systems, workflow diagrams, connected tools",
-        "open source": "connected nodes, community gathering, collaboration",
-        "reasoning": "thought bubbles, chain of logic, decision trees",
-        "benchmark": "performance charts, comparison graphs, trophy",
-        "language": "floating text, speech bubbles, translation symbols",
-        "vision": "camera lens, image processing, visual recognition",
-        "code": "terminal screens, code snippets, developer workspace",
-        "security": "locks, shields, firewall barriers, protection symbols",
-        "training": "compute clusters, gradient flows, learning curves",
-        "deployment": "cloud infrastructure, scaling arrows, production systems",
+        "passkey": "a split bronze symbolon whose two halves glow sapphire as they join",
+        "token": "a tessera hospitalis split in two, one half glowing, the other dark",
+        "credencial": "a tessera hospitalis split in two, one half glowing, the other dark",
+        "credential": "a tessera hospitalis split in two, one half glowing, the other dark",
+        "contraseñ": "a sealed bronze tablet with a cracked wax seal",
+        "password": "a sealed bronze tablet with a cracked wax seal",
+        "sesi": "a stolen bronze key glowing in a hooded figure's hand",
+        "session": "a stolen bronze key glowing in a hooded figure's hand",
+        "mfa": "a two-faced Janus gate with one face's light flickering out",
+        "autentic": "a two-faced Janus gate with one face's light flickering out",
+        "authent": "a two-faced Janus gate with one face's light flickering out",
+        "acceso": "a monumental threshold guarded by two-faced Janus",
+        "access": "a monumental threshold guarded by two-faced Janus",
+        "oauth": "Hermes handing a glowing sealed scroll across a threshold",
+        "agente": "a marble Hermes automaton carrying a glowing sealed scroll on someone's behalf",
+        "agent": "a marble Hermes automaton carrying a glowing sealed scroll on someone's behalf",
+        "delega": "a marble Hermes automaton carrying a glowing sealed scroll on someone's behalf",
+        "deepfake": "a theatre mask that casts a different face as its shadow",
+        "suplant": "a theatre mask that casts a different face as its shadow",
+        "impersonat": "a theatre mask that casts a different face as its shadow",
+        "fraude": "masks and shadows gathering around a glowing treasury vault",
+        "fraud": "masks and shadows gathering around a glowing treasury vault",
+        "phishing": "a lure of golden light drawing a cloaked figure toward a false gate",
+        "biometr": "a fractured glowing fingerprint spiral, one segment scattering into sparks",
+        "verificaci": "a fractured glowing fingerprint spiral, one segment scattering into sparks",
+        "kyc": "a fractured glowing fingerprint spiral, one segment scattering into sparks",
+        "monitor": "many-eyed Argos Panoptes watching from a colonnade",
+        "detecci": "many-eyed Argos Panoptes watching from a colonnade",
+        "regula": "a marble tribunal with a glowing bronze law tablet",
+        "datos personales": "an archive of sealed scrolls with one scroll unfurled in the wind",
+        "privacy": "an archive of sealed scrolls with one scroll unfurled in the wind",
+        "ransomware": "a city gate bound in glowing chains",
     }
 
     def __init__(
@@ -170,7 +185,7 @@ class HeroGenerator:
                 if keyword in name_lower:
                     visuals.append(visual)
                     break
-        return visuals if visuals else ["abstract AI visualization, neural networks, data flow patterns"]
+        return visuals if visuals else ["a split bronze symbolon, the ancient token of trust, one half glowing"]
 
     def _get_topic_names(self, topics: List[Any]) -> List[str]:
         """Extract topic names from topic objects."""

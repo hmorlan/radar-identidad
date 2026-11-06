@@ -3,13 +3,13 @@
 </svelte:head>
 
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-	<h1 class="text-3xl font-bold text-radar-gray-900 dark:text-radar-gray-100 mb-8">
+	<h1 class="t-display-hero text-ink mb-10">
 		Acerca de Radar de Identidad
 	</h1>
 
 	<section class="card mb-6">
-		<h2 class="text-lg font-semibold text-radar-gray-900 dark:text-radar-gray-100 mb-3">Qué es</h2>
-		<div class="prose dark:prose-invert max-w-none text-radar-gray-600 dark:text-radar-gray-300">
+		<h2 class="t-label text-electric mb-3">Qué es</h2>
+		<div class="prose-summary t-body max-w-none">
 			<p>
 				Un radar de inteligencia en español sobre identidad digital y sobre las noticias de IA y
 				ciberseguridad que cambian cómo decidimos en quién o en qué confiar.
@@ -22,8 +22,8 @@
 	</section>
 
 	<section class="card mb-6">
-		<h2 class="text-lg font-semibold text-radar-gray-900 dark:text-radar-gray-100 mb-3">Qué entra y qué no</h2>
-		<div class="prose dark:prose-invert max-w-none text-radar-gray-600 dark:text-radar-gray-300">
+		<h2 class="t-label text-electric mb-3">Qué entra y qué no</h2>
+		<div class="prose-summary t-body max-w-none">
 			<p>La regla es una sola: <strong>¿la noticia cambia cómo decidimos en quién o en qué confiar?</strong></p>
 			<ul>
 				<li>Sí: passkeys, OAuth y OpenID; account takeover y fatiga de MFA; deepfakes que pasan la verificación de identidad; agentes de IA que actúan con nuestros accesos; regulación de identidad.</li>
@@ -33,13 +33,13 @@
 	</section>
 
 	<section class="card mb-6">
-		<h2 class="text-lg font-semibold text-radar-gray-900 dark:text-radar-gray-100 mb-3">Cómo se hace</h2>
-		<div class="prose dark:prose-invert max-w-none text-radar-gray-600 dark:text-radar-gray-300">
+		<h2 class="t-label text-electric mb-3">Cómo se hace</h2>
+		<div class="prose-summary t-body max-w-none">
 			<p>
 				Cada día se recolectan fuentes públicas: organismos de estándares, prensa especializada,
 				blogs técnicos, medios de Latinoamérica e investigación académica. Un pipeline con modelos
-				de IA filtra lo relevante, redacta las notas y hace una segunda pasada de verificación
-				contra la fuente original.
+				de IA filtra lo relevante, redacta las notas y hace una segunda pasada que contrasta cada
+				nota con el texto de su fuente.
 			</p>
 			<p>
 				<strong>La IA puede equivocarse.</strong> Por eso cada nota enlaza a su fuente original:
@@ -49,8 +49,8 @@
 	</section>
 
 	<section class="card">
-		<h2 class="text-lg font-semibold text-radar-gray-900 dark:text-radar-gray-100 mb-3">Créditos</h2>
-		<div class="prose dark:prose-invert max-w-none text-radar-gray-600 dark:text-radar-gray-300">
+		<h2 class="t-label text-electric mb-3">Créditos</h2>
+		<div class="prose-summary t-body max-w-none">
 			<p>
 				Proyecto personal de Hiram Morlan, con fuentes exclusivamente públicas. El código parte del
 				proyecto de código abierto

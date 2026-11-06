@@ -3,6 +3,7 @@
  */
 
 import { format, parseISO, isValid, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday as dateFnsIsToday, isSameDay as dateFnsIsSameDay } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 /**
  * Parse a date string (YYYY-MM-DD) into a Date object
@@ -17,10 +18,10 @@ export function parseDate(dateStr: string): Date | null {
 /**
  * Format a date for display
  */
-export function formatDate(date: Date | string, formatStr: string = 'MMMM d, yyyy'): string {
+export function formatDate(date: Date | string, formatStr: string = "d 'de' MMMM 'de' yyyy"): string {
 	const d = typeof date === 'string' ? parseDate(date) : date;
 	if (!d) return '';
-	return format(d, formatStr);
+	return format(d, formatStr, { locale: es });
 }
 
 /**
@@ -104,26 +105,26 @@ export function formatRelativeTime(dateStr: string): string {
 	const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-	if (diffHours < 1) return 'Just now';
-	if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-	if (diffDays === 1) return 'Yesterday';
-	if (diffDays < 7) return `${diffDays} days ago`;
+	if (diffHours < 1) return 'Hace un momento';
+	if (diffHours < 24) return `Hace ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
+	if (diffDays === 1) return 'Ayer';
+	if (diffDays < 7) return `Hace ${diffDays} días`;
 
-	return formatDate(date, 'MMM d');
+	return formatDate(date, "d 'de' MMM");
 }
 
 /**
  * Get the month name
  */
 export function getMonthName(month: number): string {
-	return format(new Date(2000, month), 'MMMM');
+	return format(new Date(2000, month), 'MMMM', { locale: es });
 }
 
 /**
  * Get short weekday names
  */
 export function getWeekdayNames(): string[] {
-	return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+	return ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 }
 
 /**
@@ -132,7 +133,7 @@ export function getWeekdayNames(): string[] {
 export function formatDayOfWeek(date: Date | string): string {
 	const d = typeof date === 'string' ? parseDate(date) : date;
 	if (!d) return '';
-	return format(d, 'EEEE');
+	return format(d, 'EEEE', { locale: es });
 }
 
 /**

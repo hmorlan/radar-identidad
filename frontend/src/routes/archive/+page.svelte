@@ -68,7 +68,7 @@
 								<div class="flex items-center justify-between">
 									<div>
 										<h3 class="font-medium text-radar-gray-800 dark:text-radar-gray-100">
-											{formatDate(dateEntry.date, 'EEEE, MMMM d, yyyy')}
+											{formatDate(dateEntry.date, "EEEE d 'de' MMMM 'de' yyyy")}
 										</h3>
 										<p class="text-sm text-radar-gray-500 mt-1">
 											{dateEntry.total_items} items analyzed

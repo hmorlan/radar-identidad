@@ -69,6 +69,26 @@ export interface CollectionStatus {
 	sources: CollectionSource[];
 }
 
+/** Radar de Identidad: una nota de la edición (fases 4.2-4.3 del pipeline). */
+export interface EditionNote {
+	item_id: string;
+	category: string;
+	title: string;
+	url: string;
+	source: string;
+	published: string;
+	que_paso: string;
+	por_que_importa: string;
+	pregunta_de_fondo: string | null;
+	senal: 'baja' | 'media' | 'alta';
+	verificacion: 'verificada' | 'corregida' | 'sin_verificar' | string;
+}
+
+export interface Edition {
+	titular: string;
+	notas: EditionNote[];
+}
+
 export interface DaySummary {
 	date: string;
 	coverage_date?: string;
@@ -94,6 +114,8 @@ export interface DaySummary {
 	image_model?: string;
 	/** Human-facing name of the hero-image model. */
 	image_model_display?: string;
+	/** Radar de Identidad: notas de la edición (ausente en días anteriores). */
+	edition?: Edition;
 }
 
 export interface CategoryNotice {
@@ -173,7 +195,7 @@ export const CATEGORY_CONFIG: Record<
 		title: 'Noticias',
 		singularTitle: 'Noticia',
 		shortTitle: 'Noticias',
-		color: '#667eea',
+		color: '#1E5BFF',
 		bgClass: 'bg-category-news',
 		textClass: 'text-category-news',
 		badgeClass: 'badge-news',
@@ -183,7 +205,7 @@ export const CATEGORY_CONFIG: Record<
 		title: 'Investigación y estándares',
 		singularTitle: 'Investigación',
 		shortTitle: 'Investigación',
-		color: '#10b981',
+		color: '#0B63CE',
 		bgClass: 'bg-category-research',
 		textClass: 'text-category-research',
 		badgeClass: 'badge-research',
@@ -193,7 +215,7 @@ export const CATEGORY_CONFIG: Record<
 		title: 'Redes',
 		singularTitle: 'Redes',
 		shortTitle: 'Redes',
-		color: '#f59e0b',
+		color: '#5B6472',
 		bgClass: 'bg-category-social',
 		textClass: 'text-category-social',
 		badgeClass: 'badge-social',
@@ -203,7 +225,7 @@ export const CATEGORY_CONFIG: Record<
 		title: 'Reddit Discussions',
 		singularTitle: 'Reddit Discussion',
 		shortTitle: 'Reddit',
-		color: '#ef4444',
+		color: '#5B6472',
 		bgClass: 'bg-category-reddit',
 		textClass: 'text-category-reddit',
 		badgeClass: 'badge-reddit',

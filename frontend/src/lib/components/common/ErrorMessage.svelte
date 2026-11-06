@@ -27,7 +27,7 @@
 	</p>
 	{#if onRetry}
 		<button class="btn-primary" on:click={onRetry}>
-			Try Again
+			Reintentar
 		</button>
 	{/if}
 </div>
