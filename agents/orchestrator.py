@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
 from .llm_client import AnthropicClient, AsyncAnthropicClient, AsyncLLMRouter, ThinkingLevel, LLMResponse
+from .edition_notes import Edition, build_edition
 from .base import (
     BaseGatherer, BaseAnalyzer, CollectedItem, AnalyzedItem,
     CategoryReport, CategoryTheme, deduplicate_items, extract_json_str,
@@ -123,6 +124,8 @@ class OrchestratorResult:
     # everything it was supposed to. `run_pipeline` reads this to decide whether
     # publishing would misrepresent the day.
     degradations: List[str] = field(default_factory=list)
+    # Radar de Identidad: notas de la edición (fases 4.2 y 4.3).
+    edition: Dict[str, Any] = field(default_factory=dict)
     orchestrator_thinking: Optional[str] = None
     generated_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -144,9 +147,27 @@ class OrchestratorResult:
             'hero_image_usage': self.hero_image_usage,
             'phase_status': self.phase_status,
             'degradations': list(self.degradations),
+            'edition': self.edition,
             'orchestrator_thinking': self.orchestrator_thinking,
             'generated_at': self.generated_at
         }
+
+
+def _build_role_routed_client(provider_config):
+    """Main model for DEEP/ULTRATHINK, light model for QUICK/STANDARD, run cost cap."""
+    from .model_roles import RoleRoutedLLMClient, resolve_max_cost
+
+    llm = provider_config.llm
+    heavy = AsyncLLMRouter.from_config(llm)
+    light = None
+    if llm.light_model and llm.light_model != llm.model:
+        base = llm.get_route_configs()[0]
+        light = AsyncAnthropicClient.from_route_config(
+            base.model_copy(update={"id": f"light:{llm.light_model}", "model": llm.light_model})
+        )
+    pipeline = getattr(provider_config, "pipeline", None)
+    max_cost = resolve_max_cost(getattr(pipeline, "max_cost_usd", None) if pipeline else None)
+    return RoleRoutedLLMClient(heavy, light, max_cost)
 
 
 class MainOrchestrator:
@@ -251,7 +272,7 @@ class MainOrchestrator:
         # Initialize LLM clients from config
         if provider_config:
             self.llm_client = AnthropicClient.from_config(provider_config.llm)
-            self.async_client = AsyncLLMRouter.from_config(provider_config.llm)
+            self.async_client = _build_role_routed_client(provider_config)
         else:
             # Fallback to env vars for backwards compatibility
             self.llm_client = AnthropicClient()
@@ -1039,6 +1060,38 @@ class MainOrchestrator:
                 executive_summary, summary_thinking, category_reports, top_topics
             )
 
+        # Phase 4.2/4.3: Notas de la edición y verificación (Radar de Identidad)
+        edition_checkpoint = (
+            self._load_checkpoint('edition')
+            if resume_from is not None and resume_from > 4.3 else None
+        )
+        if edition_checkpoint:
+            edition = Edition.from_dict(edition_checkpoint.get('edition'))
+            self._restore_or_skip_phase(phases, "Phase 4.2: Edition Notes", edition_checkpoint, "loaded from checkpoint")
+        elif self.replay_context is not None:
+            edition = Edition()
+            phases.skip_phase("Phase 4.2: Edition Notes", "frozen replay state")
+        elif resume_from is not None and resume_from > 4.3:
+            # Resuming past the notes with no notes checkpoint (a run that
+            # predates them): keep the resume cheap and do not re-buy them.
+            edition = Edition()
+            phases.skip_phase("Phase 4.2: Edition Notes", "no checkpoint to resume from")
+        else:
+            phases.start_phase("Phase 4.2: Edition Notes")
+            logger.info("Phase 4.2-4.3: Writing and fact-checking the edition notes...")
+            edition = await build_edition(
+                self.async_client, self.prompt_accessor, category_reports,
+                self.target_date, grounding=None,
+            )
+            for note in edition.degradations:
+                self.degradations.append(note)
+            phases.end_phase(
+                'success' if edition.notas and not edition.degradations
+                else ('partial' if edition.notas else 'failed'),
+                error="; ".join(edition.degradations) or None,
+            )
+            self._save_checkpoint('edition', {'edition': edition.to_dict()})
+
         # Phase 4.6: Ecosystem Enrichment (detect new model releases from news)
         if self.replay_context is not None:
             # Enrichment is an output-side mutation. A frozen replay uses its
@@ -1206,6 +1259,7 @@ class MainOrchestrator:
             hero_image_usage=hero_image_usage,
             phase_status=phases.to_dict(),
             degradations=list(self.degradations),
+            edition=edition.to_dict(),
             orchestrator_thinking=f"Topic Detection:\n{topic_thinking}\n\nSummary:\n{summary_thinking}"
         )
 

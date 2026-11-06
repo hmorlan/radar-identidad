@@ -1,13 +1,16 @@
 name: Daily Pipeline
 
 on:
-  # Radar de Identidad: sin horario automático por ahora. Solo se ejecuta a mano
-  # (workflow_dispatch). La cadencia L-M-V + domingo se configura al terminar las
-  # pruebas en local.
+  # Radar de Identidad: sin horario automático durante la beta; solo a mano.
+  # Cadencia prevista (activar cuando el costo real esté medido): ediciones
+  # lunes, miércoles y viernes a las 06:40 de CDMX (12:40 UTC). Para activarla,
+  # descomenta estas líneas:
+  # schedule:
+  #   - cron: "40 12 * * 1,3,5"
   workflow_dispatch:
     inputs:
       target_date:
-        description: "Report date to generate (YYYY-MM-DD). Defaults to today in ET."
+        description: "Fecha de la edición (YYYY-MM-DD). Por defecto, hoy en CDMX."
         required: false
         type: string
       resume_from:
@@ -19,9 +22,9 @@ on:
         required: false
         type: string
       commit_outputs:
-        description: "Commit and push generated outputs after the run."
+        description: "Guardar las ediciones en el repo (público). En la beta: no."
         required: false
-        default: true
+        default: false
         type: boolean
 
 permissions:
@@ -53,10 +56,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:
-      TZ: America/New_York
+      TZ: America/Mexico_City
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       ANTHROPIC_API_BASE: ${{ secrets.ANTHROPIC_API_BASE }}
-      ANTHROPIC_MODEL: ${{ inputs.anthropic_model || vars.ANTHROPIC_MODEL || 'claude-5-opus-aws' }}
+      ANTHROPIC_MODEL: ${{ inputs.anthropic_model || vars.ANTHROPIC_MODEL || 'claude-opus-5-5' }}
       # Model override precedence: explicit dispatch input > LLM_DEFAULT_MODEL
       # repo variable (standing default, set 2026-09-30 to z-ai/glm-5.3-flashx
       # after GLM-Flash flapping killed the 09-29/09-30 morning runs on
@@ -88,6 +91,9 @@ jobs:
       # modelo se llama `gemini-3-pro-image-preview` (probado el 2026-11-05: 17 imágenes
       # sin error). `gemini-3-pro-image` era el alias del proxy del proyecto original.
       PIPELINE_IMAGE_MODEL: ${{ vars.PIPELINE_IMAGE_MODEL || 'gemini-3-pro-image-preview' }}
+      # Radar de Identidad: modelo ligero (triage) y tope de gasto por corrida (USD).
+      PIPELINE_LIGHT_MODEL: ${{ vars.PIPELINE_LIGHT_MODEL || 'claude-haiku-5-5' }}
+      PIPELINE_MAX_COST_USD: ${{ vars.PIPELINE_MAX_COST_USD || '6' }}
       LLM_TRUST_ENV_PROXY: ${{ vars.LLM_TRUST_ENV_PROXY || 'false' }}
       LLM_TIMEOUT_SECONDS: ${{ vars.LLM_TIMEOUT_SECONDS || '240' }}
       # Paid-model defaults: 16 in flight, paced at 60 requests/minute.
@@ -175,7 +181,9 @@ jobs:
               tzinfo=timezone.utc,
           )
           nominal_et = nominal_utc.astimezone(ZoneInfo("America/New_York"))
-          should_run = nominal_et.hour == 3 and nominal_et.minute == 0
+          # Radar de Identidad: CDMX no cambia de horario (sin horario de verano desde
+          # 2022), así que un solo cron basta y toda corrida programada procede.
+          should_run = True
 
           print(f"should_run={'true' if should_run else 'false'}")
           print(f"nominal_utc={nominal_utc.strftime('%Y-%m-%dT%H:%M:%SZ')}")
@@ -281,6 +289,7 @@ jobs:
             mode: "anthropic"
             api_key: "\${ANTHROPIC_API_KEY}"
             model: "\${ANTHROPIC_MODEL}"
+            light_model: "${PIPELINE_LIGHT_MODEL}"
             timeout: 600
 
           image:
@@ -291,6 +300,7 @@ jobs:
           pipeline:
             base_url: "${PIPELINE_BASE_URL}"
             lookback_hours: 24
+            max_cost_usd: ${PIPELINE_MAX_COST_USD:-6}
           YAML
           else
             cat > config/providers.yaml <<YAML
@@ -298,11 +308,13 @@ jobs:
             mode: "anthropic"
             api_key: "\${ANTHROPIC_API_KEY}"
             model: "\${ANTHROPIC_MODEL}"
+            light_model: "${PIPELINE_LIGHT_MODEL}"
             timeout: 600
 
           pipeline:
             base_url: "${PIPELINE_BASE_URL}"
             lookback_hours: 24
+            max_cost_usd: ${PIPELINE_MAX_COST_USD:-6}
           YAML
           fi
 
@@ -564,7 +576,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          report_date="${TARGET_DATE_INPUT:-$(TZ=America/New_York date +%F)}"
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           python3 scripts/pipeline_alert.py --date "$report_date" --probe
 
       - name: Check Reddit credit reserve before analysis
@@ -572,7 +584,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          report_date="${TARGET_DATE_INPUT:-$(TZ=America/New_York date +%F)}"
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           python3 scripts/reddit_credit_health.py --date "$report_date"
 
       - name: Run pipeline
@@ -595,6 +607,18 @@ jobs:
             echo "Pipeline-wide proxy is configured."
           fi
 
+          # Cada edición cubre desde la anterior: lunes 72 h (vie-dom), miércoles y
+          # viernes 48 h. Otros días (corridas manuales) 24 h, salvo LOOKBACK_HOURS.
+          if [[ -z "${LOOKBACK_HOURS:-}" ]]; then
+            edition_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
+            case "$(date -d "$edition_date" +%u)" in
+              1) export LOOKBACK_HOURS=72 ;;
+              3|5) export LOOKBACK_HOURS=48 ;;
+              *) export LOOKBACK_HOURS=24 ;;
+            esac
+          fi
+          echo "Ventana de recolección: ${LOOKBACK_HOURS} h"
+
           args=(--config-dir ./config --data-dir ./data --web-dir ./web)
           if [[ -n "${TARGET_DATE_INPUT:-}" ]]; then
             args+=(--date "$TARGET_DATE_INPUT")
@@ -609,7 +633,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          report_date="${TARGET_DATE_INPUT:-$(TZ=America/New_York date +%F)}"
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           # The pipeline can exit 0 even when Topic Detection / Executive Summary
           # failed (those phases catch their own errors and write failure sentinels
           # into summary.json). Validate the actual user-facing artifact so we never
@@ -671,7 +695,7 @@ jobs:
           # is discarded with the runner.
           git config rebase.gpgSign true
 
-          report_date="${TARGET_DATE_INPUT:-$(TZ=America/New_York date +%F)}"
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           git commit -S -m "data: Auto-update ${report_date}"
           echo "committed=true" >> "$GITHUB_OUTPUT"
 
@@ -717,7 +741,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          report_date="${TARGET_DATE_INPUT:-$(TZ=America/New_York date +%F)}"
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           python3 scripts/reddit_credit_health.py --date "$report_date" --record
 
       - name: Upload pipeline diagnostics
@@ -757,7 +781,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          report_date="${TARGET_DATE_INPUT:-$(TZ=America/New_York date +%F)}"
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           git fetch origin main --quiet
           # Verify the actual published artifact for report_date exists on the live
           # branch. This is commit-timing independent (no false positives on same-day
@@ -808,7 +832,7 @@ jobs:
           TARGET_DATE_INPUT: ${{ inputs.target_date }}
         run: |
           set -uo pipefail
-          report_date="${TARGET_DATE_INPUT:-$(TZ=America/New_York date +%F)}"
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           # Exits 1 by design when it finds something; that is a finding, not a
           # job failure.
           python3 scripts/check_source_anomalies.py \
@@ -857,7 +881,7 @@ jobs:
           TARGET_DATE_INPUT: ${{ inputs.target_date }}
         run: |
           set -uo pipefail
-          report_date="${TARGET_DATE_INPUT:-$(TZ=America/New_York date +%F)}"
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           if [[ -f "web/data/${report_date}/replay-index.json" ]]; then
             echo "Verified: replay-index.json present for ${report_date}."
           else
@@ -888,7 +912,7 @@ jobs:
             echo "PIPELINE_ALERT_TOKEN not set; skipping alert POST (configure the repo secret)."
             exit 0
           fi
-          report_date="${TARGET_DATE_INPUT:-$(TZ=America/New_York date +%F)}"
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           python3 scripts/pipeline_alert.py --date "$report_date" --status failure \
             --reason "Daily pipeline failed; the previous published report was retained. Inspect the run diagnostics."
 

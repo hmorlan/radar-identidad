@@ -113,6 +113,12 @@ class LLMProviderConfig(BaseModel):
                     "proxies with restrictive limits (e.g., 64000)."
     )
     timeout: float = Field(default=600.0, ge=1.0, le=600.0, description="Request timeout in seconds")
+    light_model: Optional[str] = Field(
+        default=None,
+        description="Modelo ligero para llamadas QUICK/STANDARD (triage, resúmenes por "
+                    "fuente, enlaces). Si no se define, todo usa `model`. "
+                    "Radar de Identidad: claude-haiku-5-5."
+    )
     routes: Optional[List[LLMRouteConfig]] = Field(
         default=None,
         description="Optional route list for multi-provider LLM routing"
@@ -291,6 +297,13 @@ class PipelineConfig(BaseModel):
         description="Data collection window in hours (1-168)"
     )
 
+    max_cost_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        description="Tope de gasto en LLM por corrida (USD). Al alcanzarlo, la corrida "
+                    "se detiene sin publicar. PIPELINE_MAX_COST_USD tiene prioridad."
+    )
+
     @field_validator('base_url')
     @classmethod
     def validate_base_url(cls, v: str) -> str:
@@ -402,6 +415,14 @@ class OrchestrationPrompts(BaseModel):
         ...,
         min_length=10,
         description="Executive summary generation prompt"
+    )
+    edition_notes: Optional[str] = Field(
+        default=None,
+        description="Radar de Identidad: redacción de las notas de la edición"
+    )
+    edition_fact_check: Optional[str] = Field(
+        default=None,
+        description="Radar de Identidad: verificación de las notas contra su fuente"
     )
 
     model_config = {"extra": "ignore"}

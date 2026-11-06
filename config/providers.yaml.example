@@ -45,10 +45,12 @@ llm:
   # Uncomment to override the default:
   # base_url: "https://api.anthropic.com"
 
-  # Model identifier. Use whatever Opus 5 alias your endpoint expects.
-  # The original project's hosted proxy used claude-5-opus-aws as the
-  # single-provider fallback.
-  model: "claude-5-opus-aws"
+  # Radar de Identidad: modelo principal (selección, temas, resumen, notas y
+  # verificación) y modelo ligero (triage y resúmenes por fuente; perfiles
+  # QUICK/STANDARD). Precios verificados el 2026-11-05: Opus 5.5 $4/$20 por
+  # millón de tokens; Haiku 5.5 $0.10/$0.50.
+  model: "claude-opus-5-5"
+  light_model: "claude-haiku-5-5"
 
   # mode: "openai-chat" speaks OpenRouter's DOCUMENTED surface for
   # OpenAI-style models (stealth/ox-alpha lists reasoning/reasoning_effort
@@ -156,6 +158,11 @@ pipeline:
   # How far back to look for news items
   # Default: 24 (one day)
   lookback_hours: 24
+
+  # Tope de gasto en LLM por corrida (USD). Al alcanzarlo se bloquean las llamadas
+  # restantes y la corrida no publica. PIPELINE_MAX_COST_USD tiene prioridad.
+  # Estimación previa (sin medir aún): ~US$3-4 por edición de 2-3 días.
+  max_cost_usd: 6.0
 
 # =============================================================================
 # Example: OpenAI-compatible proxy configuration

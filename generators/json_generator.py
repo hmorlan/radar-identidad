@@ -190,6 +190,35 @@ class JSONGenerator:
 
         logger.info(f"JSON generation complete for {date}")
 
+    @staticmethod
+    def _sanitize_edition(edition: Dict[str, Any]) -> Dict[str, Any]:
+        """Plain-text edition notes with scheme-checked URLs (rendered as text, never HTML)."""
+        def text(value: Any, limit: int = 1200) -> str:
+            value = re.sub(r"<[^>]+>", "", str(value or ""))
+            return " ".join(value.split())[:limit]
+
+        notes = []
+        for raw in edition.get('notas') or []:
+            if not isinstance(raw, dict):
+                continue
+            senal = text(raw.get('senal'), 10).lower()
+            if senal not in ('baja', 'media', 'alta'):
+                continue
+            notes.append({
+                'item_id': text(raw.get('item_id'), 40),
+                'category': text(raw.get('category'), 20),
+                'title': text(raw.get('title'), 200),
+                'url': _safe_url(raw.get('url')),
+                'source': text(raw.get('source'), 120),
+                'published': text(raw.get('published'), 40),
+                'que_paso': text(raw.get('que_paso')),
+                'por_que_importa': text(raw.get('por_que_importa')),
+                'pregunta_de_fondo': text(raw.get('pregunta_de_fondo'), 400) or None,
+                'senal': senal,
+                'verificacion': text(raw.get('verificacion'), 20) or 'sin_verificar',
+            })
+        return {'titular': text(edition.get('titular'), 200), 'notas': notes}
+
     def _generate_summary_json(self, date_dir: str, result: Dict[str, Any]) -> None:
         """Generate summary.json with executive summary and top items."""
         category_reports = result.get('category_reports', {})
@@ -226,6 +255,7 @@ class JSONGenerator:
             # validator, the watchdog and the site can all see that a day was
             # degraded rather than having to infer it. Empty on a clean run.
             'degradations': [str(note) for note in (result.get('degradations') or [])],
+            'edition': self._sanitize_edition(result.get('edition') or {}),
             'hero_image_url': result.get('hero_image_url'),
             'hero_image_prompt': result.get('hero_image_prompt'),
             'hero_image_usage': result.get('hero_image_usage'),

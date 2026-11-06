@@ -9,6 +9,7 @@ Pricing source: https://platform.claude.com/docs/en/about-claude/pricing
 
 import json
 import logging
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -26,6 +27,23 @@ class ModelPricing(Enum):
     OPUS_4_6_CACHE_WRITE_5MIN = 6.25
     OPUS_4_6_CACHE_WRITE_1HR = 10.00
     OPUS_4_6_CACHE_HIT = 0.50
+
+    # Claude Opus 5.5 and Haiku 5.5 (verified 2026-11-05 against
+    # https://platform.claude.com/docs/en/about-claude/pricing). Haiku 5.5 is
+    # priced by prompt length: a request whose prompt (input + cache reads +
+    # cache writes) exceeds 100,000 tokens pays the long-context row.
+    OPUS_5_5_INPUT = 4.00
+    OPUS_5_5_OUTPUT = 20.00
+    OPUS_5_5_CACHE_WRITE_5MIN = 5.00
+    OPUS_5_5_CACHE_HIT = 0.20
+    HAIKU_5_5_INPUT = 0.10
+    HAIKU_5_5_OUTPUT = 0.50
+    HAIKU_5_5_CACHE_WRITE_5MIN = 0.125
+    HAIKU_5_5_CACHE_HIT = 0.01
+    HAIKU_5_5_LONG_INPUT = 0.50
+    HAIKU_5_5_LONG_OUTPUT = 2.50
+    HAIKU_5_5_LONG_CACHE_WRITE_5MIN = 0.625
+    HAIKU_5_5_LONG_CACHE_HIT = 0.05
 
     # Claude Sonnet 4.5 pricing
     SONNET_4_5_INPUT = 3.00
@@ -291,6 +309,16 @@ class CostTracker:
             self.output_price = 3.75
             self.cache_write_price = 0.75
             self.cache_hit_price = 0.075
+        elif re.search(r"opus-5[-.]5|5[-.]5-opus", model.lower()):
+            self.input_price = ModelPricing.OPUS_5_5_INPUT.value
+            self.output_price = ModelPricing.OPUS_5_5_OUTPUT.value
+            self.cache_write_price = ModelPricing.OPUS_5_5_CACHE_WRITE_5MIN.value
+            self.cache_hit_price = ModelPricing.OPUS_5_5_CACHE_HIT.value
+        elif re.search(r"haiku-5[-.]5|5[-.]5-haiku", model.lower()):
+            self.input_price = ModelPricing.HAIKU_5_5_INPUT.value
+            self.output_price = ModelPricing.HAIKU_5_5_OUTPUT.value
+            self.cache_write_price = ModelPricing.HAIKU_5_5_CACHE_WRITE_5MIN.value
+            self.cache_hit_price = ModelPricing.HAIKU_5_5_CACHE_HIT.value
         elif "opus" in model.lower():
             self.input_price = ModelPricing.OPUS_4_6_INPUT.value
             self.output_price = ModelPricing.OPUS_4_6_OUTPUT.value
@@ -391,16 +419,46 @@ class CostTracker:
             f"cache_write={record.cache_creation_tokens}, cache_read={record.cache_read_tokens}"
         )
 
+    def _rates_for(self, record: APICallRecord):
+        """Rates for the model that actually served this call.
+
+        A run can mix models (Haiku for triage, Opus for writing), so each call is
+        priced at its own model's schedule; the tracker's default model is only
+        the fallback when a record carries no model.
+        """
+        model = (record.model or self.model or "").lower()
+        if model == (self.model or "").lower():
+            rates = (self.input_price, self.output_price, self.cache_write_price, self.cache_hit_price)
+        else:
+            cache = self.__dict__.setdefault("_rate_cache", {})
+            if model not in cache:
+                other = CostTracker.__new__(CostTracker)
+                CostTracker.__init__(other, record.model)
+                cache[model] = (other.input_price, other.output_price,
+                                other.cache_write_price, other.cache_hit_price)
+                if other.pricing_is_estimate:
+                    self.pricing_is_estimate = True
+            rates = cache[model]
+        if re.search(r"haiku-5[-.]5|5[-.]5-haiku", model):
+            prompt = record.input_tokens + record.cache_creation_tokens + record.cache_read_tokens
+            if prompt > 100_000:
+                rates = (ModelPricing.HAIKU_5_5_LONG_INPUT.value,
+                         ModelPricing.HAIKU_5_5_LONG_OUTPUT.value,
+                         ModelPricing.HAIKU_5_5_LONG_CACHE_WRITE_5MIN.value,
+                         ModelPricing.HAIKU_5_5_LONG_CACHE_HIT.value)
+        return rates
+
     def calculate_cost(self, record: APICallRecord) -> CostBreakdown:
-        """Calculate cost for a single API call."""
+        """Calculate cost for a single API call at its own model's rates."""
         # Costs are per million tokens
         mtok = 1_000_000
+        input_price, output_price, cache_write_price, cache_hit_price = self._rates_for(record)
 
         return CostBreakdown(
-            input_cost=(record.input_tokens / mtok) * self.input_price,
-            output_cost=(record.output_tokens / mtok) * self.output_price,
-            cache_write_cost=(record.cache_creation_tokens / mtok) * self.cache_write_price,
-            cache_hit_cost=(record.cache_read_tokens / mtok) * self.cache_hit_price
+            input_cost=(record.input_tokens / mtok) * input_price,
+            output_cost=(record.output_tokens / mtok) * output_price,
+            cache_write_cost=(record.cache_creation_tokens / mtok) * cache_write_price,
+            cache_hit_cost=(record.cache_read_tokens / mtok) * cache_hit_price
         )
 
     def get_totals(self) -> Dict[str, int]:
