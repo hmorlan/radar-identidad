@@ -20,6 +20,10 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 
 **Descartadas:** El Financiero (100/día sin notas de identidad), CISA y El Economista (403), INCIBE-CERT (404), feed antiguo de ESET (dominio muerto), Microsoft Entra (inactivo desde hace más de un año), OWASP (inactivo desde junio).
 
+## Alerta de fuentes caídas (2026-11-07)
+
+Cada día, `.github/workflows/source-health.yml` revisa todas las fuentes de esta página (feeds, arXiv cs.CR, Mastodon, Bluesky y reguladores) con `scripts/check_feeds.py`. Cuenta como falla: error HTTP o de red, un feed que ya no es RSS/Atom, arXiv sin artículos en 7 días, o la página de prensa de un regulador que deja de devolver notas (señal de que el sitio cambió). Tras dos fallas seguidas se abre un issue `salud-fuentes`. Una fuente que solo publica poco (INACTIVA, SIN RESULTADOS) se lista pero no abre alerta. Primera revisión completa: 43 fuentes, todas OK.
+
 ## Reguladores sin RSS (recolector propio, 2026-11-04)
 
 `config/regulators.txt` lista 18 reguladores de México, España, Colombia, Argentina y Chile. `agents/gatherers/regulator_sources.py` los recolecta por dos vías y les aplica el mismo filtro de palabras clave (identidad, suplantación, fraude, autenticación, biometría, ciberseguridad, datos personales, IA):

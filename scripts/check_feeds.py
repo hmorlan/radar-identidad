@@ -1,31 +1,73 @@
 #!/usr/bin/env python3
 """Verifica que las fuentes configuradas respondan y estén vivas.
 
-No usa la API de Anthropic ni cuesta nada: solo descarga cada feed y reporta
+No usa la API de Anthropic ni cuesta nada: solo descarga cada fuente y reporta
 estado HTTP, número de entradas y fecha de la más reciente.
+
+Revisa: feeds RSS de noticias e investigación, arXiv (cs.CR), Mastodon, Bluesky y
+los reguladores de ``config/regulators.txt`` (página de prensa directa o
+búsqueda en Google News).
 
 Uso:
     python3 scripts/check_feeds.py              # fuentes activas
     python3 scripts/check_feeds.py --pending    # incluye las líneas "# https://..." pendientes
     python3 scripts/check_feeds.py --days 60    # umbral para marcar una fuente como inactiva
+    python3 scripts/check_feeds.py --json       # salida para máquinas (la usa source_health_alert.py)
 """
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
 import urllib.request
-from datetime import datetime, timezone
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Callable, List, Optional
 
 try:
     import feedparser
 except ImportError:  # pragma: no cover
     sys.exit("Falta feedparser: pip install -r requirements.txt")
 
-CONFIG = Path(__file__).resolve().parent.parent / "config"
+ROOT = Path(__file__).resolve().parent.parent
+CONFIG = ROOT / "config"
 UA = "Radar-de-Identidad/1.0 (+feed-check)"
 TIMEOUT = 25
+ARXIV_URL = ("https://export.arxiv.org/api/query?search_query=cat:cs.CR"
+             "&sortBy=submittedDate&sortOrder=descending&max_results=10")
+# Ventana para preguntar a Google News por un regulador sin página de prensa.
+REGULATOR_SEARCH_DAYS = 30
+
+# Veredictos. Solo FALLA dispara la alerta; los demás son informativos.
+OK, FAIL, INACTIVE, NO_DATES, NO_RESULTS = "OK", "FALLA", "INACTIVA", "SIN FECHAS", "SIN RESULTADOS"
+
+
+@dataclass
+class Result:
+    group: str
+    source: str
+    verdict: str
+    status: Optional[int]
+    entries: int
+    newest: Optional[str]  # YYYY-MM-DD
+    error: str = ""
+    pending: bool = False
+
+    @property
+    def key(self) -> str:
+        return f"{self.group}|{self.source}"
+
+
+def _load_regulator_module():
+    """Load regulator_sources.py without importing the agents package (heavy deps)."""
+    path = ROOT / "agents" / "gatherers" / "regulator_sources.py"
+    spec = importlib.util.spec_from_file_location("regulator_sources_standalone", path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def is_source_token(token: str, filename: str) -> bool:
@@ -58,8 +100,8 @@ def read_entries(path: Path, include_pending: bool) -> list[tuple[str, bool]]:
     return out
 
 
-def fetch(url: str) -> tuple[int | None, bytes, str]:
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
+def fetch(url: str, ua: str = UA) -> tuple[int | None, bytes, str]:
+    req = urllib.request.Request(url, headers={"User-Agent": ua})
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
             return resp.status, resp.read(), ""
@@ -108,41 +150,104 @@ def check_bluesky(handle: str):
     return status, len(items), max(dates) if dates else None, ""
 
 
+def verdict_for(status, n, newest, err, now, days) -> str:
+    if err or status != 200:
+        return FAIL
+    if newest is None:
+        return NO_DATES
+    if (now - newest).days > days:
+        return INACTIVE
+    return OK
+
+
+def _result(group, source, status, n, newest, err, verdict, pending=False) -> Result:
+    return Result(group, source, verdict, status, n,
+                  newest.strftime("%Y-%m-%d") if newest else None, err, pending)
+
+
+def check_arxiv(now: datetime) -> Result:
+    status, n, newest, err = check_feed(ARXIV_URL)
+    # arXiv cs.CR publica todos los días hábiles: una semana sin nada es una falla.
+    v = verdict_for(status, n, newest, err, now, 7)
+    return _result("investigación", "arXiv cs.CR", status, n, newest, err, FAIL if v == INACTIVE else v)
+
+
+def check_regulators(now: datetime, days: int) -> List[Result]:
+    """Each regulator: its press page must still parse; its Google search must answer.
+
+    A press page that returns zero rows means the site changed and the scraper is
+    blind (FALLA). A Google search with zero results in 30 days is normal for a
+    quiet regulator (SIN RESULTADOS), not a failure.
+    """
+    reg = _load_regulator_module()
+    specs = reg.load_regulators(str(CONFIG))
+    out = []
+    for spec in specs:
+        if spec.page:
+            status, body, err = fetch(spec.page, reg.BROWSER_UA)
+            rows = reg.scrape_press_page(body.decode("utf-8", "replace"), spec.page) if status == 200 else []
+            newest = max((r["published"] for r in rows), default=None)
+            newest = newest.replace(tzinfo=timezone.utc) if newest else None
+            if status == 200 and not rows:
+                err = "la página de prensa no devolvió notas (¿cambió el sitio?)"
+            v = verdict_for(status, len(rows), newest, err, now, days)
+            out.append(_result("reguladores", f"{spec.label} · página", status, len(rows), newest, err, v))
+        else:
+            status, body, err = fetch(reg.search_url(spec, REGULATOR_SEARCH_DAYS), reg.BROWSER_UA)
+            if status != 200:
+                out.append(_result("reguladores", f"{spec.label} · Google News", status, 0, None,
+                                   err or "HTTP error", FAIL))
+                continue
+            n, newest = newest_feed_date(body)
+            v = OK if n else NO_RESULTS
+            out.append(_result("reguladores", f"{spec.label} · Google News", status, n, newest, "", v))
+    return out
+
+
+def run_checks(include_pending: bool = False, days: int = 60,
+               now: Optional[datetime] = None) -> List[Result]:
+    now = now or datetime.now(timezone.utc)
+    groups: list[tuple[str, str, Callable]] = [
+        ("noticias", "rss_feeds.txt", check_feed),
+        ("investigación", "research_feeds.txt", check_feed),
+        ("mastodon", "mastodon_accounts.txt", check_mastodon),
+        ("bluesky", "bluesky_accounts.txt", check_bluesky),
+    ]
+    results: List[Result] = []
+    for group, filename, checker in groups:
+        for value, pending in read_entries(CONFIG / filename, include_pending):
+            status, n, newest, err = checker(value)
+            results.append(_result(group, value, status, n, newest, err,
+                                   verdict_for(status, n, newest, err, now, days), pending))
+        if group == "investigación":
+            results.append(check_arxiv(now))
+
+    results.extend(check_regulators(now, days))
+    return results
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--pending", action="store_true", help="incluye fuentes comentadas como pendientes")
     ap.add_argument("--days", type=int, default=60, help="días sin publicar para marcar INACTIVA")
+    ap.add_argument("--json", action="store_true", help="imprime los resultados como JSON")
     args = ap.parse_args()
 
-    groups = [
-        ("rss_feeds.txt", check_feed),
-        ("research_feeds.txt", check_feed),
-        ("mastodon_accounts.txt", check_mastodon),
-        ("bluesky_accounts.txt", check_bluesky),
-    ]
-    now = datetime.now(timezone.utc)
-    problems = 0
-    for filename, checker in groups:
-        entries = read_entries(CONFIG / filename, args.pending)
-        print(f"\n== {filename} ({len(entries)})")
-        for value, pending in entries:
-            status, n, newest, err = checker(value)
-            age = (now - newest).days if newest else None
-            if err or status != 200:
-                verdict = "FALLA"
-            elif age is None:
-                verdict = "SIN FECHAS"
-            elif age > args.days:
-                verdict = "INACTIVA"
-            else:
-                verdict = "OK"
-            if verdict != "OK" and not pending:
-                problems += 1
-            tag = " [pendiente]" if pending else ""
-            when = newest.strftime("%Y-%m-%d") if newest else "-"
-            print(f"  {verdict:<10} {str(status or '-'):<4} {n:>3} entradas  última {when}  {value}{tag}"
-                  + (f"  ({err})" if err else ""))
-    print(f"\nFuentes activas con problemas: {problems}")
+    results = run_checks(args.pending, args.days)
+    if args.json:
+        print(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=1))
+    else:
+        group = None
+        for r in results:
+            if r.group != group:
+                group = r.group
+                print(f"\n== {group}")
+            tag = " [pendiente]" if r.pending else ""
+            print(f"  {r.verdict:<14} {str(r.status or '-'):<4} {r.entries:>3} entradas  "
+                  f"última {r.newest or '-'}  {r.source}{tag}" + (f"  ({r.error})" if r.error else ""))
+    problems = sum(1 for r in results if r.verdict == FAIL and not r.pending)
+    if not args.json:
+        print(f"\nFuentes activas que fallan: {problems}")
     return 1 if problems else 0
 
 

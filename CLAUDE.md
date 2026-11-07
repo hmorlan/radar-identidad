@@ -82,6 +82,7 @@ python3 run_pipeline.py --resume-from 4.7 ...              # regenerar solo la i
 python3 -m unittest discover -s tests -p '*_test.py'   # tests de Python (sin red)
 python3 scripts/check_feeds.py            # estado de cada fuente, sin costo
 python3 scripts/check_feeds.py --pending  # incluye candidatas comentadas
+python3 scripts/source_health_alert.py --dry-run   # simula la alerta de fuentes caídas
 GOOGLE_API_KEY=... python3 scripts/check_image_model.py              # confirma el modelo de imagen, sin costo
 GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una imagen de prueba (~US$0.14)
 ```
@@ -107,6 +108,8 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | Estado de las fuentes | `docs/fuentes.md` |
 
 Para agregar una fuente: añadirla al `.txt` correspondiente, correr `scripts/check_feeds.py` y documentarla en `docs/fuentes.md`.
+
+**Alerta de fuentes caídas:** `.github/workflows/source-health.yml` corre `check_feeds.py` todos los días a las 07:17 (CDMX), sin costo. Si una fuente falla dos revisiones seguidas (o la página de prensa de un regulador deja de devolver notas), abre un issue con la etiqueta `salud-fuentes` y lo cierra cuando se recupera.
 
 ## Arquitectura
 
