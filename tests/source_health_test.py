@@ -86,6 +86,48 @@ class SyncIssueTest(unittest.TestCase):
         self.assertEqual((action, calls), ("sin cambios", []))
 
 
+class MainTest(unittest.TestCase):
+    def _main(self, results, issues, tmp):
+        import json, os, tempfile
+        res = Path(tmp) / "r.json"
+        res.write_text(json.dumps(results))
+        state = Path(tmp) / "s.json"
+        argv = ["x", "--results", str(res), "--state", str(state), "--min-streak", "1"]
+        with mock.patch.object(sys, "argv", argv), \
+             mock.patch.dict(os.environ, {"GITHUB_REPOSITORY": "o/r", "GITHUB_STEP_SUMMARY": ""}), \
+             mock.patch.object(alert, "issues_enabled", return_value=issues), \
+             mock.patch.object(alert, "sync_issue", return_value="abierto") as sync:
+            code = alert.main()
+        return code, sync.called, json.loads(state.read_text())
+
+    def test_alert_without_issues_fails_the_run_and_keeps_state(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            code, synced, state = self._main([r("a", "FALLA")], False, tmp)
+        self.assertEqual(code, 1)
+        self.assertFalse(synced)
+        self.assertEqual(state["alerted"], ["noticias|a"])
+
+    def test_healthy_run_passes(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            code, synced, _ = self._main([r("a", "OK")], True, tmp)
+        self.assertEqual(code, 0)
+        self.assertTrue(synced)
+
+    def test_github_error_does_not_crash(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp, \
+             mock.patch.object(alert, "gh", side_effect=RuntimeError("403")):
+            res = Path(tmp) / "r.json"
+            res.write_text('[]')
+            import os
+            argv = ["x", "--results", str(res), "--state", str(Path(tmp) / "s.json")]
+            with mock.patch.object(sys, "argv", argv), \
+                 mock.patch.dict(os.environ, {"GITHUB_REPOSITORY": "o/r", "GITHUB_STEP_SUMMARY": ""}):
+                self.assertEqual(alert.main(), 0)
+
+
 class RegulatorCheckTest(unittest.TestCase):
     NOW = datetime(2026, 11, 7, tzinfo=timezone.utc)
 

@@ -74,7 +74,7 @@ python3 run_pipeline.py --resume ...                       # reanudar tras una f
 python3 run_pipeline.py --resume-from 4.7 ...              # regenerar solo la imagen
 ```
 
-**Semántica de fechas:** `TARGET_DATE` es la fecha de la edición; cubre las noticias del día anterior (zona horaria de la variable `TZ`, hoy `America/New_York` en el workflow; pendiente pasar a `America/Mexico_City`).
+**Semántica de fechas:** `TARGET_DATE` es la fecha de la edición; cubre las noticias del día anterior (zona horaria de la variable `TZ`, `America/Mexico_City` en el workflow).
 
 ### Tests y verificación
 
@@ -101,7 +101,7 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | Reguladores sin RSS (MX, ES, CO, AR, CL) | `config/regulators.txt` → `agents/gatherers/regulator_sources.py` (página de prensa directa o Google News; vista previa: `python3 -m agents.gatherers.regulator_sources --hours 72`) |
 | Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
 | X y Reddit | Desactivados (APIs de pago) |
-| Prompts editoriales | `config/prompts.yaml` (pendiente pasar a español) |
+| Prompts editoriales | `config/prompts.yaml` (en español) |
 | Modelos, keys y URL base | `config/providers.yaml` (copia de `providers.yaml.example`) |
 | Estilo de imágenes | `config/hero_style.md` (las líneas `#` no se envían al modelo) |
 | Identidad visual del sitio | `docs/identidad-visual.md` |
@@ -109,7 +109,7 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 
 Para agregar una fuente: añadirla al `.txt` correspondiente, correr `scripts/check_feeds.py` y documentarla en `docs/fuentes.md`.
 
-**Alerta de fuentes caídas:** `.github/workflows/source-health.yml` corre `check_feeds.py` todos los días a las 07:17 (CDMX), sin costo. Si una fuente falla dos revisiones seguidas (o la página de prensa de un regulador deja de devolver notas), abre un issue con la etiqueta `salud-fuentes` y lo cierra cuando se recupera.
+**Alerta de fuentes caídas:** `.github/workflows/source-health.yml` corre `check_feeds.py` todos los días a las 07:17 (CDMX), sin costo. Si una fuente falla dos revisiones seguidas (o la página de prensa de un regulador deja de devolver notas), la corrida termina en rojo y GitHub manda correo (con Issues activados, además abre un issue `salud-fuentes` que se cierra solo al recuperarse).
 
 ## Arquitectura
 

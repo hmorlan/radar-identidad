@@ -22,7 +22,7 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 
 ## Alerta de fuentes caídas (2026-11-07)
 
-Cada día, `.github/workflows/source-health.yml` revisa todas las fuentes de esta página (feeds, arXiv cs.CR, Mastodon, Bluesky y reguladores) con `scripts/check_feeds.py`. Cuenta como falla: error HTTP o de red, un feed que ya no es RSS/Atom, arXiv sin artículos en 7 días, o la página de prensa de un regulador que deja de devolver notas (señal de que el sitio cambió). Tras dos fallas seguidas se abre un issue `salud-fuentes`. Una fuente que solo publica poco (INACTIVA, SIN RESULTADOS) se lista pero no abre alerta. Primera revisión completa: 43 fuentes, todas OK.
+Cada día, `.github/workflows/source-health.yml` revisa todas las fuentes de esta página (feeds, arXiv cs.CR, Mastodon, Bluesky y reguladores) con `scripts/check_feeds.py`. Cuenta como falla: error HTTP o de red, un feed que ya no es RSS/Atom, arXiv sin artículos en 7 días, o la página de prensa de un regulador que deja de devolver notas (señal de que el sitio cambió). Tras dos fallas seguidas la corrida termina en rojo y GitHub manda correo; si el repo tiene Issues activados, además se abre un issue `salud-fuentes`. Una fuente que solo publica poco (INACTIVA, SIN RESULTADOS) se lista pero no abre alerta. Primera revisión completa: 43 fuentes, todas OK.
 
 ## Reguladores sin RSS (recolector propio, 2026-11-04)
 

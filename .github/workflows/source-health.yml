@@ -2,8 +2,9 @@ name: Salud de las fuentes
 
 # Revisa todos los días que cada fuente responda (RSS, arXiv, Mastodon, Bluesky y
 # reguladores). No usa la API de Anthropic ni de Google: costo cero. Si una fuente
-# falla dos revisiones seguidas, abre un issue con la etiqueta "salud-fuentes";
-# lo cierra solo cuando todas se recuperan.
+# falla dos revisiones seguidas, la corrida termina en rojo y GitHub manda correo;
+# el detalle queda en el resumen de la corrida. Con Issues activados en el repo,
+# además abre un issue "salud-fuentes" y lo cierra cuando todas se recuperan.
 
 on:
   schedule:
@@ -40,7 +41,7 @@ jobs:
           key: source-health-${{ github.run_id }}
           restore-keys: source-health-
 
-      - name: Revisar fuentes y sincronizar el issue
+      - name: Revisar fuentes y avisar
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/source_health_alert.py --state data/source_health.json

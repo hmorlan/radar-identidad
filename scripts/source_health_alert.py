@@ -4,9 +4,11 @@
 Corre ``check_feeds.run_checks()`` (sin LLM, sin costo) y lleva la cuenta de
 cuántas revisiones seguidas lleva fallando cada fuente en un archivo de estado.
 Cuando una fuente llega a ``--min-streak`` fallas seguidas (por defecto 2, para
-no alertar por una caída pasajera), abre un issue con la etiqueta
-``salud-fuentes``. Si la lista de fuentes caídas cambia, deja un comentario;
-cuando todas se recuperan, comenta y cierra el issue.
+no alertar por una caída pasajera), la corrida termina en rojo: GitHub manda un
+correo por cada workflow programado que falla, y ese es el aviso. El detalle va en
+el resumen de la corrida. Si el repo tiene Issues activados, además abre un issue
+``salud-fuentes``, lo actualiza si cambia la lista y lo cierra cuando todas se
+recuperan. Los forks empiezan con Issues desactivados.
 
 Uso:
     python3 scripts/source_health_alert.py --state data/source_health.json --dry-run
@@ -108,7 +110,15 @@ def render_summary(results: List[dict], alerting: List[dict], today: str) -> str
 
 
 def gh(*args: str) -> str:
-    return subprocess.run(["gh", *args], check=True, capture_output=True, text=True).stdout
+    proc = subprocess.run(["gh", *args], capture_output=True, text=True)
+    if proc.returncode != 0:
+        raise RuntimeError(f"gh {' '.join(args[:2])} falló: {proc.stderr.strip()[:300]}")
+    return proc.stdout
+
+
+def issues_enabled(repo: str) -> bool:
+    """Forks start with Issues off; without them the alert is the failed run itself."""
+    return gh("api", f"repos/{repo}", "--jq", ".has_issues").strip() == "true"
 
 
 def open_issue_number(repo: str) -> Optional[int]:
@@ -180,11 +190,22 @@ def main() -> int:
         if not repo:
             print("Falta GITHUB_REPOSITORY; usa --dry-run para probar localmente.", file=sys.stderr)
             return 2
-        action = sync_issue(repo, alerting, info, state.get("alerted", []), new_state["alerted"], today)
-        print(f"\nIssue: {action}")
+        try:
+            if issues_enabled(repo):
+                action = sync_issue(repo, alerting, info, state.get("alerted", []), new_state["alerted"], today)
+                print(f"\nIssue: {action}")
+            else:
+                print("\nIssues desactivados en el repo: el aviso es la corrida fallida (GitHub manda correo).")
+        except RuntimeError as e:
+            # Un problema con GitHub no debe tumbar la revisión ni perder el estado.
+            print(f"\nNo se pudo sincronizar el issue: {e}", file=sys.stderr)
 
     state_path.parent.mkdir(parents=True, exist_ok=True)
     state_path.write_text(json.dumps(new_state, ensure_ascii=False, indent=1), encoding="utf-8")
+    if alerting:
+        # La corrida en rojo es el aviso: GitHub envía correo cuando falla un workflow programado.
+        print(f"\n{len(alerting)} fuente(s) caída(s): la corrida se marca como fallida a propósito.", file=sys.stderr)
+        return 1
     return 0
 
 
