@@ -1,0 +1,37 @@
+name: Comprobar modelos
+
+# Prueba mínima antes de una corrida real: confirma que la API acepta Opus 5.5
+# (effort high, xhigh y max) y Haiku 5.5, y que el modelo de imagen existe para la
+# key de Google. Solo a mano. Costo: menos de US$0.05 en Claude; la parte de
+# Gemini no genera imagen (costo cero).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Dependencias
+        run: pip install -r requirements.txt
+
+      - name: Claude (Opus 5.5 y Haiku 5.5)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 scripts/check_claude_models.py
+
+      - name: Gemini (modelo de imagen, sin generar)
+        if: always()
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: python3 scripts/check_image_model.py

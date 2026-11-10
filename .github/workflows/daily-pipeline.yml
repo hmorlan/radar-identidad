@@ -571,16 +571,19 @@ jobs:
           key: source-health-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: source-health-${{ github.ref_name }}-
 
+      # Radar: no hay receptor de alertas configurado; sin el secreto, este paso
+      # fallaba y tumbaba la corrida antes de empezar.
       - name: Verify alert receiver readiness without sending a notification
-        if: steps.schedule_gate.outputs.should_run == 'true'
+        if: steps.schedule_gate.outputs.should_run == 'true' && env.PIPELINE_ALERT_TOKEN != ''
         shell: bash
         run: |
           set -euo pipefail
           report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           python3 scripts/pipeline_alert.py --date "$report_date" --probe
 
+      # Radar: Reddit está desactivado; sin la key este paso fallaba.
       - name: Check Reddit credit reserve before analysis
-        if: steps.schedule_gate.outputs.should_run == 'true'
+        if: steps.schedule_gate.outputs.should_run == 'true' && env.SCRAPECREATORS_API_KEY != ''
         shell: bash
         run: |
           set -euo pipefail
@@ -737,7 +740,7 @@ jobs:
       # text is nothing the site does not already publish (replay-prompts.json.gz
       # ships with every day, and config/prompts.yaml is tracked here).
       - name: Record Reddit consumption and remaining reserve
-        if: always() && steps.schedule_gate.outputs.should_run == 'true'
+        if: always() && steps.schedule_gate.outputs.should_run == 'true' && env.SCRAPECREATORS_API_KEY != ''
         shell: bash
         run: |
           set -euo pipefail
