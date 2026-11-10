@@ -1,0 +1,63 @@
+name: Publicar sitio
+
+# Compila el sitio y lo sube a Cloudflare Pages. Solo a mano.
+#
+# Por defecto incluye la última edición generada por el pipeline (el artefacto
+# "generated-pipeline-output" de la corrida más reciente que lo tenga), para que
+# un despliegue del diseño no deje el sitio en "Próximamente". Sin ediciones,
+# la portada muestra "Próximamente".
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_latest_edition:
+        description: 'Incluir la última edición generada por el pipeline'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Traer la última edición del pipeline
+        if: inputs.include_latest_edition
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          run_id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow daily-pipeline.yml \
+            --status success --limit 10 --json databaseId -q '.[].databaseId' | head -1 || true)
+          if [[ -z "$run_id" ]]; then
+            echo "Aún no hay corridas exitosas del pipeline: se publica sin ediciones."
+            exit 0
+          fi
+          tmp=$(mktemp -d)
+          if gh run download "$run_id" --repo "$GITHUB_REPOSITORY" -n generated-pipeline-output -D "$tmp"; then
+            cp -R "$tmp/web/data/." web/data/
+            echo "Edición incluida desde la corrida $run_id."
+          else
+            echo "La corrida $run_id no tiene el artefacto: se publica sin ediciones."
+          fi
+
+      - name: Compilar y subir a Cloudflare Pages
+        run: bash scripts/deploy_site.sh

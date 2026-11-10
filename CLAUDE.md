@@ -154,9 +154,9 @@ Los perfiles internos se traducen al `effort` del pensamiento adaptativo de Clau
 - **CSP:** la política de scripts vive solo en el `<meta>` que genera SvelteKit (`frontend/svelte.config.js`, `kit.csp`). No agregues `script-src` ni `default-src` en cabeceras del servidor, porque bloquearía los scripts con hash y dejaría la página en blanco.
 - Las URLs de las notas se filtran por esquema (http, https, mailto) en `generators/json_generator.py` y en `frontend/src/lib/services/sanitize.ts`.
 
-## Despliegue (planeado)
+## Despliegue
 
-GitHub Actions como motor y Cloudflare Pages para el sitio estático en `radar.hirammorlan.com` (subdominio provisional). Durante la beta las ediciones no se guardan en el repo público (`commit_outputs=false`).
+GitHub Actions como motor y Cloudflare Pages (proyecto `radar-identidad`, Direct Upload) para el sitio estático en `radar.hirammorlan.com`. Durante la beta las ediciones no se guardan en el repo público (`commit_outputs=false`): el pipeline compila el sitio y lo sube con `scripts/deploy_site.sh` (wrangler). Para redesplegar solo el diseño: workflow manual **Publicar sitio** (incluye la última edición del pipeline). Secretos: `CLOUDFLARE_API_TOKEN` (Cloudflare Pages: Edit) y `CLOUDFLARE_ACCOUNT_ID`. El sitio va detrás de Cloudflare Access hasta el lanzamiento.
 
 ## Infraestructura heredada que no aplica
 
