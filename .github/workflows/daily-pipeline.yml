@@ -98,7 +98,8 @@ jobs:
       PIPELINE_LIGHT_MODEL: ${{ vars.PIPELINE_LIGHT_MODEL || 'claude-haiku-5-5' }}
       PIPELINE_MAX_COST_USD: ${{ vars.PIPELINE_MAX_COST_USD || '6' }}
       LLM_TRUST_ENV_PROXY: ${{ vars.LLM_TRUST_ENV_PROXY || 'false' }}
-      LLM_TIMEOUT_SECONDS: ${{ vars.LLM_TIMEOUT_SECONDS || '240' }}
+      # Radar: las notas de la edición (Opus, effort max) pasaron de 240 s en la primera corrida.
+      LLM_TIMEOUT_SECONDS: ${{ vars.LLM_TIMEOUT_SECONDS || '600' }}
       # Paid-model defaults: 16 in flight, paced at 60 requests/minute.
       # Keep pacing to prevent fast failures from producing retry bursts.
       # Explicit route values in PIPELINE_PROVIDERS_YAML override these;
@@ -633,6 +634,27 @@ jobs:
             echo "Ediciones anteriores restauradas desde el artefacto de la corrida $run_id."
           else
             echo "::warning::No se pudo traer el archivo de la corrida $run_id; el sitio solo tendrá esta edición."
+          fi
+
+      # Radar: los checkpoints no se guardan en el repo; para reanudar se traen del
+      # artefacto pipeline-diagnostics de la corrida anterior más reciente.
+      - name: Restaurar checkpoints para reanudar (beta)
+        if: steps.schedule_gate.outputs.should_run == 'true' && env.RESUME_FROM_INPUT != '' && env.COMMIT_OUTPUTS != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          run_id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow daily-pipeline.yml --limit 10 \
+            --json databaseId,status -q '.[] | select(.status=="completed") | .databaseId' | head -1)
+          tmp=$(mktemp -d)
+          if [[ -n "$run_id" ]] && gh run download "$run_id" --repo "$GITHUB_REPOSITORY" -n pipeline-diagnostics -D "$tmp"; then
+            mkdir -p data/checkpoints
+            cp -R "$tmp/checkpoints/." data/checkpoints/
+            echo "Checkpoints restaurados desde la corrida $run_id."
+          else
+            echo "::error::No hay checkpoints para reanudar."
+            exit 1
           fi
 
       - name: Run pipeline
