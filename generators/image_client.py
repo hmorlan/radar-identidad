@@ -242,6 +242,7 @@ class NativeGeminiClient(BaseImageClient):
     """
 
     DEFAULT_MODEL = "gemini-3-pro-image-preview"
+    API_VERSION = "v1beta"
 
     def __init__(
         self,
@@ -266,6 +267,9 @@ class NativeGeminiClient(BaseImageClient):
             api_key=api_key,
             http_options=types.HttpOptions(
                 timeout=int(timeout * 1000),
+                # Los modelos preview (gemini-3-pro-image-preview) solo existen en
+                # v1beta; versiones recientes del SDK pueden usar v1 por defecto.
+                api_version=self.API_VERSION,
             )
         )
 

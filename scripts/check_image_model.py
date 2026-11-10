@@ -45,8 +45,10 @@ def main() -> int:
         return 2
 
     from google import genai
+    from google.genai import types
 
-    client = genai.Client(api_key=key)
+    print(f"google-genai {getattr(genai, '__version__', '?')} · API {NativeGeminiClient.API_VERSION}")
+    client = genai.Client(api_key=key, http_options=types.HttpOptions(api_version=NativeGeminiClient.API_VERSION))
     try:
         info = client.models.get(model=args.model)
     except Exception as e:  # noqa: BLE001
