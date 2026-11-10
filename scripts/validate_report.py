@@ -46,9 +46,9 @@ from zoneinfo import ZoneInfo
 # on sys.path), the workflow runs it as `python3 scripts/validate_report.py`
 # (sys.path[0] is the scripts dir itself).
 try:
-    from scripts.reddit_gate_policy import reddit_gate_ok
+    from scripts.reddit_gate_policy import reddit_gate_ok, reddit_required
 except ImportError:
-    from reddit_gate_policy import reddit_gate_ok
+    from reddit_gate_policy import reddit_gate_ok, reddit_required
 
 # Substrings that indicate a phase wrote a failure sentinel instead of real content.
 # Matched case-insensitively against the executive summary text.
@@ -143,7 +143,7 @@ def validate(summary: dict, date_str: str) -> dict:
     # Reddit has daily activity; absence is an outage, not a quiet-day exemption.
     reddit = categories.get('reddit') if isinstance(categories, dict) else None
     reddit_count = reddit.get('count') if isinstance(reddit, dict) else None
-    if isinstance(reddit_count, bool) or not isinstance(reddit_count, int) or reddit_count <= 0:
+    if reddit_required() and (isinstance(reddit_count, bool) or not isinstance(reddit_count, int) or reddit_count <= 0):
         failures.append('required Reddit category is missing or empty')
     sources = (summary.get('collection_status') or {}).get('sources') or []
     reddit_source = next((s for s in sources if s.get('name') == 'reddit'), None)
@@ -153,7 +153,7 @@ def validate(summary: dict, date_str: str) -> dict:
         reddit_source.get('status') if reddit_source else None,
         reddit_source.get('count') if reddit_source else 0,
     )
-    if reddit_source is None or not _rs_ok:
+    if reddit_required() and (reddit_source is None or not _rs_ok):
         failures.append('required Reddit collection is missing, failed or incomplete'
                         + (f": {_rs_reason}" if reddit_source is not None and _rs_reason else ''))
     degraded_categories = []

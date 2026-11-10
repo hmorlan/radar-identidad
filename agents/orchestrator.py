@@ -61,9 +61,12 @@ except ImportError:
 # docstring for why the two gates must not drift). Namespace import matches
 # the scripts.lesswrong_cookie_fetch precedent.
 try:
-    from scripts.reddit_gate_policy import reddit_gate_ok, REDDIT_MIN_PUBLISH_COUNT
+    from scripts.reddit_gate_policy import reddit_gate_ok, reddit_required, REDDIT_MIN_PUBLISH_COUNT
 except ImportError:
     REDDIT_MIN_PUBLISH_COUNT = 300
+
+    def reddit_required():  # Radar: Reddit desactivado salvo REDDIT_REQUIRED=1
+        return os.environ.get("REDDIT_REQUIRED", "").strip().lower() in ("1", "true", "yes")
 
     def reddit_gate_ok(status, count):  # strict fallback: success-only
         return (status == 'success' and (count or 0) > 0), None
@@ -845,7 +848,7 @@ class MainOrchestrator:
             reddit_status.get('status'),
             reddit_status.get('count', len(gathered_items.get('reddit') or [])),
         )
-        if not reddit_ok:
+        if not reddit_ok and reddit_required():
             raise RuntimeError('Required Reddit collection is empty or incomplete: '
                                + (reddit_status.get('error') or reddit_reason or 'no healthy Reddit collection'))
         if reddit_status.get('status') == 'partial':

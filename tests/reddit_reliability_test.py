@@ -13,6 +13,17 @@ from scripts.reddit_credit_health import reserve
 from scripts.pipeline_alert import post_alert
 
 
+def setUpModule():
+    # Estos tests cubren el comportamiento del original, con Reddit obligatorio.
+    global _env_patch
+    _env_patch = patch.dict("os.environ", {"REDDIT_REQUIRED": "1"})
+    _env_patch.start()
+
+
+def tearDownModule():
+    _env_patch.stop()
+
+
 class RedditReliabilityTests(unittest.TestCase):
     def test_credit_exhaustion_prevents_any_listing_requests(self):
         with TemporaryDirectory() as temp:
@@ -219,3 +230,19 @@ class RedditGatePolicyTests(unittest.TestCase):
         }
         result = validate(summary, '2026-10-15')
         self.assertTrue(any('Reddit' in f for f in result['failures']))
+
+
+class RedditOptionalTests(unittest.TestCase):
+    """Radar de Identidad: sin REDDIT_REQUIRED, Reddit vacío no bloquea la publicación."""
+
+    def test_validator_accepts_report_without_reddit(self):
+        with patch.dict("os.environ", {"REDDIT_REQUIRED": ""}):
+            result = validate({
+                "date": "2026-11-10",
+                "executive_summary": "x" * 400,
+                "top_topics": [{"name": "t"}],
+                "total_items_analyzed": 10,
+                "categories": {"news": {"count": 3, "category_summary": "y" * 400}},
+                "collection_status": {"sources": [{"name": "reddit", "status": "failed", "count": 0}]},
+            }, "2026-11-10")
+        self.assertFalse([f for f in result["failures"] if "Reddit" in f or "reddit" in f])

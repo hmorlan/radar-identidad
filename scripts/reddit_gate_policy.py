@@ -41,6 +41,12 @@ except ValueError:
     REDDIT_MIN_PUBLISH_COUNT = _DEFAULT_MIN_PUBLISH_COUNT
 
 
+def reddit_required() -> bool:
+    """Radar de Identidad: Reddit está desactivado (API de pago), así que no es
+    fuente obligatoria salvo que REDDIT_REQUIRED=1 (comportamiento del original)."""
+    return os.environ.get("REDDIT_REQUIRED", "").strip().lower() in ("1", "true", "yes")
+
+
 def reddit_gate_ok(status: str | None, count: int | None) -> tuple[bool, str | None]:
     """
     Decide whether a Reddit collection row may proceed to analysis/publish.
