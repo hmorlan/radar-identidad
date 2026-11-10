@@ -38,6 +38,21 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+# Radar: candidatos que el modelo principal ordena por categoría (antes 50 para
+# todas). arXiv cs.CR trae ~90 artículos al día; ordenar más de 25 encarece la
+# corrida y carga la edición hacia la investigación académica. El triage (Haiku)
+# ya los calificó, así que se ordenan solo los mejores.
+REDUCE_CANDIDATE_DEFAULTS = {"research": 25}
+
+
+def reduce_candidate_limit(category: str) -> int:
+    env = os.environ.get(f"REDUCE_MAX_CANDIDATES_{category.upper()}")
+    try:
+        return max(1, int(env)) if env else REDUCE_CANDIDATE_DEFAULTS.get(category, 50)
+    except ValueError:
+        return REDUCE_CANDIDATE_DEFAULTS.get(category, 50)
+
+
 def _is_replay_integrity_error(exc: BaseException) -> bool:
     """Recognise the strict replay error without importing optional shadow code.
 
@@ -1482,7 +1497,7 @@ Every entry needs a nonempty summary and reasoning and a numeric score 0-100.
                 degradations=reduce_degradations
             )
 
-        top_candidates = eligible_items[:50]
+        top_candidates = eligible_items[:reduce_candidate_limit(self.category)]
         logger.info(f"  {self.category} REDUCE: ranking {len(top_candidates)} candidates...")
 
         # Build ranking context

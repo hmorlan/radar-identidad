@@ -174,3 +174,13 @@ class PerModelCostTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReduceLimitTest(unittest.TestCase):
+    def test_research_capped_and_env_override(self):
+        from unittest import mock
+        from agents.base import reduce_candidate_limit
+        self.assertEqual(reduce_candidate_limit("research"), 25)
+        self.assertEqual(reduce_candidate_limit("news"), 50)
+        with mock.patch.dict("os.environ", {"REDUCE_MAX_CANDIDATES_RESEARCH": "10"}):
+            self.assertEqual(reduce_candidate_limit("research"), 10)
