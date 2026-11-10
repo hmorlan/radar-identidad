@@ -29,6 +29,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: daily-pipeline-${{ github.ref }}
@@ -138,7 +139,9 @@ jobs:
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       TARGET_DATE_INPUT: ${{ inputs.target_date || '' }}
       RESUME_FROM_INPUT: ${{ inputs.resume_from || '' }}
-      COMMIT_OUTPUTS: ${{ github.event_name != 'workflow_dispatch' || inputs.commit_outputs }}
+      # Radar: en beta las ediciones NO se guardan en el repo público, ni en corridas
+      # a mano ni programadas. Para el lanzamiento: variable de repo COMMIT_OUTPUTS=true.
+      COMMIT_OUTPUTS: ${{ inputs.commit_outputs && 'true' || vars.COMMIT_OUTPUTS || 'false' }}
 
     steps:
       - name: Check 3 AM ET schedule gate
@@ -591,6 +594,30 @@ jobs:
           set -euo pipefail
           report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
           python3 scripts/reddit_credit_health.py --date "$report_date"
+
+      # Radar: sin guardar ediciones en el repo, el archivo del sitio (ediciones
+      # anteriores, índice) viaja de una corrida a la siguiente en el artefacto
+      # generated-pipeline-output. Sin esto, cada corrida publicaría solo su edición.
+      - name: Restaurar ediciones anteriores (beta)
+        if: steps.schedule_gate.outputs.should_run == 'true' && env.COMMIT_OUTPUTS != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          run_id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow daily-pipeline.yml \
+            --status success --limit 10 --json databaseId -q '.[].databaseId' | head -1)
+          if [[ -z "$run_id" ]]; then
+            echo "Primera corrida: no hay ediciones anteriores."
+            exit 0
+          fi
+          tmp=$(mktemp -d)
+          if gh run download "$run_id" --repo "$GITHUB_REPOSITORY" -n generated-pipeline-output -D "$tmp"; then
+            cp -R "$tmp/web/data/." web/data/
+            echo "Ediciones anteriores restauradas desde la corrida $run_id."
+          else
+            echo "::warning::No se pudo traer el archivo de la corrida $run_id; el sitio solo tendrá esta edición."
+          fi
 
       - name: Run pipeline
         if: steps.schedule_gate.outputs.should_run == 'true'
