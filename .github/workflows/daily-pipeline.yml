@@ -615,8 +615,9 @@ jobs:
           set -uo pipefail
           if [[ -n "${CLOUDFLARE_API_TOKEN:-}" ]]; then
             python3 scripts/archive_r2.py ensure || true
-            python3 scripts/archive_r2.py pull web/data
-            code=$?
+            # GitHub corre bash con -e: capturar el código sin abortar el paso.
+            code=0
+            python3 scripts/archive_r2.py pull web/data || code=$?
             if [[ $code -eq 0 ]]; then exit 0; fi
             [[ $code -eq 3 ]] || echo "::warning::No se pudo leer el archivo en R2; se usa el respaldo."
           fi
