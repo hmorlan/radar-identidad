@@ -2,7 +2,7 @@ name: Publicar sitio
 
 # Compila el sitio y lo sube a Cloudflare Pages. Solo a mano.
 #
-# Por defecto incluye la última edición generada por el pipeline (el artefacto
+# Por defecto incluye el archivo de ediciones (R2; si no, el artefacto
 # "generated-pipeline-output" de la corrida más reciente que lo tenga), para que
 # un despliegue del diseño no deje el sitio en "Próximamente". Sin ediciones,
 # la portada muestra "Próximamente".
@@ -39,12 +39,16 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Traer la última edición del pipeline
+      - name: Traer el archivo de ediciones
         if: inputs.include_latest_edition
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          if python3 scripts/archive_r2.py pull web/data; then
+            exit 0
+          fi
+          echo "R2 sin archivo o no disponible: se busca el artefacto de la última corrida."
           run_id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow daily-pipeline.yml \
             --status success --limit 10 --json databaseId -q '.[].databaseId' | head -1 || true)
           if [[ -z "$run_id" ]]; then

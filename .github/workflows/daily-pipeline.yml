@@ -596,8 +596,16 @@ jobs:
           python3 scripts/reddit_credit_health.py --date "$report_date"
 
       # Radar: sin guardar ediciones en el repo, el archivo del sitio (ediciones
-      # anteriores, índice) viaja de una corrida a la siguiente en el artefacto
-      # generated-pipeline-output. Sin esto, cada corrida publicaría solo su edición.
+      # anteriores, índice, feeds) vive en R2 (scripts/archive_r2.py). Respaldo: el
+      # artefacto generated-pipeline-output de la última corrida exitosa.
+      - name: Set up Node (wrangler)
+        if: steps.schedule_gate.outputs.should_run == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Restaurar ediciones anteriores (beta)
         if: steps.schedule_gate.outputs.should_run == 'true' && env.COMMIT_OUTPUTS != 'true'
         shell: bash
@@ -605,6 +613,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -uo pipefail
+          if [[ -n "${CLOUDFLARE_API_TOKEN:-}" ]]; then
+            python3 scripts/archive_r2.py ensure || true
+            python3 scripts/archive_r2.py pull web/data
+            code=$?
+            if [[ $code -eq 0 ]]; then exit 0; fi
+            [[ $code -eq 3 ]] || echo "::warning::No se pudo leer el archivo en R2; se usa el respaldo."
+          fi
           run_id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow daily-pipeline.yml \
             --status success --limit 10 --json databaseId -q '.[].databaseId' | head -1)
           if [[ -z "$run_id" ]]; then
@@ -614,7 +629,7 @@ jobs:
           tmp=$(mktemp -d)
           if gh run download "$run_id" --repo "$GITHUB_REPOSITORY" -n generated-pipeline-output -D "$tmp"; then
             cp -R "$tmp/web/data/." web/data/
-            echo "Ediciones anteriores restauradas desde la corrida $run_id."
+            echo "Ediciones anteriores restauradas desde el artefacto de la corrida $run_id."
           else
             echo "::warning::No se pudo traer el archivo de la corrida $run_id; el sitio solo tendrá esta edición."
           fi
@@ -744,13 +759,12 @@ jobs:
 
       # Radar: publica la edición en Cloudflare Pages sin guardarla en el repo
       # público. Solo corre si existen los secretos de Cloudflare.
-      - name: Set up Node for the site build
-        if: success() && steps.schedule_gate.outputs.should_run == 'true' && env.CLOUDFLARE_API_TOKEN != ''
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+      - name: Guardar el archivo de ediciones en R2
+        if: success() && steps.schedule_gate.outputs.should_run == 'true' && env.CLOUDFLARE_API_TOKEN != '' && env.COMMIT_OUTPUTS != 'true'
+        # Si R2 falla, la edición se publica igual y queda en el artefacto de respaldo.
+        continue-on-error: true
+        shell: bash
+        run: python3 scripts/archive_r2.py push web/data
 
       - name: Publicar el sitio en Cloudflare Pages
         if: success() && steps.schedule_gate.outputs.should_run == 'true' && env.CLOUDFLARE_API_TOKEN != ''
