@@ -111,8 +111,8 @@ https://www.df.cl/noticias/site/list/port/rss.xml  filtro=identidad
 https://www.elfinancierocr.com/arc/outboundfeeds/rss/?outputType=xml  filtro=identidad
 # Just Retail Latam, ~1-2/día; retail y comercio con agentes
 https://justretail.news/latam/feed/  filtro=identidad
-# WeLiveSecurity (ESET) en español, ~4/semana; fraude, phishing, suplantación
-https://www.welivesecurity.com/es/rss/feed/
+# Retirada 2026-11-12 (política agnóstica: blog de ESET, empresa de seguridad):
+# https://www.welivesecurity.com/es/rss/feed/
 # Ciberseguridad LATAM, ~5/día; enfoque frecuente en identidad y agentes de IA (vigilar calidad)
 https://www.ciberseguridadlatam.com/feed/
 # DPL News (telecom y tecnología LATAM), ~10/día; relevancia baja, aporta casos regionales
@@ -121,8 +121,8 @@ https://www.dplnews.com/feed/
 https://expansion.mx/rss/tecnologia
 # iupana (fintech y banca digital LATAM), ~6/semana; fraude y seguridad bancaria
 https://www.iupana.com/feed/
-# Una al Día (Hispasec, España), ~4/semana; relevancia baja (vulnerabilidades)
-https://unaaldia.hispasec.com/feed/
+# Retirada 2026-11-12 (política agnóstica: blog de Hispasec, empresa de seguridad):
+# https://unaaldia.hispasec.com/feed/
 
 # ===== Descartadas (2026-11-04) =====
 # El Financiero general: ~100/día y 0 notas de identidad en la muestra; su sección tech casi no publica.

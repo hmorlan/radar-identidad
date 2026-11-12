@@ -9,7 +9,7 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 | Prensa de seguridad | The Record, Krebs on Security, Dark Reading, SecurityWeek, BleepingComputer; **desde 2026-11-11:** TechCrunch Security, 404 Media, CyberScoop, The Register (seguridad), Wired (seguridad), CSO Online, Infosecurity Magazine, Cybersecurity Dive | ~42 |
 | CERTs nacionales (nuevo) | CERT-FR (filtrado), INCIBE-CERT (filtrado) | ~1 tras el filtro |
 | Identidad | Biometric Update, FIDO Alliance | ~10 |
-| Español (LATAM y España) | WeLiveSecurity ES, Ciberseguridad LATAM, DPL News, Expansión Tecnología, iupana, Una al Día; **desde 2026-11-11, filtradas:** EL PAÍS, elDiario.es y ABC (Tecnología), EL TIEMPO (Colombia), LA NACION (Argentina), Bloomberg Línea | ~20 + ~1 tras el filtro |
+| Español (LATAM y España) | Ciberseguridad LATAM, DPL News, Expansión Tecnología, iupana; **desde 2026-11-11, filtradas:** EL PAÍS, elDiario.es y ABC (Tecnología), EL TIEMPO (Colombia), LA NACION (Argentina), Bloomberg Línea | ~20 + ~1 tras el filtro |
 | Banca, pagos y agentes en EE. UU. (2026-11-11) | American Banker, Banking Dive, Payments Dive, The Verge (IA); PYMNTS y Axios filtradas | ~25 |
 | Gobierno de EE. UU. (2026-11-11) | CISA avisos y noticias (filtradas), FBI IC3 (avisos al público) | ~1 |
 | Negocios LatAm (2026-11-11, filtradas) | Expansión Empresas, El Economista, Portafolio, Gestión, Diario Financiero, El Financiero (Costa Rica), Just Retail Latam | ~1 tras el filtro |
@@ -18,9 +18,9 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 | Análisis de autor | Juan Pablo Castro (Cybersecurity Compass), Heather Flanagan (Spherical Cow), Mike Jones (self-issued.info) | ~0.3 |
 | Investigación | arXiv cs.CR | ~35 |
 
-**Total: 55 feeds + 9 cuentas de Bluesky + arXiv cs.CR + 23 reguladores + 11 empresas observadas.** En noticias, ~100 entradas/día antes del triage (el 4 nov eran ~45). Medido con 7 días, los 15 feeds del 11 nov (segunda ronda) aportan ~35 entradas por semana después del filtro.
+**Total: 53 feeds + 9 cuentas de Bluesky + arXiv cs.CR + 23 reguladores + 11 empresas observadas.** En noticias, ~100 entradas/día antes del triage (el 4 nov eran ~45). Medido con 7 días, los 15 feeds del 11 nov (segunda ronda) aportan ~35 entradas por semana después del filtro.
 
-**Política agnóstica (2026-11-04):** no se usan blogs de proveedores (Okta, Auth0, Ping, Jumio y similares). Las empresas solo entran a través de fuentes independientes. **Pendiente de decisión:** WeLiveSecurity es el blog de ESET y Una al Día es de Hispasec, empresas de seguridad (no de identidad).
+**Política agnóstica (2026-11-04):** no se usan blogs de proveedores (Okta, Auth0, Ping, Jumio y similares). Las empresas solo entran a través de fuentes independientes. El 2026-11-12 se retiraron WeLiveSecurity (blog de ESET) y Una al Día (Hispasec): son empresas de seguridad y la política excluye a proveedores de identidad, seguridad, fraude o verificación como fuente.
 
 **Filtro previo `filtro=identidad` (2026-11-11):** para fuentes con mucho volumen y poca identidad (CERT-FR, INCIBE-CERT y las secciones generalistas en español). Solo pasan entradas cuyo título o resumen hablan de identidad, credenciales, fraude, suplantación, datos personales o agentes de IA (`agents/gatherers/identity_filter.py`, en español, inglés y francés). En español, "identidad", "sesión" y "verificación" solas se ignoran porque en notas de política y finanzas significan otra cosa. Medido con 7 días: de ~175 entradas de esas fuentes pasaron 6, todas pertinentes (INCIBE-CERT se agregó después y no entra en esa cuenta).
 
