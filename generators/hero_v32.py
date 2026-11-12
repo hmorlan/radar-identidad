@@ -292,16 +292,19 @@ REVIEW_PROMPT = {
         "\"foco_x\": number 0-100}. Set ok=false if ANY of these is visible: a frame, border or "
         "stone edge around the image; any text, letters or numerals; a mobile phone, keypad or "
         "screen; a cut-out halo around figures (background tesserae not touching the contours); "
-        "figures painted smoothly instead of built from tesserae. foco_x is the horizontal "
-        "position (percent from the left) of the main subject."
+        "figures painted smoothly instead of built from tesserae. Reject only clear, obvious "
+        "violations: chip grids, circuit traces, sensor rings and other abstract geometric "
+        "patterns made of tesserae are intended and are NOT text, keypads or screens. "
+        "foco_x is the horizontal position (percent from the left) of the main subject."
     ),
     "grabado": (
         "You review a generated image that must look like a sepia copperplate engraving. "
         "Answer with JSON only: {\"ok\": true|false, \"motivo\": \"short reason in Spanish\", "
         "\"foco_x\": number 0-100}. Set ok=false if ANY of these is visible: a frame, border or "
         "dotted outline; text, letters or blocks of ruled lines that imitate text; color other "
-        "than sepia ink; accidental shapes such as heart-shaped fingerprints. foco_x is the "
-        "horizontal position (percent from the left) of the main subject."
+        "than sepia ink; accidental shapes such as heart-shaped fingerprints. Reject only clear, "
+        "obvious violations; cross-hatching, cables and circuit traces are intended. foco_x is "
+        "the horizontal position (percent from the left) of the main subject."
     ),
 }
 
