@@ -19,6 +19,7 @@ from dateutil import parser as date_parser
 from ..base import BaseGatherer, CollectedItem, deduplicate_items, step_label_for_url
 from ..llm_client import AnthropicClient
 from .link_follower import LinkFollower
+from . import identity_filter
 from .regulator_sources import SeenCache, collect as collect_regulators, load_regulators
 
 logger = logging.getLogger(__name__)
@@ -183,6 +184,8 @@ class NewsGatherer(BaseGatherer):
         # Accept either a FeedSpec or a plain URL for backward compatibility.
         feed_url = getattr(feed, 'url', feed)
         use_proxy = getattr(feed, 'use_proxy', None)
+        filtro = getattr(feed, 'filtro', None)
+        filtered_out = 0
         # Default: proxied session (which only carries a proxy if one is set).
         # proxy=off -> direct session that bypasses the proxy entirely.
         session = self.direct_session if use_proxy is False else self.feed_session
@@ -235,6 +238,13 @@ class NewsGatherer(BaseGatherer):
                     title = entry.get('title', 'No Title')
                     url = entry.get('link', '')
 
+                    # Fuentes ruidosas: solo entradas con tema de identidad.
+                    if filtro == 'identidad' and not identity_filter.matches(
+                        f"{title} {content_text[:1500]}"
+                    ):
+                        filtered_out += 1
+                        continue
+
                     article = CollectedItem(
                         id=self.generate_id(url, title),
                         title=title,
@@ -257,6 +267,8 @@ class NewsGatherer(BaseGatherer):
                 except Exception as e:
                     logger.error(f"Error processing entry from {feed_url}: {e}")
 
+            if filtered_out:
+                logger.info(f"filtro=identidad descartó {filtered_out} entradas de {feed_url}")
             logger.debug(f"Collected {len(articles)} articles from {feed_url}")
 
         except Exception as e:

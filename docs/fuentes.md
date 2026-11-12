@@ -1,24 +1,29 @@
 # Fuentes del radar
 
-## Estado actual (verificación real, 2026-11-04)
+## Estado actual (verificación real, 2026-11-11)
 
-Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó en los últimos 60 días. Esta tabla manda sobre el informe inicial de abajo, que se hizo sin acceso directo a los feeds y tenía errores (por ejemplo, decía que FIDO Alliance no tiene RSS y que INCIBE-CERT funcionaba).
+Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó en los últimos 60 días. Esta tabla manda sobre el informe inicial de abajo, que se hizo sin acceso directo a los feeds y tenía errores.
 
 | Grupo | Fuentes activas | Notas/día aprox. |
 |---|---|---|
-| Prensa de seguridad | The Record, Krebs on Security, Dark Reading, SecurityWeek, BleepingComputer | ~24 |
+| Prensa de seguridad | The Record, Krebs on Security, Dark Reading, SecurityWeek, BleepingComputer; **desde 2026-11-11:** TechCrunch Security, 404 Media, CyberScoop, The Register (seguridad), Wired (seguridad), CSO Online, Infosecurity Magazine, Cybersecurity Dive | ~42 |
+| CERTs nacionales (nuevo) | CERT-FR (filtrado), INCIBE avisos a la ciudadanía, INCIBE-CERT (filtrado) | ~1 tras el filtro |
 | Identidad | Biometric Update, FIDO Alliance | ~10 |
-| Español (LATAM y España) | WeLiveSecurity ES, Ciberseguridad LATAM, DPL News, Expansión Tecnología, iupana, Una al Día | ~20 |
+| Español (LATAM y España) | WeLiveSecurity ES, Ciberseguridad LATAM, DPL News, Expansión Tecnología, iupana, Una al Día; **desde 2026-11-11, filtradas:** EL PAÍS, elDiario.es y ABC (Tecnología), EL TIEMPO (Colombia), LA NACION (Argentina), Bloomberg Línea | ~20 + ~1 tras el filtro |
 | Estándares y gobierno | NIST Cybersecurity Insights, NIST CSRC (borradores), IETF OAuth WG, IETF WIMSE WG, OpenID Foundation, W3C, UK NCSC | ~1.5 |
-| Redes | Brian Krebs (Mastodon) | ~1 |
+| Redes | Brian Krebs (Mastodon); **Bluesky desde 2026-11-11:** Zack Whittaker, Lorenzo Franceschi-Bicchierai, 404 Media, EFF, Access Now, noyb, Derechos Digitales, R3D, Heather Flanagan | ~10 |
 | Análisis de autor | Juan Pablo Castro (Cybersecurity Compass), Heather Flanagan (Spherical Cow), Mike Jones (self-issued.info) | ~0.3 |
 | Investigación | arXiv cs.CR | ~35 |
 
-**Total: 24 feeds + arXiv cs.CR, ~90 entradas/día antes del filtro de relevancia.**
+**Total: 40 feeds + 9 cuentas de Bluesky + arXiv cs.CR.** En noticias, ~70 entradas/día antes del triage (antes ~45).
 
-**Política agnóstica (2026-11-04):** no se usan blogs de proveedores (Okta, Auth0, Ping, Jumio y similares). Las empresas solo entran a través de fuentes independientes.
+**Política agnóstica (2026-11-04):** no se usan blogs de proveedores (Okta, Auth0, Ping, Jumio y similares). Las empresas solo entran a través de fuentes independientes. **Pendiente de decisión:** WeLiveSecurity es el blog de ESET y Una al Día es de Hispasec, empresas de seguridad (no de identidad).
 
-**Descartadas:** El Financiero (100/día sin notas de identidad), CISA y El Economista (403), INCIBE-CERT (404), feed antiguo de ESET (dominio muerto), Microsoft Entra (inactivo desde hace más de un año), OWASP (inactivo desde junio).
+**Filtro previo `filtro=identidad` (2026-11-11):** para fuentes con mucho volumen y poca identidad (CERT-FR, INCIBE-CERT y las secciones generalistas en español). Solo pasan entradas cuyo título o resumen hablan de identidad, credenciales, fraude, suplantación, datos personales o agentes de IA (`agents/gatherers/identity_filter.py`, en español, inglés y francés). En español, "identidad", "sesión" y "verificación" solas se ignoran porque en notas de política y finanzas significan otra cosa. Medido con 7 días: de ~175 entradas de esas fuentes pasaron 6, todas pertinentes (INCIBE-CERT se agregó después y no entra en esa cuenta).
+
+**Bluesky (2026-11-11):** solo posts propios (sin respuestas ni reposts, porque un repost trae cuentas que no pasaron la revisión), máximo 10 por cuenta y día (`BLUESKY_MAX_POSTS_PER_HANDLE`). Los enlaces completos (facetas y tarjeta) se agregan al contenido para que el seguidor de enlaces llegue a la nota original. Las organizaciones de derechos digitales tienen postura: se citan por nombre, como el análisis de autor, no como noticia.
+
+**Descartadas:** El Financiero (sin notas de identidad), CISA y El Economista (403), feed antiguo de ESET (dominio muerto), Microsoft Entra (inactivo desde hace más de un año), OWASP (inactivo desde junio). En la ronda del 2026-11-11: Help Net Security y Finextra (muchas notas de producto y comunicados de empresas), Xataka, Omicrono y Clarín (casi nada de identidad), SC Media (feed vacío), Infobae (feed vacío), Forbes México (403).
 
 ## Alerta de fuentes caídas (2026-11-07)
 
@@ -30,12 +35,13 @@ Cada día, `.github/workflows/source-health.yml` revisa todas las fuentes de est
 
 - **Página de prensa directa** (más fresca y confiable): CNBV, CONDUSEF, BCRA y AAIP.
 - **Google News** (búsqueda `site:` y resolución del enlace original del regulador): el resto.
+- **INCIBE** pasó a `config/rss_feeds.txt` el 2026-11-11: tiene RSS de avisos a la ciudadanía y de INCIBE-CERT.
 
 Una caché (`data/regulators_seen.json`) evita repetir páginas que Google vuelve a indexar.
 
 **Rendimiento medido (últimos 14 días):** 8 notas relevantes, sobre todo alertas de suplantación de la CONDUSEF, sanciones de la AAIP, la guía de la AEPD sobre asistentes y agentes de IA, su análisis de datos biométricos y el trabajo del Banco de España en criptografía poscuántica.
 
-**Limitación:** Google News casi no tiene notas recientes de CNMV, CCN-CERT, INCIBE, SIC, ColCERT, CMF, ANCI, Banco Central de Chile y CSIRT. Si alguno resulta clave, se agrega su página de prensa directa cuando sea legible (CNMV, CCN-CERT y ANCI bloquean a los lectores automáticos).
+**Limitación:** Google News casi no tiene notas recientes de CNMV, CCN-CERT, SIC, ColCERT, CMF, ANCI, Banco Central de Chile y CSIRT. Revisión del 2026-11-11 en busca de página de prensa o RSS directo: CNMV, CCN-CERT, ANCI y CSIRT de Gobierno responden 403 a lectores automáticos; CMF y SIC fallan en conexión o certificado; ColCERT y Banco Central de Chile no tienen un listado de prensa legible. Siguen por Google News.
 
 ---
 

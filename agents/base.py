@@ -74,6 +74,9 @@ class FeedSpec:
     """
     url: str
     use_proxy: Optional[bool] = None
+    # Filtro previo por palabras clave (hoy solo "identidad", ver
+    # agents/gatherers/identity_filter.py). None = sin filtro.
+    filtro: Optional[str] = None
 
 
 class TruncatedJSONError(Exception):
@@ -842,6 +845,7 @@ class BaseGatherer(ABC):
             https://example.com/feed   proxy=off      # bypass proxy, fetch direct
             https://example.com/feed   proxy=on        # force proxy
             https://example.com/feed   direct          # shorthand for proxy=off
+            https://example.com/feed   filtro=identidad  # solo entradas con tema de identidad
 
         - Full-line `#` comments and blank lines are ignored.
         - The first whitespace-separated token is the URL.
@@ -865,6 +869,7 @@ class BaseGatherer(ABC):
                 parts = line.split()
                 url = parts[0]
                 use_proxy: Optional[bool] = None
+                filtro: Optional[str] = None
                 for tok in parts[1:]:
                     if tok.startswith('#'):
                         break  # inline comment
@@ -882,11 +887,18 @@ class BaseGatherer(ABC):
                             )
                     elif not sep and key in ('direct', 'no-proxy', 'noproxy'):
                         use_proxy = False
+                    elif key == 'filtro' and sep:
+                        if val == 'identidad':
+                            filtro = val
+                        else:
+                            logger.warning(
+                                f"Unknown filtro '{val}' for feed {url} in {filename}; ignoring"
+                            )
                     else:
                         logger.warning(
                             f"Unknown feed directive '{tok}' for feed {url} in {filename}; ignoring"
                         )
-                specs.append(FeedSpec(url=url, use_proxy=use_proxy))
+                specs.append(FeedSpec(url=url, use_proxy=use_proxy, filtro=filtro))
         return specs
 
     def save_to_file(self, items: List[CollectedItem], filename: str):

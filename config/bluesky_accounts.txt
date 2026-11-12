@@ -1,3 +1,32 @@
-# Radar de Identidad: cuentas de Bluesky (handle), una por línea.
-# Sin cuentas activas por ahora. Aaron Parecki se retiró (trabaja en un proveedor de identidad;
-# política agnóstica). Se agregan solo autores independientes, verificados con scripts/check_feeds.py.
+# Radar de Identidad: cuentas de Bluesky (handle), una por línea. '#' = comentario.
+# Solo autores y organizaciones independientes (política agnóstica: nadie que trabaje
+# en empresas de identidad, fraude, verificación o protección contra bots).
+# Aaron Parecki se retiró por esa razón.
+#
+# El recolector toma solo posts propios (sin respuestas ni reposts), máx. 10 por cuenta
+# (BLUESKY_MAX_POSTS_PER_HANDLE), y sigue sus enlaces hasta la nota original.
+# Verificado 2026-11-11 con la API pública (volumen = posts propios en 7 días).
+
+# ===== Periodistas y medios =====
+# Zack Whittaker (periodista de seguridad), ~8/semana, la mitad con enlace
+zackwhittaker.com
+# Lorenzo Franceschi-Bicchierai (TechCrunch), ~1-3/semana
+lorenzofb.bsky.social
+# 404 Media, ~20/semana; vigilancia, privacidad, data brokers
+404media.co
+
+# ===== Organizaciones de derechos digitales (postura: se citan por nombre, como análisis) =====
+# Electronic Frontier Foundation, ~29/semana (EE. UU.; política de privacidad e identidad)
+eff.org
+# Access Now, ~3/semana
+accessnow.org
+# noyb (Max Schrems), ~1-3/semana; quejas GDPR, verificación de edad, KYC
+noyb.eu
+# Derechos Digitales (Latinoamérica), ~3/semana
+derechosdigitales.org
+# R3D, Red en Defensa de los Derechos Digitales (México), ~1-2/semana
+r3d.mx
+
+# ===== Análisis de autor (opinión, se cita por nombre) =====
+# Heather Flanagan, Spherical Cow Consulting (estándares de identidad), ~2/semana
+sphericalcowconsulting.com

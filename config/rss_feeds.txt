@@ -1,7 +1,11 @@
 # Radar de Identidad: feeds de noticias (RSS/Atom), uno por línea. '#' = comentario.
 # Directiva opcional por feed: <url>  proxy=off | proxy=on
-# Verificado 2026-11-04 con scripts/check_feeds.py (respuesta 200 y publicación reciente).
-# Volumen estimado total de este archivo: ~45 notas/día antes del filtro de relevancia.
+# Directiva filtro=identidad: solo pasan entradas cuyo título o resumen tocan identidad,
+# credenciales, fraude o agentes (agents/gatherers/identity_filter.py). Para fuentes
+# con mucho volumen y poca identidad.
+# Verificado 2026-11-04 con scripts/check_feeds.py (respuesta 200 y publicación reciente);
+# las fuentes del 2026-11-11 se midieron con 7 días de publicaciones.
+# Volumen estimado total de este archivo: ~70 notas/día antes del triage.
 
 # ===== Prensa de seguridad (relevancia de identidad media: el triage filtra) =====
 # The Record (Recorded Future News), ~4/día
@@ -15,6 +19,33 @@ https://www.securityweek.com/feed/
 # BleepingComputer, ~7/día; ~25% con ángulo de identidad (sesiones, MFA, contraseñas)
 https://www.bleepingcomputer.com/feed/
 
+# ===== Prensa de seguridad, agregadas 2026-11-11 =====
+# TechCrunch Security, ~1/día
+https://techcrunch.com/category/security/feed/
+# 404 Media, ~2/día; vigilancia, privacidad, data brokers (identidad de forma indirecta)
+https://www.404media.co/rss/
+# CyberScoop, ~1-2/día; política pública y gobierno
+https://cyberscoop.com/feed/
+# The Register (seguridad), ~5/día
+https://www.theregister.com/security/headlines.atom
+# Wired (seguridad), ~1/día
+https://www.wired.com/feed/category/security/latest/rss
+# CSO Online, ~3/día; relevancia alta (IAM, credenciales, agentes)
+https://www.csoonline.com/feed/
+# Infosecurity Magazine, ~4/día
+https://www.infosecurity-magazine.com/rss/news/
+# Cybersecurity Dive, ~1-2/día
+https://www.cybersecuritydive.com/feeds/news/
+
+# ===== CERTs nacionales =====
+# CERT-FR (ANSSI, Francia), ~4/día, casi todo avisos de vulnerabilidades: filtrado
+https://cert.cyber.gouv.fr/feed/  filtro=identidad
+# INCIBE (España), avisos para la ciudadanía: fraudes y campañas de phishing que suplantan
+# a bancos, paquetería u organismos, ~2-4/mes; relevancia muy alta
+https://www.incibe.es/ciudadania/avisos/feed
+# INCIBE-CERT (España), avisos técnicos, ~1-2/día: filtrado
+https://www.incibe.es/incibe-cert/alerta-temprana/avisos/feed  filtro=identidad
+
 # ===== Prensa especializada en identidad =====
 # Biometric Update, ~9/día; relevancia alta (verificación de identidad, KYC, ID digital, agentes)
 https://feeds.feedburner.com/biometricupdate
@@ -22,6 +53,20 @@ https://feeds.feedburner.com/biometricupdate
 https://fidoalliance.org/feed/
 
 # ===== Español: Latinoamérica y España =====
+# Secciones generalistas de tecnología o negocios (agregadas 2026-11-11): mucho volumen
+# y poca identidad, por eso van filtradas.
+# EL PAÍS, Tecnología (España), ~1-2/día
+https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/tecnologia/portada  filtro=identidad
+# elDiario.es, Tecnología (España), ~1-2/día
+https://www.eldiario.es/rss/tecnologia/  filtro=identidad
+# ABC, Tecnología (España), ~3/día
+https://www.abc.es/rss/2.0/tecnologia/  filtro=identidad
+# EL TIEMPO, Tecnósfera (Colombia), ~1-2/día
+https://www.eltiempo.com/rss/tecnosfera.xml  filtro=identidad
+# LA NACION, Tecnología (Argentina), ~1/día
+https://www.lanacion.com.ar/arc/outboundfeeds/rss/category/tecnologia/?outputType=xml  filtro=identidad
+# Bloomberg Línea (Latinoamérica, negocios y fintech), ~12/día
+https://www.bloomberglinea.com/arc/outboundfeeds/rss/?outputType=xml  filtro=identidad
 # WeLiveSecurity (ESET) en español, ~4/semana; fraude, phishing, suplantación
 https://www.welivesecurity.com/es/rss/feed/
 # Ciberseguridad LATAM, ~5/día; enfoque frecuente en identidad y agentes de IA (vigilar calidad)

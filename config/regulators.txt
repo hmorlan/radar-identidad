@@ -5,6 +5,11 @@
 # Si se indica la página de prensa, se lee directo (más fresco y confiable); si no, por Google News.
 # A ambos se les aplica el mismo filtro de palabras clave de identidad, fraude y ciberseguridad.
 # Revisar qué traería (sin LLM ni costo): python3 -m agents.gatherers.regulator_sources --hours 72
+#
+# Revisión 2026-11-11 de los que van por Google News (¿hay página de prensa o RSS directo?):
+#   CNMV, CCN-CERT, ANCI y CSIRT de Gobierno bloquean lectores automáticos (403);
+#   CMF y SIC fallan en conexión/certificado; ColCERT y Banco Central de Chile no tienen
+#   un listado de prensa legible. Siguen por Google News.
 
 # ===== México =====
 MX | DOF | dof.gob.mx
@@ -17,7 +22,8 @@ ES | AEPD | aepd.es
 ES | Banco de España | bde.es
 ES | CNMV | cnmv.es
 ES | CCN-CERT | ccn-cert.cni.es
-ES | INCIBE | incibe.es
+# INCIBE: pasó a config/rss_feeds.txt (feeds de avisos a la ciudadanía e INCIBE-CERT, 2026-11-11).
+# ES | INCIBE | incibe.es
 
 # ===== Colombia =====
 CO | Superintendencia Financiera (SFC) | superfinanciera.gov.co

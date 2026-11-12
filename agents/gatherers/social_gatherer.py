@@ -417,16 +417,25 @@ class SocialGatherer(BaseGatherer):
 
             logger.info(f"Fetching Bluesky posts for @{handle}")
 
+            # Sin respuestas (solo posts propios y sus hilos): las respuestas son
+            # conversación, no noticia.
             response = requests.get(
                 f"{base_url}/app.bsky.feed.getAuthorFeed",
-                params={'actor': handle, 'limit': 30},
+                params={'actor': handle, 'limit': 30, 'filter': 'posts_no_replies'},
                 timeout=30
             )
             response.raise_for_status()
             data = response.json()
 
+            max_posts = int(os.environ.get('BLUESKY_MAX_POSTS_PER_HANDLE', '10'))
             for item in data.get('feed', []):
+                if len(posts) >= max_posts:
+                    break
                 try:
+                    # Reposts: son de otras cuentas, que no pasaron la revisión de
+                    # fuentes (política agnóstica). Solo cuenta lo que publica la cuenta.
+                    if (item.get('reason') or {}).get('$type', '').endswith('reasonRepost'):
+                        continue
                     post_data = item.get('post', {})
                     record = post_data.get('record', {})
                     author = post_data.get('author', {})
@@ -448,11 +457,21 @@ class SocialGatherer(BaseGatherer):
                     author_handle = author.get('handle', handle)
                     web_url = f"https://bsky.app/profile/{author_handle}/post/{rkey}"
                     text = record.get('text', '')
+                    # El texto de Bluesky recorta los enlaces ("techcrunch.com/2026/1...");
+                    # la URL completa vive en las facetas y en la tarjeta del enlace. Se
+                    # agregan al contenido para que el seguidor de enlaces llegue a la nota.
+                    links = _bluesky_links(record, post_data)
+                    content = text
+                    card = (post_data.get('embed') or {}).get('external') or {}
+                    if card.get('title'):
+                        content += f"\n\n{card.get('title')}: {card.get('description', '')}".rstrip(': ')
+                    if links:
+                        content += "\n\n" + "\n".join(links)
 
                     post = CollectedItem(
                         id=self.generate_id('bluesky', uri),
                         title=text[:100] + '...' if len(text) > 100 else text,
-                        content=text,
+                        content=content,
                         url=web_url,
                         author=f"@{author_handle}",
                         published=pub_date.isoformat(),
@@ -647,3 +666,18 @@ class SocialGatherer(BaseGatherer):
         # This would be called after gather() to get URLs for the link follower
         # Implementation depends on when this is called in the pipeline
         pass
+
+
+def _bluesky_links(record: dict, post_view: dict) -> list:
+    """URLs completas de un post de Bluesky (facetas y tarjeta de enlace), sin duplicar."""
+    out = []
+    for facet in record.get('facets') or []:
+        for feature in facet.get('features') or []:
+            uri = feature.get('uri')
+            if uri and uri.startswith('http') and uri not in out:
+                out.append(uri)
+    for embed in (record.get('embed'), post_view.get('embed')):
+        uri = ((embed or {}).get('external') or {}).get('uri')
+        if uri and uri.startswith('http') and uri not in out:
+            out.append(uri)
+    return out
