@@ -8,7 +8,7 @@
 
 	const dispatch = createEventDispatcher();
 
-	export let placeholder = 'Search articles, research, discussions...';
+	export let placeholder = 'Buscar notas, investigación y publicaciones…';
 	export let autofocus = false;
 
 	let query = '';
@@ -119,7 +119,7 @@
 			on:change={handleCategoryChange}
 			class="input w-auto min-w-[120px] text-sm"
 		>
-			<option value="">All Categories</option>
+			<option value="">Todas las categorías</option>
 			{#each categories.filter(c => c !== '') as cat}
 				<option value={cat}>{CATEGORY_CONFIG[cat].title}</option>
 			{/each}
@@ -142,7 +142,7 @@
 				<button
 					on:click={clearSearch}
 					class="absolute right-3 top-1/2 -translate-y-1/2 text-radar-gray-400 hover:text-radar-gray-600"
-					aria-label="Clear search"
+					aria-label="Borrar búsqueda"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -186,7 +186,7 @@
 	{:else if isOpen && query.length >= 2 && results.length === 0}
 		<div class="absolute z-[60] w-full mt-2 p-4 bg-papel border border-filete">
 			<p class="text-sm text-radar-gray-500 text-center">
-				No results found for "{query}"
+				Sin resultados para «{query}»
 			</p>
 		</div>
 	{/if}

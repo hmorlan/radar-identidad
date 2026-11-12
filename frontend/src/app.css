@@ -291,3 +291,12 @@
 		background-repeat: no-repeat;
 	}
 }
+
+/* El buscador ya trae su propio botón para borrar: se oculta la "x" nativa del
+   navegador (azul en Chrome y Safari), que además quedaba duplicada. */
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-decoration {
+	-webkit-appearance: none;
+	appearance: none;
+	display: none;
+}

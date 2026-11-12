@@ -40,15 +40,15 @@
 			if (!showPreviewBanner && $page.url.searchParams.has('preview')) {
 				showPreviewBanner = true;
 				previewBannerLabel =
-					'Preview misconfigured: this origin did not inject the preview data base, so ' +
-					'you are looking at LIVE data. Open the preview from the admin origin';
+					'Vista previa mal configurada: este origen no inyectó la base de datos de la vista previa, así que ' +
+					'estás viendo datos PUBLICADOS. Abre la vista previa desde el origen de administración';
 			}
 		} catch (e) {
 			// A malformed base throws by design rather than falling back to live
 			// data. Surface it loudly instead of rendering something misleading.
 			console.error(e);
 			showPreviewBanner = true;
-			previewBannerLabel = 'Preview misconfigured — this page may not be showing draft data';
+			previewBannerLabel = 'Vista previa mal configurada: puede que esta página no muestre el borrador';
 		}
 	});
 
@@ -81,8 +81,8 @@
 <div class="min-h-screen flex flex-col">
 	{#if showPreviewBanner}
 		<div class="preview-banner" role="status">
-			<strong>Draft.</strong>
-			{previewBannerLabel ?? 'This is unpublished content'} — not visible to readers.
+			<strong>Borrador.</strong>
+			{previewBannerLabel ?? 'Contenido sin publicar'}: los lectores no lo ven.
 		</div>
 	{/if}
 	<Header />

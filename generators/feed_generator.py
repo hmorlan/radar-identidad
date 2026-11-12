@@ -122,7 +122,7 @@ def build_feed_subtitle(display_name: Optional[str]) -> Optional[str]:
     """Feed subtitle for a display name; None means 'no model known'."""
     if not display_name:
         return None
-    return f"Daily AI/ML news powered by {display_name}"
+    return f"Identidad digital, IA y ciberseguridad, con {display_name}"
 
 
 class FeedGenerator:
@@ -133,6 +133,19 @@ class FeedGenerator:
 
     FEED_TITLE = "Radar de Identidad"
     FEED_SUBTITLE = "Identidad digital, IA y ciberseguridad: en quién y en qué confiar"
+
+    # Nombres de categoría para títulos de feeds y entradas.
+    CATEGORY_NAMES = {
+        'news': 'Noticias',
+        'research': 'Investigación y estándares',
+        'social': 'Redes',
+        'reddit': 'Reddit',
+    }
+    _MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto',
+              'septiembre', 'octubre', 'noviembre', 'diciembre']
+
+    def _cat(self, category: str) -> str:
+        return self.CATEGORY_NAMES.get(category, category.capitalize())
 
     def _extract_first_external_link(self, html: str) -> Optional[str]:
         """
@@ -278,7 +291,7 @@ class FeedGenerator:
                         '_feed_date': date,
                         '_external_url': first_external_url,
                         '_hero_image_url': hero_image_url,
-                        'title': f"Daily Briefing: {self._format_date_title(date)}",
+                        'title': f"Edición del {self._format_date_title(date)}",
                         'summary_html': exec_summary,
                         'url': f"{self.base_url}/?date={date}",
                         'published': f"{date}T06:00:00Z",  # Morning briefing time
@@ -352,7 +365,7 @@ class FeedGenerator:
         """Format a date string as a human-readable title."""
         try:
             dt = datetime.strptime(date, '%Y-%m-%d')
-            return dt.strftime('%B %d, %Y')  # e.g., "January 12, 2026"
+            return f"{dt.day} de {self._MESES[dt.month - 1]} de {dt.year}"  # "12 de enero de 2026"
         except ValueError:
             return date
 
@@ -391,7 +404,7 @@ class FeedGenerator:
                             '_feed_date': date,
                             '_feed_category': category,
                             '_external_url': first_external_url,
-                            'title': f"{category.capitalize()} Summary: {self._format_date_title(date)}",
+                            'title': f"Resumen de {self._cat(category).lower()}: {self._format_date_title(date)}",
                             'summary_html': cat_summary,
                             'url': f"{self.base_url}/?date={date}&category={category}",
                             'published': f"{date}T06:00:00Z",
@@ -429,11 +442,11 @@ class FeedGenerator:
         if category == 'news' and limit is not None:
             return
 
-        category_title = f"{self.FEED_TITLE} - {category.capitalize()}"
+        category_title = f"{self.FEED_TITLE}: {self._cat(category)}"
         if limit:
-            category_title += f" (Top {limit})"
+            category_title += f" (las {limit} principales)"
         elif category != 'news':
-            category_title += " (Full)"
+            category_title += " (todas)"
 
         # Interleave entries by date (newest first) so RSS readers display correctly
         # Group items by date
@@ -464,7 +477,7 @@ class FeedGenerator:
             items=all_entries,
             feed_id=f"urn:ainews:{category}" + (f":{limit}" if limit else ":full"),
             title=category_title,
-            subtitle=f"{category.capitalize()} items from AI News Aggregator",
+            subtitle=f"Notas de {self._cat(category).lower()} del Radar de Identidad",
             feed_url=f"{self.base_url}/data/feeds/{filename}",
             site_url=f"{self.base_url}/?category={category}"
         )
@@ -512,7 +525,7 @@ class FeedGenerator:
                         '_feed_date': date,
                         '_external_url': first_external_url,
                         '_hero_image_url': hero_image_url,
-                        'title': f"Daily Briefing: {self._format_date_title(date)}",
+                        'title': f"Edición del {self._format_date_title(date)}",
                         'summary_html': exec_summary,
                         'url': f"{self.base_url}/?date={date}",
                         'published': f"{date}T06:00:00Z",
@@ -524,8 +537,8 @@ class FeedGenerator:
         feed_xml = self._build_atom_feed(
             items=entries,
             feed_id="urn:ainews:summaries:executive",
-            title=f"{self.FEED_TITLE} - Daily Briefings",
-            subtitle="Daily executive summaries with hero images",
+            title=f"{self.FEED_TITLE}: resumen de cada edición",
+            subtitle="El resumen de cada edición, con su imagen",
             feed_url=f"{self.base_url}/data/feeds/summaries-executive.xml",
             site_url=self.base_url
         )
@@ -570,7 +583,7 @@ class FeedGenerator:
                         '_feed_date': date,
                         '_feed_category': category,
                         '_external_url': first_external_url,
-                        'title': f"{category.capitalize()} Summary: {self._format_date_title(date)}",
+                        'title': f"Resumen de {self._cat(category).lower()}: {self._format_date_title(date)}",
                         'summary_html': cat_summary,
                         'url': f"{self.base_url}/?date={date}&category={category}",
                         'published': f"{date}T06:00:00Z",
@@ -582,8 +595,8 @@ class FeedGenerator:
         feed_xml = self._build_atom_feed(
             items=entries,
             feed_id=f"urn:ainews:summaries:{category}",
-            title=f"{self.FEED_TITLE} - {category.capitalize()} Summaries",
-            subtitle=f"Daily {category} category summaries",
+            title=f"{self.FEED_TITLE}: resúmenes de {self._cat(category).lower()}",
+            subtitle=f"El resumen diario de {self._cat(category).lower()}",
             feed_url=f"{self.base_url}/data/feeds/summaries-{category}.xml",
             site_url=f"{self.base_url}/?category={category}"
         )
@@ -638,7 +651,7 @@ class FeedGenerator:
                         '_feed_date': date,
                         '_external_url': first_external_url,
                         '_hero_image_url': hero_image_url,
-                        'title': f"Daily Briefing: {self._format_date_title(date)}",
+                        'title': f"Edición del {self._format_date_title(date)}",
                         'summary_html': exec_summary,
                         'url': f"{self.base_url}/?date={date}",
                         'published': f"{date}T06:00:00Z",
@@ -671,7 +684,7 @@ class FeedGenerator:
                                 '_feed_date': date,
                                 '_feed_category': category,
                                 '_external_url': first_external_url,
-                                'title': f"{category.capitalize()} Summary: {self._format_date_title(date)}",
+                                'title': f"Resumen de {self._cat(category).lower()}: {self._format_date_title(date)}",
                                 'summary_html': cat_summary,
                                 'url': f"{self.base_url}/?date={date}&category={category}",
                                 'published': f"{date}T06:00:00Z",
@@ -686,8 +699,8 @@ class FeedGenerator:
         feed_xml = self._build_atom_feed(
             items=all_entries,
             feed_id="urn:ainews:summaries:all",
-            title=f"{self.FEED_TITLE} - All Summaries",
-            subtitle="Executive summary plus all category summaries",
+            title=f"{self.FEED_TITLE}: todos los resúmenes",
+            subtitle="El resumen de la edición y los de cada categoría",
             feed_url=f"{self.base_url}/data/feeds/summaries.xml",
             site_url=self.base_url
         )
@@ -749,7 +762,7 @@ class FeedGenerator:
             return None
 
         # Get and clean title (strip any HTML, escape for XML)
-        title = item.get('title', 'Untitled')
+        title = item.get('title', 'Sin título')
         title = strip_html_from_text(title)
 
         url = item.get('url', '')

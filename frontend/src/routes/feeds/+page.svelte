@@ -1,276 +1,151 @@
 <script lang="ts">
-	import { CATEGORY_CONFIG, type Category } from '$lib/types';
+	// Feeds Atom del radar (generators/feed_generator.py). Reddit no aparece porque
+	// el radar no lo recolecta (API de pago).
+	type Feed = { name: string; description: string; url: string };
 
-	const feeds = {
-		main: {
-			name: 'Main Feed',
-			description: 'Top stories from across all categories, plus top 5 items from each category. Mirrors the homepage.',
-			url: '/data/feeds/main.xml',
-			recommended: true
-		},
-		news: {
-			name: 'News',
-			description: 'All news items from RSS feeds and linked articles.',
-			variants: [
-				{ name: 'All Items', url: '/data/feeds/news.xml' }
-			]
-		},
-		research: {
-			name: 'Research',
-			description: 'arXiv papers and research blog posts.',
-			variants: [
-				{ name: 'Top 25', url: '/data/feeds/research-25.xml' },
-				{ name: 'Top 50', url: '/data/feeds/research-50.xml', default: true },
-				{ name: 'Top 100', url: '/data/feeds/research-100.xml' },
-				{ name: 'All Items', url: '/data/feeds/research-full.xml' }
-			]
-		},
-		social: {
-			name: 'Social',
-			description: 'Posts from Twitter, Bluesky, and Mastodon.',
-			variants: [
-				{ name: 'Top 25', url: '/data/feeds/social-25.xml' },
-				{ name: 'Top 50', url: '/data/feeds/social-50.xml', default: true },
-				{ name: 'Top 100', url: '/data/feeds/social-100.xml' },
-				{ name: 'All Items', url: '/data/feeds/social-full.xml' }
-			]
-		},
-		reddit: {
-			name: 'Reddit',
-			description: 'Discussions from AI-related subreddits.',
-			variants: [
-				{ name: 'Top 25', url: '/data/feeds/reddit-25.xml' },
-				{ name: 'Top 50', url: '/data/feeds/reddit-50.xml', default: true },
-				{ name: 'Top 100', url: '/data/feeds/reddit-100.xml' },
-				{ name: 'All Items', url: '/data/feeds/reddit-full.xml' }
-			]
-		}
+	const principal: Feed = {
+		name: 'La edición completa',
+		description:
+			'Lo más importante de cada categoría, igual que la portada. Recomendado para la mayoría.',
+		url: '/data/feeds/main.xml'
 	};
 
-	const summaryFeeds = {
-		executive: {
-			name: 'Daily Briefing',
-			description: 'Just the daily executive summary with hero image. One entry per day.',
-			url: '/data/feeds/summaries-executive.xml',
-			recommended: true
+	const resumenes: Feed[] = [
+		{
+			name: 'Solo el resumen del día',
+			description: 'El resumen de cada edición con su imagen. Una entrada por edición.',
+			url: '/data/feeds/summaries-executive.xml'
 		},
-		all: {
-			name: 'All Summaries',
-			description: 'Executive summary plus all category summaries. No individual items.',
+		{
+			name: 'Todos los resúmenes',
+			description: 'El resumen de la edición y los de cada categoría, sin notas sueltas.',
 			url: '/data/feeds/summaries.xml'
 		},
-		news: {
-			name: 'News Summaries',
-			description: 'Daily news category summaries only.',
+		{
+			name: 'Resumen de noticias',
+			description: 'Solo el resumen diario de la categoría Noticias.',
 			url: '/data/feeds/summaries-news.xml'
 		},
-		research: {
-			name: 'Research Summaries',
-			description: 'Daily research category summaries only.',
+		{
+			name: 'Resumen de investigación y estándares',
+			description: 'Solo el resumen diario de investigación y estándares.',
 			url: '/data/feeds/summaries-research.xml'
 		},
-		social: {
-			name: 'Social Summaries',
-			description: 'Daily social category summaries only.',
+		{
+			name: 'Resumen de redes',
+			description: 'Solo el resumen diario de lo que se dijo en redes.',
 			url: '/data/feeds/summaries-social.xml'
-		},
-		reddit: {
-			name: 'Reddit Summaries',
-			description: 'Daily reddit category summaries only.',
-			url: '/data/feeds/summaries-reddit.xml'
 		}
-	};
+	];
 
-	function getCategoryColor(category: string): string {
-		const config = CATEGORY_CONFIG[category as Category];
-		return config?.color || '#6b7280';
-	}
+	const categorias: { name: string; description: string; variants: { name: string; url: string; porDefecto?: boolean }[] }[] = [
+		{
+			name: 'Noticias',
+			description: 'Todas las notas de prensa, reguladores y empresas observadas.',
+			variants: [{ name: 'Todas', url: '/data/feeds/news.xml', porDefecto: true }]
+		},
+		{
+			name: 'Investigación y estándares',
+			description: 'Papers de arXiv, organismos de estándares y análisis de autor.',
+			variants: [
+				{ name: 'Las 25 principales', url: '/data/feeds/research-25.xml' },
+				{ name: 'Las 50 principales', url: '/data/feeds/research-50.xml', porDefecto: true },
+				{ name: 'Las 100 principales', url: '/data/feeds/research-100.xml' },
+				{ name: 'Todas', url: '/data/feeds/research-full.xml' }
+			]
+		},
+		{
+			name: 'Redes',
+			description: 'Publicaciones de Bluesky y Mastodon de periodistas y organizaciones independientes.',
+			variants: [
+				{ name: 'Las 25 principales', url: '/data/feeds/social-25.xml' },
+				{ name: 'Las 50 principales', url: '/data/feeds/social-50.xml', porDefecto: true },
+				{ name: 'Las 100 principales', url: '/data/feeds/social-100.xml' },
+				{ name: 'Todas', url: '/data/feeds/social-full.xml' }
+			]
+		}
+	];
 </script>
 
 <svelte:head>
-	<title>RSS Feeds | AI News Daily</title>
+	<title>RSS | Radar de Identidad</title>
 </svelte:head>
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-	<h1 class="text-2xl font-bold text-radar-gray-800 dark:text-radar-gray-100 mb-2">
-		RSS Feeds
-	</h1>
-	<p class="text-radar-gray-600 dark:text-radar-gray-400 mb-8">
-		Subscribe to AI news in your favorite RSS reader. All feeds use Atom 1.0 format and include the last 7 days of content.
+<div class="max-w-[760px] mx-auto px-4 sm:px-6 py-10">
+	<p class="t-kicker text-oro">Suscripción</p>
+	<h1 class="t-display-hero text-tinta mt-2">RSS</h1>
+	<p class="t-body text-tinta-cuerpo mt-4">
+		Recibe el radar en tu lector de RSS. Todos los feeds usan formato Atom e incluyen los
+		últimos 7 días.
 	</p>
 
-	<!-- Main Feed (Recommended) -->
-	<div class="card mb-8 border-2 border-radar-accent">
-		<div class="flex items-start justify-between gap-4">
+	<section class="mt-10 border border-oro p-5 sm:p-6">
+		<p class="t-label text-oro">Recomendado</p>
+		<div class="mt-2 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
 			<div>
-				<div class="flex items-center gap-2 mb-1">
-					<h2 class="text-lg font-semibold text-radar-gray-800 dark:text-radar-gray-100">
-						{feeds.main.name}
-					</h2>
-					<span class="text-xs px-2 py-0.5 bg-oro text-papel rounded-full">Recommended</span>
-				</div>
-				<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400">
-					{feeds.main.description}
-				</p>
+				<h2 class="font-display text-2xl text-tinta">{principal.name}</h2>
+				<p class="t-body !text-[16px] text-tinta-suave mt-1">{principal.description}</p>
 			</div>
-			<a
-				href={feeds.main.url}
-				class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-oro text-papel rounded-lg hover:bg-radar-accent-dark transition-colors"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-					<circle cx="6.18" cy="17.82" r="2.18"/>
-					<path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/>
-				</svg>
-				Subscribe
+			<a href={principal.url} class="shrink-0 t-ui bg-oro text-papel px-4 py-2 no-underline hover:underline">
+				Suscribirse
 			</a>
 		</div>
-	</div>
+	</section>
 
-	<!-- Summary Feeds -->
-	<h2 class="text-lg font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-4">
-		Summary Feeds
-	</h2>
-	<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400 mb-6">
-		Just the summaries, no individual items. Great for a quick daily overview.
-	</p>
+	<section class="mt-12">
+		<h2 class="font-display text-2xl text-tinta">Solo resúmenes</h2>
+		<p class="t-body !text-[16px] text-tinta-suave mt-1">Sin notas sueltas: para una lectura rápida.</p>
+		<ul class="mt-5 border-t border-filete">
+			{#each resumenes as feed}
+				<li class="border-b border-filete">
+					<a href={feed.url} class="flex items-baseline justify-between gap-4 py-4 no-underline group">
+						<span>
+							<span class="block font-serif text-[17px] text-tinta group-hover:underline">{feed.name}</span>
+							<span class="block t-ui !normal-case !tracking-normal !text-[13px] text-tinta-suave mt-0.5">
+								{feed.description}
+							</span>
+						</span>
+						<span class="t-label text-oro shrink-0">RSS</span>
+					</a>
+				</li>
+			{/each}
+		</ul>
+	</section>
 
-	<!-- Daily Briefing (Recommended Summary Feed) -->
-	<div class="card mb-4 border-2 border-radar-accent/50">
-		<div class="flex items-start justify-between gap-4">
-			<div>
-				<div class="flex items-center gap-2 mb-1">
-					<h3 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100">
-						{summaryFeeds.executive.name}
-					</h3>
-					<span class="text-xs px-2 py-0.5 bg-oro text-papel rounded-full">Most Popular</span>
-				</div>
-				<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400">
-					{summaryFeeds.executive.description}
-				</p>
-			</div>
-			<a
-				href={summaryFeeds.executive.url}
-				class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-oro text-papel rounded-lg hover:bg-radar-accent transition-colors"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-					<circle cx="6.18" cy="17.82" r="2.18"/>
-					<path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/>
-				</svg>
-				Subscribe
-			</a>
-		</div>
-	</div>
-
-	<!-- All Summaries (Full Width) -->
-	<a
-		href={summaryFeeds.all.url}
-		class="block card p-3 hover:border-radar-accent/50 transition-colors group mb-3"
-		style="border-left: 3px solid #6b7280"
-	>
-		<div class="flex items-center justify-between gap-2">
-			<div>
-				<h4 class="font-medium text-radar-gray-800 dark:text-radar-gray-100 text-sm">
-					{summaryFeeds.all.name}
-				</h4>
-				<p class="text-xs text-radar-gray-500 dark:text-radar-gray-400 mt-0.5">
-					{summaryFeeds.all.description}
-				</p>
-			</div>
-			<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-radar-gray-400 group-hover:text-radar-accent transition-colors shrink-0" fill="currentColor" viewBox="0 0 24 24">
-				<circle cx="6.18" cy="17.82" r="2.18"/>
-				<path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/>
-			</svg>
-		</div>
-	</a>
-
-	<!-- Category Summary Feeds -->
-	<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-		{#each ['news', 'research', 'social', 'reddit'] as key}
-			{@const feed = summaryFeeds[key as keyof typeof summaryFeeds]}
-			{@const color = getCategoryColor(key)}
-			<a
-				href={feed.url}
-				class="block card p-3 hover:border-radar-accent/50 transition-colors group"
-				style="border-left: 3px solid {color}"
-			>
-				<div class="flex items-center justify-between gap-2">
-					<div>
-						<h4 class="font-medium text-radar-gray-800 dark:text-radar-gray-100 text-sm">
-							{feed.name}
-						</h4>
-						<p class="text-xs text-radar-gray-500 dark:text-radar-gray-400 mt-0.5">
-							{feed.description}
-						</p>
-					</div>
-					<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-radar-gray-400 group-hover:text-radar-accent transition-colors shrink-0" fill="currentColor" viewBox="0 0 24 24">
-						<circle cx="6.18" cy="17.82" r="2.18"/>
-						<path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/>
-					</svg>
-				</div>
-			</a>
-		{/each}
-	</div>
-
-	<!-- Category Feeds -->
-	<h2 class="text-lg font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-4">
-		Category Feeds
-	</h2>
-	<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400 mb-6">
-		Subscribe to specific categories. Choose how many items you want in your feed.
-	</p>
-
-	<div class="space-y-4">
-		{#each ['news', 'research', 'social', 'reddit'] as category}
-			{@const feed = feeds[category as keyof typeof feeds]}
-			{@const color = getCategoryColor(category)}
-			{#if 'variants' in feed}
-				<div class="card" style="border-left: 4px solid {color}">
-					<div class="mb-3">
-						<h3 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100">
-							{feed.name}
-						</h3>
-						<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400">
-							{feed.description}
-						</p>
-					</div>
-					<div class="flex flex-wrap gap-2">
-						{#each feed.variants as variant}
+	<section class="mt-12">
+		<h2 class="font-display text-2xl text-tinta">Por categoría</h2>
+		<p class="t-body !text-[16px] text-tinta-suave mt-1">Elige cuántas notas quieres recibir.</p>
+		<div class="mt-5 space-y-6">
+			{#each categorias as cat}
+				<div class="border-t border-filete pt-4">
+					<h3 class="font-serif text-[19px] text-tinta">{cat.name}</h3>
+					<p class="t-ui !normal-case !tracking-normal !text-[13px] text-tinta-suave mt-0.5">{cat.description}</p>
+					<div class="flex flex-wrap gap-2 mt-3">
+						{#each cat.variants as v}
 							<a
-								href={variant.url}
-								class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors
-									{'default' in variant && variant.default
-										? 'bg-radar-gray-100 dark:bg-radar-gray-700 border-radar-gray-300 dark:border-radar-gray-600 text-radar-gray-800 dark:text-radar-gray-100 hover:border-radar-accent'
-										: 'border-radar-gray-200 dark:border-radar-gray-700 text-radar-gray-600 dark:text-radar-gray-400 hover:border-radar-gray-400 dark:hover:border-radar-gray-500'
-									}"
+								href={v.url}
+								class="t-ui !text-[12px] px-3 py-1.5 border no-underline hover:underline
+									{v.porDefecto ? 'border-oro text-oro' : 'border-filete text-tinta-suave'}"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-									<circle cx="6.18" cy="17.82" r="2.18"/>
-									<path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/>
-								</svg>
-								{variant.name}
-								{#if 'default' in variant && variant.default}
-									<span class="text-xs text-radar-gray-500">(default)</span>
-								{/if}
+								{v.name}{v.porDefecto ? ' · sugerido' : ''}
 							</a>
 						{/each}
 					</div>
 				</div>
-			{/if}
-		{/each}
-	</div>
+			{/each}
+		</div>
+	</section>
 
-	<!-- Help Section -->
-	<div class="mt-8 p-4 bg-radar-gray-50 dark:bg-radar-gray-800 rounded-lg">
-		<h3 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-2">
-			How to Subscribe
-		</h3>
-		<ol class="list-decimal list-inside text-sm text-radar-gray-600 dark:text-radar-gray-400 space-y-1">
-			<li>Click a feed link above to open it</li>
-			<li>Copy the URL from your browser's address bar</li>
-			<li>Paste the URL into your RSS reader (Feedly, Inoreader, NetNewsWire, etc.)</li>
+	<section class="mt-12 bg-caja p-5">
+		<h2 class="font-serif text-[19px] text-tinta">Cómo suscribirte</h2>
+		<ol class="list-decimal list-inside t-body !text-[16px] text-tinta-cuerpo mt-2 space-y-1">
+			<li>Abre el enlace del feed que quieras.</li>
+			<li>Copia la dirección de la barra del navegador.</li>
+			<li>Pégala en tu lector de RSS (Feedly, Inoreader, NetNewsWire u otro).</li>
 		</ol>
-		<p class="text-sm text-radar-gray-500 mt-3">
-			Most browsers will show raw XML when you click a feed link. That's normal! Just copy the URL and add it to your reader.
+		<p class="t-ui !normal-case !tracking-normal !text-[13px] text-tinta-suave mt-3">
+			Es normal que el navegador muestre el código XML al abrir un feed: solo copia la
+			dirección y agrégala a tu lector.
 		</p>
-	</div>
+	</section>
 </div>

@@ -7,6 +7,8 @@ export type Category = 'news' | 'research' | 'social' | 'reddit';
 export interface NewsItem {
 	id: string;
 	title: string;
+	/** Título original cuando el análisis escribió uno en español. */
+	title_original?: string;
 	content: string;
 	content_html?: string;
 	url: string;
@@ -250,8 +252,8 @@ export const CATEGORY_CONFIG: Record<
 		accentClass: 'category-accent-social'
 	},
 	reddit: {
-		title: 'Reddit Discussions',
-		singularTitle: 'Reddit Discussion',
+		title: 'Discusiones en Reddit',
+		singularTitle: 'Discusión en Reddit',
 		shortTitle: 'Reddit',
 		color: '#5A5F66',
 		bgClass: 'bg-category-reddit',

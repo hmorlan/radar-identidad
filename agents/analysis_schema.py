@@ -67,6 +67,8 @@ class AnalyzedItemModel(BaseModel):
     # Retained for source-identity validation and analysis checkpoints; not
     # republished as article metadata by AnalyzedItem.
     source_title: str = ""
+    # Título en español para el sitio (traducción breve del original).
+    titulo: str = ""
     summary: str = ""
     importance_score: float = 50.0
     reasoning: str = ""
@@ -77,6 +79,11 @@ class AnalyzedItemModel(BaseModel):
     def _clamp_source_title(cls, value: Any) -> str:
         # Source prompt titles use an 800-character clip plus an ellipsis.
         return _coerce_str(value, 803)
+
+    @field_validator('titulo', mode='before')
+    @classmethod
+    def _clamp_titulo(cls, value: Any) -> str:
+        return _coerce_str(value, 300)
 
     @field_validator('id', mode='before')
     @classmethod
@@ -192,7 +199,10 @@ def sanitize_batch_result(result: Any, where: str = "batch") -> Dict[str, Any]:
             dropped = 0
             for entry in raw_items:
                 try:
-                    items.append(AnalyzedItemModel.model_validate(entry).model_dump())
+                    row = AnalyzedItemModel.model_validate(entry).model_dump()
+                    if not row.get('titulo'):
+                        row.pop('titulo', None)  # sin título traducido: forma de siempre
+                    items.append(row)
                 except Exception:
                     dropped += 1
             if dropped:

@@ -777,7 +777,8 @@ Snippet: {self._clip_context_text(item.content, 300)}...
                 importance_score=float(item_result.get('importance_score', 50)),
                 reasoning=item_result.get('reasoning', ''),
                 themes=item_result.get('themes', []),
-                thinking=thinking
+                thinking=thinking,
+                titulo=item_result.get('titulo', '') or '',
             ))
 
         # Sort by importance score (descending)

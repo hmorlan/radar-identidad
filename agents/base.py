@@ -366,11 +366,13 @@ class AnalyzedItem:
     themes: List[str]  # Detected themes
     thinking: Optional[str] = None  # Extended thinking content (if available)
     continuation: Optional['ContinuationInfo'] = None  # Story continuation info
+    titulo: str = ""  # Título en español; el original queda en item.title
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         result = self.item.to_dict()
         result.update({
+            'titulo': self.titulo,
             'summary': self.summary,
             'importance_score': self.importance_score,
             'reasoning': self.reasoning,
@@ -397,7 +399,8 @@ class AnalyzedItem:
             reasoning=data.get('reasoning', ''),
             themes=data.get('themes', []),
             thinking=data.get('thinking'),
-            continuation=continuation
+            continuation=continuation,
+            titulo=data.get('titulo', '') or '',
         )
 
 
@@ -1377,7 +1380,8 @@ Every entry needs a nonempty summary and reasoning and a numeric score 0-100.
                     summary=a.get('summary', ''),
                     importance_score=a.get('importance_score', 50),
                     reasoning=a.get('reasoning', ''),
-                    themes=a.get('themes', [])
+                    themes=a.get('themes', []),
+                    titulo=a.get('titulo', '') or '',
                 ))
         # Sort by importance
         analyzed_items.sort(key=lambda x: x.importance_score, reverse=True)

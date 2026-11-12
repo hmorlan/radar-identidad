@@ -93,14 +93,14 @@ def get_arxiv_notice(report_date: str) -> Optional[Dict[str, str]]:
         if day_of_week in ('Saturday', 'Sunday'):
             return {
                 'type': 'info',
-                'title': 'Weekend Edition',
-                'message': 'arXiv papers are not collected on weekends. Any weekend papers will be included in Monday\'s report.'
+                'title': 'Edición de fin de semana',
+                'message': 'arXiv no publica en fin de semana. Los papers de sábado y domingo entran en la edición del lunes.'
             }
         elif day_of_week == 'Monday':
             return {
                 'type': 'info',
-                'title': 'Monday Edition',
-                'message': "Today's arXiv papers cover submissions from the entire weekend (Friday through Sunday) due to arXiv's publishing schedule."
+                'title': 'Edición del lunes',
+                'message': "Por el calendario de arXiv, los papers de hoy cubren todo el fin de semana (de viernes a domingo)."
             }
     except ValueError:
         logger.warning(f"Invalid date format for arxiv notice: {report_date}")
@@ -126,8 +126,8 @@ def get_news_notice(report_date: str) -> Optional[Dict[str, str]]:
         if report_date < NEWS_COLLECTION_START:
             return {
                 'type': 'info',
-                'title': 'Limited Coverage',
-                'message': 'News collection began on January 6th, 2026. Earlier dates may have incomplete or no news data.'
+                'title': 'Cobertura limitada',
+                'message': 'La recolección de noticias empezó el 6 de enero de 2026. Las fechas anteriores pueden estar incompletas.'
             }
     except ValueError:
         logger.warning(f"Invalid date format for news notice: {report_date}")
@@ -476,6 +476,14 @@ class JSONGenerator:
 
             if not simplified_item.get('freshness'):
                 simplified_item.pop('freshness', None)
+
+            # Radar en español: el título que escribe el análisis va al frente y el
+            # original (casi siempre en inglés) se conserva para "Ver texto original".
+            titulo = re.sub(r'<[^>]*>', '', str(item.get('titulo') or '')).strip()
+            original = simplified_item.get('title', '')
+            if titulo and titulo != original:
+                simplified_item['title'] = titulo[:300]
+                simplified_item['title_original'] = original
 
             # Convert summary and content to HTML for frontend rendering
             simplified_item['summary_html'] = self._markdown_to_html(simplified_item.get('summary', ''))

@@ -8,7 +8,7 @@
 	};
 </script>
 
-<div class="flex items-center justify-center" role="status" aria-label="Loading">
+<div class="flex items-center justify-center" role="status" aria-label="Cargando">
 	<svg
 		class="{sizeClasses[size]} animate-spin text-radar-accent"
 		xmlns="http://www.w3.org/2000/svg"

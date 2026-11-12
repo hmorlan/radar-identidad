@@ -167,7 +167,7 @@
 		if (!resolvedDate) {
 			summary = null;
 			categoryData = null;
-			error = 'No reports available yet.';
+			error = 'Todavía no hay ediciones.';
 			return;
 		}
 
@@ -220,7 +220,7 @@
 				return;
 			}
 
-			error = e instanceof Error ? e.message : 'Failed to load data';
+			error = e instanceof Error ? e.message : 'No se pudieron cargar los datos';
 			summary = null;
 			categoryData = null;
 		} finally {
@@ -303,8 +303,8 @@
 		{#if categoryData.notice}
 			<div
 				class="mb-6 p-4 rounded-lg border-l-4 {categoryData.notice.type === 'info'
-					? 'bg-blue-50 border-blue-400 text-blue-800 dark:bg-blue-900/30 dark:border-blue-500 dark:text-blue-200'
-					: 'bg-amber-50 border-amber-400 text-amber-800 dark:bg-amber-900/30 dark:border-amber-500 dark:text-amber-200'}"
+					? 'bg-caja border-oro text-tinta'
+					: 'bg-caja border-terracota text-tinta'}"
 			>
 				<div class="flex items-start gap-3">
 					<svg

@@ -70,12 +70,12 @@
 	// the button says what the action is; the card above already names the source.
 	$: readLabel =
 		target?.category === 'research'
-			? 'Read the paper'
+			? 'Leer el paper'
 			: target?.category === 'reddit'
-				? 'Open the discussion'
+				? 'Abrir la discusión'
 				: target?.category === 'social'
-					? 'Open the post'
-					: 'Read the article';
+					? 'Abrir la publicación'
+					: 'Leer la nota';
 
 	/**
 	 * The anchor's own href is the whole contract — `ALLOW_DATA_ATTR: false` in
@@ -416,7 +416,7 @@
 		style="top: {top}px; left: {left}px; width: {width}px; max-height: {maxHeight}px"
 		role="dialog"
 		aria-modal="false"
-		aria-label={item ? item.title : 'Loading story'}
+		aria-label={item ? item.title : 'Cargando la nota'}
 		tabindex="-1"
 	>
 		<!-- Only the card scrolls. A long story would otherwise push the footer out
@@ -451,9 +451,9 @@
 					<span aria-hidden="true">&nearr;</span>
 				</a>
 			{/if}
-			<a class="secondary" href={target.href} on:click={close}>Open card</a>
+			<a class="secondary" href={target.href} on:click={close}>Ver ficha</a>
 			<button class="secondary" type="button" on:click={copyLink}>
-				{copied ? 'Copied' : 'Share'}
+				{copied ? 'Copiado' : 'Compartir'}
 			</button>
 		</div>
 	</div>
@@ -487,16 +487,16 @@
 		display: flex;
 		flex-direction: column;
 		border-radius: 12px;
-		border: 1px solid rgb(0 0 0 / 0.1);
-		background: #fff;
+		border: 1px solid rgb(var(--filete));
+		background: rgb(var(--papel));
 		box-shadow: 0 16px 40px -12px rgb(0 0 0 / 0.35);
 		/* Clip the scrolling card to the panel's own corners. */
 		overflow: hidden;
 		outline: none;
 	}
 	:global(.dark) .preview {
-		background: #262626;
-		border-color: rgb(255 255 255 / 0.14);
+		background: rgb(var(--papel));
+		border-color: rgb(var(--filete));
 		box-shadow: 0 16px 40px -12px rgb(0 0 0 / 0.6);
 	}
 
@@ -530,12 +530,12 @@
 		gap: 0.75rem;
 		padding: 0.625rem 0.75rem;
 		flex: none;
-		border-top: 1px solid rgb(0 0 0 / 0.08);
-		background: #fff;
+		border-top: 1px solid rgb(var(--filete));
+		background: rgb(var(--papel));
 	}
 	:global(.dark) .actions {
-		border-top-color: rgb(255 255 255 / 0.1);
-		background: #262626;
+		border-top-color: rgb(var(--filete));
+		background: rgb(var(--papel));
 	}
 
 	/* A soft edge above the bar so text scrolling under it fades out instead of
@@ -548,10 +548,10 @@
 		bottom: 100%;
 		height: 1.5rem;
 		pointer-events: none;
-		background: linear-gradient(to top, #fff, transparent);
+		background: linear-gradient(to top, rgb(var(--papel)), transparent);
 	}
 	:global(.dark) .actions::before {
-		background: linear-gradient(to top, #262626, transparent);
+		background: linear-gradient(to top, rgb(var(--papel)), transparent);
 	}
 
 	/* The source article: the reason the reader opened this at all. */
@@ -562,9 +562,10 @@
 		justify-content: center;
 		gap: 0.35rem;
 		padding: 0.5rem 0.75rem;
-		border-radius: 8px;
-		background: #2F5F9E;
-		color: #fff;
+		border-radius: 0;
+		/* v3.2: sin azul; la acción principal va en oro sobre papel. */
+		background: rgb(var(--oro));
+		color: rgb(var(--papel));
 		font-size: 0.875rem;
 		font-weight: 600;
 		text-align: center;
@@ -574,7 +575,8 @@
 		text-overflow: ellipsis;
 	}
 	.primary:hover {
-		background: #c1121f;
+		background: rgb(var(--oro-hover));
+		text-decoration: underline;
 	}
 
 	.secondary {
@@ -582,20 +584,14 @@
 		padding: 0.5rem 0.25rem;
 		font-size: 0.8125rem;
 		font-weight: 500;
-		color: #737373;
+		color: rgb(var(--tinta-suave));
 		white-space: nowrap;
 		background: none;
 		border: none;
 		cursor: pointer;
 	}
 	.secondary:hover {
-		color: #2F5F9E;
-	}
-	:global(.dark) .secondary {
-		color: #a3a3a3;
-	}
-	:global(.dark) .secondary:hover {
-		color: #fca5a5;
+		color: rgb(var(--oro-hover));
 	}
 
 	.skeleton {

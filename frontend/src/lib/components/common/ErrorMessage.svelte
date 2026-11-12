@@ -1,6 +1,6 @@
 <script lang="ts">
-	export let title: string = 'Something went wrong';
-	export let message: string = 'Please try again later.';
+	export let title: string = 'Algo salió mal';
+	export let message: string = 'Inténtalo de nuevo más tarde.';
 	export let onRetry: (() => void) | null = null;
 </script>
 

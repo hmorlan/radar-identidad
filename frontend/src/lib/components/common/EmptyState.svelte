@@ -1,6 +1,6 @@
 <script lang="ts">
-	export let title: string = 'No data available';
-	export let message: string = 'Check back later for updates.';
+	export let title: string = 'No hay datos';
+	export let message: string = 'Vuelve más tarde.';
 </script>
 
 <div class="text-center py-12">

@@ -31,14 +31,19 @@
 
 	$: config = CATEGORY_CONFIG[category];
 	$: safeUrl = isSafeUrl(item.url) ? item.url : undefined;
-	$: hasContent = item.content && item.content.length > 0;
-	$: truncatedContent = item.content?.slice(0, 300);
-	$: needsTruncation = item.content?.length > 300;
+	// arXiv antepone "arXiv:2611.12636v1 Announce Type: new Abstract:" al resumen.
+	$: rawContent = (item.content || '').replace(/^\s*arXiv:\S+\s+Announce Type:\s*\S+\s+Abstract:\s*/i, '');
+	$: hasContent = rawContent.length > 0 || Boolean(item.title_original);
+	$: needsTruncation = rawContent.length > 300;
+	// Con análisis en español, el texto original (casi siempre en inglés) queda
+	// plegado detrás de "Ver texto original"; sin análisis, se muestra como antes.
+	$: originalHidden = Boolean(item.summary);
 	$: freshness = item.freshness;
 
 	// Use pre-rendered HTML if available, otherwise convert client-side
 	$: summaryHtml = item.summary_html || markdownToHtml(item.summary || '');
-	$: contentHtml = item.content_html || markdownToHtml(item.content || '');
+	$: contentHtml =
+		item.content_html && rawContent === item.content ? item.content_html : markdownToHtml(rawContent);
 
 	// Determine importance tier class
 	$: importanceTierClass =
@@ -82,7 +87,7 @@
 				: item.importance_score >= 60
 					? 'bg-category-social/10 text-category-social'
 					: 'bg-radar-gray-100 dark:bg-radar-gray-700 text-radar-gray-600 dark:text-radar-gray-400'}"
-			title="Importance score: {item.importance_score}"
+			title="Puntaje de importancia: {Math.round(item.importance_score)} de 100"
 		>
 			{Math.round(item.importance_score)}
 		</div>
@@ -109,14 +114,14 @@
 		{/if}
 	</div>
 
-	<!-- AI Analysis -->
+	<!-- Análisis -->
 	{#if item.summary}
 		<div class="mb-3 pl-3 border-l-2 border-radar-accent/30">
 			<div class="flex items-center gap-1.5 text-xs font-bold text-radar-gray-500 dark:text-radar-gray-400 mb-1">
 				<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
 				</svg>
-				<span>AI Analysis</span>
+				<span>Análisis</span>
 			</div>
 			<div class="text-radar-gray-700 dark:text-radar-gray-300 leading-relaxed font-bold prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-a:text-radar-accent prose-a:no-underline hover:prose-a:underline">
 				{@html safeHtml(summaryHtml)}
@@ -124,22 +129,34 @@
 		</div>
 	{/if}
 
-	<!-- Content (expandable) -->
+	<!-- Texto original (plegable) -->
 	{#if hasContent}
 		<div class="text-sm text-radar-gray-600 dark:text-radar-gray-400 mb-3">
-			<div
-				class="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-a:text-radar-accent prose-a:no-underline hover:prose-a:underline"
-				class:line-clamp-3={!expanded && needsTruncation}
-			>
-				{@html safeHtml(contentHtml)}
-			</div>
+			{#if expanded && item.title_original}
+				<p class="font-semibold text-radar-gray-700 dark:text-radar-gray-300 mb-1" lang="en">
+					{item.title_original}
+				</p>
+			{/if}
+			{#if rawContent && (!originalHidden || expanded)}
+				<div
+					class="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-a:text-radar-accent prose-a:no-underline hover:prose-a:underline"
+					class:line-clamp-3={!expanded && needsTruncation}
+				>
+					{@html safeHtml(contentHtml)}
+				</div>
+			{/if}
 
-			{#if needsTruncation}
+			{#if originalHidden || item.title_original || needsTruncation}
 				<button
 					on:click={() => (expanded = !expanded)}
 					class="text-radar-accent hover:text-radar-accent-dark mt-2 font-medium"
+					aria-expanded={expanded}
 				>
-					{expanded ? 'Show less' : 'Read more'}
+					{#if originalHidden || item.title_original}
+						{expanded ? 'Ocultar texto original' : 'Ver texto original'}
+					{:else}
+						{expanded ? 'Ver menos' : 'Leer más'}
+					{/if}
 				</button>
 			{/if}
 		</div>
@@ -168,16 +185,16 @@
 				class="text-sm font-medium text-radar-accent hover:text-radar-accent-dark transition-colors"
 			>
 				{category === 'research'
-					? 'View Research'
-					: category === 'reddit'
-						? 'View Discussion'
-						: 'Read More'} &rarr;
+					? 'Leer el paper'
+					: category === 'reddit' || category === 'social'
+						? 'Ver la publicación'
+						: 'Leer la nota'} &rarr;
 			</a>
 			<button
 				on:click={copyShareLink}
 				class="text-sm font-medium text-radar-accent hover:text-radar-accent-dark transition-colors"
 			>
-				{copied ? 'Copied!' : 'Share'}
+				{copied ? '¡Enlace copiado!' : 'Compartir'}
 			</button>
 		</div>
 	{/if}

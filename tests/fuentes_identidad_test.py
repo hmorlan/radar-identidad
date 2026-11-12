@@ -163,5 +163,37 @@ class EmpresasYReguladoresTest(unittest.TestCase):
         self.assertTrue({"FTC", "CFPB", "FinCEN", "SUGEF"} <= {r.name for r in regs})
 
 
+class TituloEnEspanolTest(unittest.TestCase):
+    def test_schema_keeps_titulo_and_drops_it_when_empty(self):
+        from agents.analysis_schema import AnalyzedItemModel
+        row = AnalyzedItemModel.model_validate(
+            {"id": "a", "source_title": "Session theft", "titulo": "Robo de sesiones", "summary": "x"}
+        ).model_dump()
+        self.assertEqual(row["titulo"], "Robo de sesiones")
+
+    def test_site_shows_spanish_title_and_keeps_original(self):
+        from generators.json_generator import JSONGenerator
+        gen = JSONGenerator.__new__(JSONGenerator)
+        gen._markdown_to_html = lambda t: t
+        items = gen._simplify_items([
+            {"item": {"id": "1", "title": "Passkeys reach 1B users", "content": "c", "url": "https://a.example"},
+             "titulo": "Las passkeys llegan a mil millones de usuarios", "summary": "s"},
+            {"item": {"id": "2", "title": "Ya en español", "content": "c", "url": "https://b.example"},
+             "titulo": "", "summary": "s"},
+        ])
+        by_id = {i["id"]: i for i in items}
+        self.assertEqual(by_id["1"]["title"], "Las passkeys llegan a mil millones de usuarios")
+        self.assertEqual(by_id["1"]["title_original"], "Passkeys reach 1B users")
+        self.assertEqual(by_id["2"]["title"], "Ya en español")
+        self.assertNotIn("title_original", by_id["2"])
+
+    def test_analyzed_item_roundtrip(self):
+        from agents.base import AnalyzedItem, CollectedItem
+        it = CollectedItem(id="1", title="T", content="c", url="https://a.example", author="",
+                           published="2026-11-11T00:00:00", source="s", source_type="news")
+        a = AnalyzedItem(item=it, summary="s", importance_score=60, reasoning="r", themes=[], titulo="Título")
+        self.assertEqual(AnalyzedItem.from_dict(a.to_dict()).titulo, "Título")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -16,8 +16,8 @@
 
 {#if items.length === 0}
 	<EmptyState
-		title="No items found"
-		message="There are no items in this category for the selected date."
+		title="No hay notas"
+		message="No hay notas de esta categoría en la fecha seleccionada."
 	/>
 {:else}
 	<div class="space-y-4">
@@ -30,7 +30,7 @@
 		<div class="mt-6 text-center">
 			<slot name="view-all">
 				<span class="text-sm text-radar-gray-500">
-					Showing top {limit} of {totalCount ?? items.length} items
+					Se muestran {limit} de {totalCount ?? items.length} notas
 				</span>
 			</slot>
 		</div>

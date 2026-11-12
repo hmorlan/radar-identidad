@@ -53,7 +53,7 @@ class ResearchGatherer(BaseGatherer):
     # Las categorías de IA del proyecto original (cs.AI, cs.LG, cs.CL, ...) generaban
     # cientos de papers diarios sin ángulo de identidad.
     CATEGORIES = {
-        'cs.CR': 'Cryptography and Security',
+        'cs.CR': 'criptografía y seguridad',
     }
 
     API_BASE = "https://export.arxiv.org/api/query"

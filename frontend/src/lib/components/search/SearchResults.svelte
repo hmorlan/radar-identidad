@@ -72,7 +72,7 @@
 							<!-- Score indicator -->
 							<span
 								class="text-xs px-1.5 py-0.5 rounded bg-radar-gray-100 dark:bg-radar-gray-700 text-radar-gray-500"
-								title="Relevance score"
+								title="Relevancia"
 							>
 								{Math.round(doc.importance)}
 							</span>
@@ -86,7 +86,7 @@
 	{#if results.length > 0}
 		<div class="px-4 py-2 border-t border-radar-gray-100 dark:border-radar-gray-700">
 			<p class="text-xs text-radar-gray-400 text-center">
-				{results.length} result{results.length === 1 ? '' : 's'} found
+				{results.length} resultado{results.length === 1 ? '' : 's'}
 			</p>
 		</div>
 	{/if}

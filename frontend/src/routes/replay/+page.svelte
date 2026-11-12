@@ -81,6 +81,9 @@
 
 	$: dateParam = $page.url.searchParams.get('date');
 	$: isDemo = $page.url.searchParams.get('demo') === '1';
+	// La vista de la corrida sigue en inglés y describe agentes del proyecto original:
+	// mientras se traduce y se adapta al radar, solo se abre con ?interno=1.
+	$: interno = $page.url.searchParams.get('interno') === '1';
 	$: effectiveDate = dateParam && parseDate(dateParam) ? dateParam : ($currentDate || null);
 	$: loadKey = isDemo ? 'demo' : (effectiveDate ?? '');
 
@@ -506,14 +509,26 @@
 </script>
 
 <svelte:head>
-	<title>LLM Replay{index ? ` — ${index.date}` : ''} | Radar de Identidad</title>
+	<title>La corrida{index ? ` del ${index.date}` : ''} | Radar de Identidad</title>
 	<meta
 		name="description"
-		content="A time-scrubbed reconstruction of the Radar de Identidad pipeline: every agent, every LLM call, replayed from real timestamps."
+		content="Cómo se produjo cada edición del Radar de Identidad: cada agente y cada llamada al modelo, con sus tiempos reales."
 	/>
 </svelte:head>
 
 <svelte:window on:keydown={onKeydown} on:wheel|passive={onWheel} on:touchmove|passive={onTouchMove} />
+
+{#if !interno}
+<div class="max-w-[760px] mx-auto px-4 sm:px-6 py-16">
+	<p class="t-kicker text-oro">En preparación</p>
+	<h1 class="t-display-hero text-tinta mt-2">Cómo se hizo cada edición</h1>
+	<p class="t-body text-tinta-cuerpo mt-4">
+		Aquí podrás ver, paso a paso, cómo se produjo cada edición: qué fuentes se revisaron, qué
+		decidió cada agente y cuánto tardó. La estamos adaptando al radar.
+	</p>
+	<p class="mt-6"><a href="/" class="enlace">Volver a la edición</a></p>
+</div>
+{:else}
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 	<!-- Title block -->
@@ -758,6 +773,7 @@
 		</p>
 	{/if}
 </div>
+{/if}
 
 <style>
 	.eyebrow {

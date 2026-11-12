@@ -222,7 +222,7 @@ class FeedSubtitleTest(unittest.TestCase):
 
     def test_subtitle_builder(self):
         self.assertEqual(build_feed_subtitle("Ox Alpha"),
-                         "Daily AI/ML news powered by Ox Alpha")
+                         "Identidad digital, IA y ciberseguridad, con Ox Alpha")
         self.assertIsNone(build_feed_subtitle(None))
 
 

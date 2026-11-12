@@ -1458,12 +1458,12 @@ class StalenessChecker:
                 if self._is_primarily_about_release(item, model_variant):
                     ga_dt = datetime.strptime(ga_date, "%Y-%m-%d").date()
                     days_old = (self.coverage_date - ga_dt).days
-                    reason = f"model GA was {ga_date} ({days_old}d before coverage)"
+                    reason = f"el modelo salió el {ga_date} ({days_old} días antes de la cobertura)"
                     if self._mark_freshness(
                         item,
                         "stale_release",
-                        "Stale release",
-                        reason if category == "news" else f"primary subject released {days_old} days ago (GA: {ga_date})",
+                        "Lanzamiento antiguo",
+                        reason if category == "news" else f"el tema principal salió hace {days_old} días ({ga_date})",
                         STALE_RELEASE_SCORE_CAP,
                         age_days=days_old,
                     ):
@@ -1501,13 +1501,13 @@ class StalenessChecker:
                 continue
 
             reason = (
-                f"secondary coverage of primary source from {primary_date.isoformat()} "
-                f"({age_days}d before coverage)"
+                f"cobertura secundaria de una fuente del {primary_date.isoformat()} "
+                f"({age_days} días antes)"
             )
             if self._mark_freshness(
                 item,
                 "stale_followup",
-                "Follow-up",
+                "Seguimiento",
                 reason,
                 STALE_FOLLOWUP_SCORE_CAP,
                 primary_url=primary_url,
@@ -1648,8 +1648,8 @@ Mark stale_anchor=false when today's item has a concrete new action, release, fi
         if not reason:
             prior = matches[0]
             reason = (
-                f"main claim overlaps prior {prior.get('category', 'coverage')} coverage "
-                f"from {prior.get('date', 'unknown date')}"
+                f"lo principal ya se cubrió en {prior.get('category', 'una edición')} "
+                f"del {prior.get('date', 'una fecha anterior')}"
             )
 
         primary_match_date = self._parse_item_date(matches[0].get("date"))
@@ -1658,7 +1658,7 @@ Mark stale_anchor=false when today's item has a concrete new action, release, fi
         marked = self._mark_freshness(
             item,
             "stale_anchor",
-            "Old anchor",
+            "Ya cubierta",
             reason,
             STALE_ANCHOR_SCORE_CAP,
             age_days=age_days,

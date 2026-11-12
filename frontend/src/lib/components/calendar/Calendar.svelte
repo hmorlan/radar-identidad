@@ -66,7 +66,7 @@
 		<button
 			on:click={previousMonth}
 			class="p-2 rounded-lg hover:bg-radar-gray-100 dark:hover:bg-radar-gray-700 transition-colors"
-			aria-label="Previous month"
+			aria-label="Mes anterior"
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -87,7 +87,7 @@
 		<button
 			on:click={nextMonth}
 			class="p-2 rounded-lg hover:bg-radar-gray-100 dark:hover:bg-radar-gray-700 transition-colors"
-			aria-label="Next month"
+			aria-label="Mes siguiente"
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
