@@ -1,0 +1,41 @@
+# Radar de Identidad: empresas observadas (bancos, retail, aerolíneas y plataformas).
+#
+# Son empresas que ADOPTAN identidad digital, biometría o agentes de IA; no son
+# proveedores de identidad, seguridad o fraude (esos siguen fuera, política agnóstica).
+# Entran como SUJETO de la nota, nunca como fuente de análisis: lo que afirmen va
+# atribuido ("según la empresa"). Ver CLAUDE.md, criterio editorial.
+#
+# Se buscan por nombre en Google News (últimos días) y solo pasan los títulos que tocan
+# identidad, fraude, datos personales, biometría o agentes de IA
+# (agents/gatherers/regulator_sources.py, TOPIC_RE). Llega tanto el comunicado de la
+# empresa como la nota de prensa que lo cubre. Máx. 4 notas
+# por empresa y corrida (EMPRESAS_MAX_POR_EMPRESA). Revisar qué traería, sin costo:
+#   python3 -m agents.gatherers.regulator_sources --empresas --hours 168
+#
+# Formato: PAÍS | Nombre | consulta de Google News (entre comillas para nombres exactos;
+# con contexto cuando el nombre es ambiguo, como Liverpool o Banco Industrial).
+
+# ===== Plataformas de agentes =====
+MX | Meta (Muse) | "Muse" Meta agente
+LATAM | Mercado Libre y Mercado Pago | "Mercado Pago" OR "Mercado Libre"
+
+# ===== México: retail y crédito =====
+MX | Coppel y BanCoppel | "Coppel" OR "BanCoppel"
+MX | Liverpool | Liverpool -FC -Reds -"Premier League" -Anfield -Champions
+
+# ===== México: aerolíneas =====
+MX | Aeroméxico | "Aeroméxico" OR "Aeromexico"
+MX | Volaris | "Volaris"
+
+# ===== Colombia =====
+CO | Davivienda | "Davivienda" OR "DaviPlata"
+
+# ===== Costa Rica =====
+CR | Banco de Costa Rica (BCR) | "Banco de Costa Rica" OR "SINPE Móvil"
+
+# ===== Guatemala =====
+GT | Banco Industrial | "Banco Industrial" Guatemala
+GT | Banrural | "Banrural"
+
+# ===== Chile y Perú =====
+CL | Falabella y Banco Falabella | "Banco Falabella" OR "CMR Falabella" OR "Falabella"

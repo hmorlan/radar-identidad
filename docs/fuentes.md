@@ -7,21 +7,26 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 | Grupo | Fuentes activas | Notas/día aprox. |
 |---|---|---|
 | Prensa de seguridad | The Record, Krebs on Security, Dark Reading, SecurityWeek, BleepingComputer; **desde 2026-11-11:** TechCrunch Security, 404 Media, CyberScoop, The Register (seguridad), Wired (seguridad), CSO Online, Infosecurity Magazine, Cybersecurity Dive | ~42 |
-| CERTs nacionales (nuevo) | CERT-FR (filtrado), INCIBE avisos a la ciudadanía, INCIBE-CERT (filtrado) | ~1 tras el filtro |
+| CERTs nacionales (nuevo) | CERT-FR (filtrado), INCIBE-CERT (filtrado) | ~1 tras el filtro |
 | Identidad | Biometric Update, FIDO Alliance | ~10 |
 | Español (LATAM y España) | WeLiveSecurity ES, Ciberseguridad LATAM, DPL News, Expansión Tecnología, iupana, Una al Día; **desde 2026-11-11, filtradas:** EL PAÍS, elDiario.es y ABC (Tecnología), EL TIEMPO (Colombia), LA NACION (Argentina), Bloomberg Línea | ~20 + ~1 tras el filtro |
+| Banca, pagos y agentes en EE. UU. (2026-11-11) | American Banker, Banking Dive, Payments Dive, The Verge (IA); PYMNTS y Axios filtradas | ~25 |
+| Gobierno de EE. UU. (2026-11-11) | CISA avisos y noticias (filtradas), FBI IC3 (avisos al público) | ~1 |
+| Negocios LatAm (2026-11-11, filtradas) | Expansión Empresas, El Economista, Portafolio, Gestión, Diario Financiero, El Financiero (Costa Rica), Just Retail Latam | ~1 tras el filtro |
 | Estándares y gobierno | NIST Cybersecurity Insights, NIST CSRC (borradores), IETF OAuth WG, IETF WIMSE WG, OpenID Foundation, W3C, UK NCSC | ~1.5 |
 | Redes | Brian Krebs (Mastodon); **Bluesky desde 2026-11-11:** Zack Whittaker, Lorenzo Franceschi-Bicchierai, 404 Media, EFF, Access Now, noyb, Derechos Digitales, R3D, Heather Flanagan | ~10 |
 | Análisis de autor | Juan Pablo Castro (Cybersecurity Compass), Heather Flanagan (Spherical Cow), Mike Jones (self-issued.info) | ~0.3 |
 | Investigación | arXiv cs.CR | ~35 |
 
-**Total: 40 feeds + 9 cuentas de Bluesky + arXiv cs.CR.** En noticias, ~70 entradas/día antes del triage (antes ~45).
+**Total: 55 feeds + 9 cuentas de Bluesky + arXiv cs.CR + 23 reguladores + 11 empresas observadas.** En noticias, ~100 entradas/día antes del triage (el 4 nov eran ~45). Medido con 7 días, los 15 feeds del 11 nov (segunda ronda) aportan ~35 entradas por semana después del filtro.
 
 **Política agnóstica (2026-11-04):** no se usan blogs de proveedores (Okta, Auth0, Ping, Jumio y similares). Las empresas solo entran a través de fuentes independientes. **Pendiente de decisión:** WeLiveSecurity es el blog de ESET y Una al Día es de Hispasec, empresas de seguridad (no de identidad).
 
 **Filtro previo `filtro=identidad` (2026-11-11):** para fuentes con mucho volumen y poca identidad (CERT-FR, INCIBE-CERT y las secciones generalistas en español). Solo pasan entradas cuyo título o resumen hablan de identidad, credenciales, fraude, suplantación, datos personales o agentes de IA (`agents/gatherers/identity_filter.py`, en español, inglés y francés). En español, "identidad", "sesión" y "verificación" solas se ignoran porque en notas de política y finanzas significan otra cosa. Medido con 7 días: de ~175 entradas de esas fuentes pasaron 6, todas pertinentes (INCIBE-CERT se agregó después y no entra en esa cuenta).
 
 **Bluesky (2026-11-11):** solo posts propios (sin respuestas ni reposts, porque un repost trae cuentas que no pasaron la revisión), máximo 10 por cuenta y día (`BLUESKY_MAX_POSTS_PER_HANDLE`). Los enlaces completos (facetas y tarjeta) se agregan al contenido para que el seguidor de enlaces llegue a la nota original. Las organizaciones de derechos digitales tienen postura: se citan por nombre, como el análisis de autor, no como noticia.
+
+**Empresas observadas (2026-11-11):** `config/empresas.txt` sigue por nombre a empresas que adoptan identidad digital o agentes: Meta (Muse), Mercado Libre y Mercado Pago, Coppel y BanCoppel, Liverpool, Aeroméxico, Volaris, Davivienda, Banco de Costa Rica, Banco Industrial, Banrural y Falabella. Mismo recolector que los reguladores (Google News), pero sin `site:` y sin palabras clave en la consulta (con ellas Google devuelve notas de hace meses): se buscan las notas de los últimos días y solo pasan los títulos que tocan identidad, fraude, datos personales, biometría o agentes. Máximo 4 por empresa y corrida. Entran como sujeto de la nota, nunca como fuente de análisis (ver CLAUDE.md). Se descartaron los scrapers de salas de prensa corporativas: frágiles (Liverpool publica en `.docx`, Aeroméxico muestra páginas de mantenimiento) y casi todo ruido. Medido con 7 días: 6 notas (4 sobre Muse en México, 2 de estafas que suplantan a Mercado Libre); Coppel, Davivienda y los bancos de Centroamérica no tuvieron notas de identidad esa semana.
 
 **Descartadas:** El Financiero (sin notas de identidad), CISA y El Economista (403), feed antiguo de ESET (dominio muerto), Microsoft Entra (inactivo desde hace más de un año), OWASP (inactivo desde junio). En la ronda del 2026-11-11: Help Net Security y Finextra (muchas notas de producto y comunicados de empresas), Xataka, Omicrono y Clarín (casi nada de identidad), SC Media (feed vacío), Infobae (feed vacío), Forbes México (403).
 
@@ -35,7 +40,8 @@ Cada día, `.github/workflows/source-health.yml` revisa todas las fuentes de est
 
 - **Página de prensa directa** (más fresca y confiable): CNBV, CONDUSEF, BCRA y AAIP.
 - **Google News** (búsqueda `site:` y resolución del enlace original del regulador): el resto.
-- **INCIBE** pasó a `config/rss_feeds.txt` el 2026-11-11: tiene RSS de avisos a la ciudadanía y de INCIBE-CERT.
+- **INCIBE:** sus avisos técnicos (INCIBE-CERT) van por RSS desde el 2026-11-11. El feed de avisos a la ciudadanía existe, pero alternó 200, 302 y 404 en revisiones seguidas (protección anti-bots), así que quedó como pendiente e INCIBE sigue por Google News. El recolector y `check_feeds.py` reintentan 3 veces antes de dar una fuente por caída.
+- **Nuevos el 2026-11-11, por Google News:** SBS (Perú; su página en gob.pe carga las noticias con JavaScript), SUGEF (Costa Rica) y, en EE. UU., FTC, CFPB y FinCEN (sus feeds dan 404 o 403). Los de EE. UU. se consultan en inglés. SBS y SUGEF casi no aparecen en Google News (0 notas en 30 días): si resultan clave, habrá que buscar otra vía.
 
 Una caché (`data/regulators_seen.json`) evita repetir páginas que Google vuelve a indexar.
 

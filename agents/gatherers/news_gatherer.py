@@ -7,6 +7,7 @@ Combines RSS collection with smart link following from social media posts.
 import asyncio
 import logging
 import os
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -20,7 +21,7 @@ from ..base import BaseGatherer, CollectedItem, deduplicate_items, step_label_fo
 from ..llm_client import AnthropicClient
 from .link_follower import LinkFollower
 from . import identity_filter
-from .regulator_sources import SeenCache, collect as collect_regulators, load_regulators
+from .regulator_sources import SeenCache, collect as collect_regulators, load_empresas, load_regulators
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,9 @@ class NewsGatherer(BaseGatherer):
 
         # Reguladores sin RSS (config/regulators.txt), vía página de prensa o Google News.
         self.regulators = load_regulators(config_dir)
+        # Empresas observadas (config/empresas.txt): bancos, retail, aerolíneas y
+        # plataformas, buscadas por nombre en Google News.
+        self.empresas = load_empresas(config_dir)
 
     @property
     def category(self) -> str:
@@ -124,6 +128,17 @@ class NewsGatherer(BaseGatherer):
             self.source_counts['regulators'] = len(regulator_articles)
             all_articles.extend(regulator_articles)
             logger.info(f"Collected {len(regulator_articles)} regulator items")
+
+        # Phase 1c: Empresas observadas (cobertura de prensa y comunicados propios)
+        if self.empresas:
+            logger.info(f"Collecting news about {len(self.empresas)} watched companies")
+            with self.time_source('empresas'):
+                empresa_articles = await asyncio.get_event_loop().run_in_executor(
+                    None, self._collect_empresas
+                )
+            self.source_counts['empresas'] = len(empresa_articles)
+            all_articles.extend(empresa_articles)
+            logger.info(f"Collected {len(empresa_articles)} watched-company items")
 
         # Phase 2: Extract linked articles from social posts
         if social_posts:
@@ -192,8 +207,17 @@ class NewsGatherer(BaseGatherer):
 
         try:
             logger.debug(f"Fetching feed: {feed_url} (proxy={'direct' if use_proxy is False else 'default'})")
-            response = session.get(feed_url, timeout=30)
-            response.raise_for_status()
+            # Reintento: algunos sitios (INCIBE) rechazan una de cada dos visitas con
+            # una redirección de seguridad.
+            for attempt in range(3):
+                try:
+                    response = session.get(feed_url, timeout=30)
+                    response.raise_for_status()
+                    break
+                except requests.RequestException:
+                    if attempt == 2:
+                        raise
+                    time.sleep(2)
             feed = feedparser.parse(
                 response.content,
                 response_headers={
@@ -275,6 +299,54 @@ class NewsGatherer(BaseGatherer):
             logger.error(f"Error fetching feed {feed_url}: {e}")
 
         return articles
+
+    # Máximo de notas por empresa y corrida (EMPRESAS_MAX_POR_EMPRESA).
+    EMPRESAS_MAX = int(os.getenv("EMPRESAS_MAX_POR_EMPRESA", "4"))
+
+    def _collect_empresas(self) -> List[CollectedItem]:
+        """Notas sobre empresas observadas (source_type 'empresa').
+
+        Son el SUJETO de la nota, nunca una fuente de análisis: lo que diga la
+        empresa se atribuye ("según la empresa"). Llegan por Google News, así que
+        casi siempre son notas de prensa sobre la empresa, no su comunicado.
+        """
+        seen = SeenCache(Path(self.data_dir) / 'empresas_seen.json')
+        session = requests.Session()
+        if PIPELINE_PROXY_URL:
+            session.proxies.update({"http": PIPELINE_PROXY_URL, "https": PIPELINE_PROXY_URL})
+        try:
+            found = collect_regulators(
+                self.empresas, self.start_time, self.end_time,
+                session=session, seen=seen, today=self.report_date,
+                max_per_spec=self.EMPRESAS_MAX,
+            )
+        except Exception as e:  # never let this source break the news phase
+            logger.error(f"Watched-company collection failed: {e}")
+            self.note_degradation("empresas observadas: falló la recolección")
+            return []
+        seen.save(self.report_date)
+
+        items = []
+        for it in found:
+            items.append(CollectedItem(
+                id=self.generate_id(it.url, it.title),
+                title=it.title,
+                content=(f"Nota sobre {it.spec.name} (empresa observada; lo que afirme la "
+                         f"empresa va atribuido): {it.title}"),
+                url=it.url,
+                author=it.spec.name,
+                published=it.published.isoformat(),
+                source=it.spec.label,
+                source_type='empresa',
+                tags=['empresa observada', it.spec.country],
+                metadata={
+                    'empresa': it.spec.name,
+                    'country': it.spec.country,
+                    'via': 'google_news',
+                },
+                keywords=self.extract_keywords(it.title),
+            ))
+        return items
 
     def _collect_regulators(self) -> List[CollectedItem]:
         """Collect regulator press items as CollectedItems (source_type 'regulator')."""

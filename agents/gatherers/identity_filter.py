@@ -21,10 +21,11 @@ _TERMS = [
     r"authent", r"autentic", r"authentif",
     r"credential", r"credencial", r"password", r"contraseñ", r"mot de passe",
     r"passkey", r"\bmfa\b", r"\b2fa\b", r"multi-?fact", r"multifactor", r"doble factor",
-    r"oauth", r"openid", r"\bsso\b", r"single sign", r"inicio de sesi[oó]n", r"\blog-?in\b",
+    r"\boauth", r"openid", r"\bsso\b", r"single sign", r"inicio de sesi[oó]n", r"\blog-?in\b",
     r"session hijack", r"session token", r"secuestro de sesi", r"cookies? de sesi", r"cookies? de session",
     r"\btokens?\b", r"jeton", r"active directory", r"kerberos",
-    r"privilege", r"privilegios", r"control de acceso", r"access control", r"contr[oô]le d.acc[eè]s",
+    r"privileged access", r"privilege escalation", r"escalada de privilegios",
+    r"acceso privilegiado", r"élévation de privil", r"control de acceso", r"access control", r"contr[oô]le d.acc[eè]s",
     r"acceso no autorizado", r"unauthori[sz]ed access", r"acc[eè]s non autoris", r"account takeover",
     r"toma de cuentas?", r"robo de cuentas?", r"cuentas? (?:hackead|robad|comprometid)",
     # Suplantación y fraude

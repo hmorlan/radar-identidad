@@ -5,7 +5,7 @@
 # con mucho volumen y poca identidad.
 # Verificado 2026-11-04 con scripts/check_feeds.py (respuesta 200 y publicación reciente);
 # las fuentes del 2026-11-11 se midieron con 7 días de publicaciones.
-# Volumen estimado total de este archivo: ~70 notas/día antes del triage.
+# Volumen estimado total de este archivo: ~100 notas/día antes del triage.
 
 # ===== Prensa de seguridad (relevancia de identidad media: el triage filtra) =====
 # The Record (Recorded Future News), ~4/día
@@ -40,11 +40,38 @@ https://www.cybersecuritydive.com/feeds/news/
 # ===== CERTs nacionales =====
 # CERT-FR (ANSSI, Francia), ~4/día, casi todo avisos de vulnerabilidades: filtrado
 https://cert.cyber.gouv.fr/feed/  filtro=identidad
-# INCIBE (España), avisos para la ciudadanía: fraudes y campañas de phishing que suplantan
-# a bancos, paquetería u organismos, ~2-4/mes; relevancia muy alta
-https://www.incibe.es/ciudadania/avisos/feed
-# INCIBE-CERT (España), avisos técnicos, ~1-2/día: filtrado
+# PENDIENTE: INCIBE (España), avisos para la ciudadanía (fraudes que suplantan a bancos o
+# paquetería, ~2-4/mes). El feed existe, pero el 2026-11-11 alternó 200, 302 y 404 en
+# revisiones seguidas (protección anti-bots): mientras, INCIBE sigue por Google News
+# en config/regulators.txt.
+# https://www.incibe.es/ciudadania/avisos/feed
+# INCIBE-CERT (España), avisos técnicos, ~1-2/día: filtrado. Sitio lento y con protección
+# anti-bots (a veces responde 302): el recolector reintenta 3 veces. Vigilar en la alerta.
 https://www.incibe.es/incibe-cert/alerta-temprana/avisos/feed  filtro=identidad
+
+# ===== Gobierno de EE. UU. (agregado 2026-11-11) =====
+# CISA, avisos y alertas (incluye guías conjuntas con NSA y FBI), ~1/día; casi todo
+# vulnerabilidades e ICS: filtrado. En la revisión del 2026-11-04 daba 403; hoy responde.
+https://www.cisa.gov/cybersecurity-advisories/all.xml  filtro=identidad
+# CISA, noticias, ~2/semana: filtrado
+https://www.cisa.gov/news.xml  filtro=identidad
+# FBI IC3, avisos al público (fraude, suplantación con voz clonada, robo de cuentas),
+# ~2-4/mes; relevancia alta
+https://www.ic3.gov/PSA/RSS
+
+# ===== Banca, pagos y agentes en EE. UU. (agregado 2026-11-11) =====
+# American Banker, ~2/día; parte tras paywall (el triage ve título y resumen)
+https://www.americanbanker.com/feed?rss=true
+# Banking Dive, ~2/día
+https://www.bankingdive.com/feeds/news/
+# Payments Dive, ~2/día
+https://www.paymentsdive.com/feeds/news/
+# PYMNTS, ~10/día con contenido patrocinado: filtrado
+https://www.pymnts.com/feed/  filtro=identidad
+# The Verge, sección de IA (agentes de consumo), ~2/día
+https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+# Axios, ~14/día de todos los temas: filtrado
+https://www.axios.com/feeds/feed.rss  filtro=identidad
 
 # ===== Prensa especializada en identidad =====
 # Biometric Update, ~9/día; relevancia alta (verificación de identidad, KYC, ID digital, agentes)
@@ -67,6 +94,23 @@ https://www.eltiempo.com/rss/tecnosfera.xml  filtro=identidad
 https://www.lanacion.com.ar/arc/outboundfeeds/rss/category/tecnologia/?outputType=xml  filtro=identidad
 # Bloomberg Línea (Latinoamérica, negocios y fintech), ~12/día
 https://www.bloomberglinea.com/arc/outboundfeeds/rss/?outputType=xml  filtro=identidad
+
+# Prensa de negocios de los mercados clave (agregado 2026-11-11): lo que anuncian bancos,
+# retailers y aerolíneas sobre biometría, fraude o agentes sale aquí con contexto. Filtradas.
+# Expansión, Empresas (México), ~5/día
+https://expansion.mx/rss/empresas  filtro=identidad
+# El Economista, últimas noticias (México), ~14/día (las secciones dan 403)
+https://www.eleconomista.com.mx/rss/ultimas-noticias  filtro=identidad
+# Portafolio, Tecnología (Colombia), ~1-2/día
+https://www.portafolio.co/rss/tecnologia.xml  filtro=identidad
+# Gestión (Perú), ~14/día
+https://gestion.pe/arcio/rss/  filtro=identidad
+# Diario Financiero (Chile), ~7/día
+https://www.df.cl/noticias/site/list/port/rss.xml  filtro=identidad
+# El Financiero (Costa Rica), ~4/día; banca estatal, SINPE, regulación
+https://www.elfinancierocr.com/arc/outboundfeeds/rss/?outputType=xml  filtro=identidad
+# Just Retail Latam, ~1-2/día; retail y comercio con agentes
+https://justretail.news/latam/feed/  filtro=identidad
 # WeLiveSecurity (ESET) en español, ~4/semana; fraude, phishing, suplantación
 https://www.welivesecurity.com/es/rss/feed/
 # Ciberseguridad LATAM, ~5/día; enfoque frecuente en identidad y agentes de IA (vigilar calidad)

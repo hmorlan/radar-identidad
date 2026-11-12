@@ -89,6 +89,7 @@ _PHASE_NAME_RE = re.compile(r"^Phase\s+(?P<ordinal>[\d.]+)\s*:\s*(?P<label>.+)$"
 _SOURCE_LABELS = {
     "news": ("news_gatherer", "RSS feeds"),
     "regulators": ("news_gatherer", "Reguladores"),
+    "empresas": ("news_gatherer", "Empresas observadas"),
     "research": ("research_gatherer", "arXiv + blogs"),
     "social": ("social_gatherer", "Social platforms"),
     "reddit": ("reddit_gatherer", "Reddit"),

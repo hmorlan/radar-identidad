@@ -24,7 +24,8 @@ El código parte de [flyryan/ai-news-aggregator](https://github.com/flyryan/ai-n
 - **Sí entran:** ransomware que empezó por credenciales robadas o fatiga de MFA; agentes de IA que actúan con nuestros accesos; deepfakes que pasan la verificación de identidad; estándares (passkeys, OAuth, OpenID); regulación de identidad.
 - **No entran:** malware genérico, vulnerabilidades sin ángulo de identidad, noticias de IA sin relación con la confianza, y notas de mercado (rondas de inversión, adquisiciones, lanzamientos de producto) salvo que cambien cómo decidimos en quién o en qué confiar.
 - **Formato de cada nota:** Qué pasó (2–3 frases, con enlace a la fuente) · Por qué importa · La pregunta de fondo (solo cuando aplica) · Nivel de señal (baja, media o alta).
-- **Agnóstico de proveedores.** No se usan blogs ni comunicados de empresas del sector como fuente. Una empresa (incluidos competidores o el empleador de Hiram) solo aparece cuando la cubre una fuente independiente: prensa, organismos de estándares (FIDO, OpenID, IETF, NIST) o reguladores. Tono factual, sin comparar productos ni recomendar proveedores. Las afirmaciones de una empresa se atribuyen ("según la empresa").
+- **Agnóstico de proveedores.** No se usan blogs ni comunicados de **proveedores de identidad, seguridad, fraude o verificación** como fuente. Uno de esos proveedores (incluidos competidores o el empleador de Hiram) solo aparece cuando lo cubre una fuente independiente: prensa, organismos de estándares (FIDO, OpenID, IETF, NIST) o reguladores. Tono factual, sin comparar productos ni recomendar proveedores. Las afirmaciones de una empresa se atribuyen ("según la empresa").
+- **Empresas que adoptan (desde 2026-11-11).** Bancos, retailers, aerolíneas y plataformas (por ejemplo Coppel, Davivienda, Aeroméxico o Meta con Muse) sí pueden ser el **sujeto** de una nota: lo que anuncian sobre biometría, fraude, verificación o agentes de IA marca el mercado. Nunca son fuente de análisis, lo que afirman va atribuido, y entran con señal baja o media salvo que la prensa independiente lo confirme. Pasan la misma regla de entrada: un anuncio de marketing no entra; uno que cambia cómo un agente compra o paga con nuestra cuenta, sí. Se siguen por nombre en `config/empresas.txt`.
 - **Análisis de autor.** Los blogs personales de expertos independientes (p. ej. Cybersecurity Compass, Spherical Cow, self-issued.info) se tratan como opinión y se citan por nombre del autor, no como noticia. No se usan blogs ni cuentas de autores que trabajan en empresas de identidad, fraude, verificación o protección contra bots.
 
 ## Cadencia (planeada)
@@ -98,7 +99,9 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | Fuentes de noticias | `config/rss_feeds.txt` |
 | Investigación y estándares | `config/research_feeds.txt` |
 | arXiv | `agents/gatherers/research_gatherer.py` (`CATEGORIES`, hoy solo `cs.CR`) |
-| Reguladores sin RSS (MX, ES, CO, AR, CL) | `config/regulators.txt` → `agents/gatherers/regulator_sources.py` (página de prensa directa o Google News; vista previa: `python3 -m agents.gatherers.regulator_sources --hours 72`) |
+| Reguladores sin RSS (MX, ES, CO, AR, CL, PE, CR, EE. UU.) | `config/regulators.txt` → `agents/gatherers/regulator_sources.py` (página de prensa directa o Google News; vista previa: `python3 -m agents.gatherers.regulator_sources --hours 72`) |
+| Empresas observadas (bancos, retail, aerolíneas, plataformas) | `config/empresas.txt`, mismo recolector por Google News (vista previa: `python3 -m agents.gatherers.regulator_sources --empresas --hours 168`) |
+| Filtro previo de identidad para fuentes ruidosas | Directiva `filtro=identidad` en `config/rss_feeds.txt` → `agents/gatherers/identity_filter.py` |
 | Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
 | X y Reddit | Desactivados (APIs de pago) |
 | Prompts editoriales | `config/prompts.yaml` (en español) |

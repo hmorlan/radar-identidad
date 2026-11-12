@@ -108,5 +108,60 @@ class BlueskyLinksTest(unittest.TestCase):
         self.assertTrue(all(p.author == "@eff.org" for p in posts))
 
 
+class EmpresasYReguladoresTest(unittest.TestCase):
+    def test_parse_empresas_and_search_url(self):
+        from urllib.parse import unquote, urlparse, parse_qs
+        from agents.gatherers import regulator_sources as rs
+        specs = rs.parse_empresas([
+            "# comentario",
+            'MX | Coppel y BanCoppel | "Coppel" OR "BanCoppel"',
+            "MX | incompleta",
+        ])
+        self.assertEqual(len(specs), 1)
+        url = rs.search_url(specs[0], 2)
+        q = parse_qs(urlparse(url).query)["q"][0]
+        self.assertEqual(q, '("Coppel" OR "BanCoppel") when:2d')  # sin site: ni palabras clave
+        self.assertIn("gl=MX", url)
+
+    def test_us_regulators_search_in_english(self):
+        from urllib.parse import urlparse, parse_qs
+        from agents.gatherers import regulator_sources as rs
+        [ftc] = rs.parse_regulators(["US | FTC | ftc.gov"])
+        url = rs.search_url(ftc, 3)
+        q = parse_qs(urlparse(url).query)["q"][0]
+        self.assertTrue(q.startswith("site:ftc.gov ("))
+        self.assertIn('"identity theft"', q)
+        self.assertIn("gl=US", url)
+        self.assertTrue(rs.is_evergreen("What should I do when a debt collector contacts me?", ftc))
+        self.assertTrue(rs.TOPIC_RE.search("FTC sues data broker over location data"))
+
+    def test_max_per_spec(self):
+        from datetime import datetime
+        from agents.gatherers import regulator_sources as rs
+        [spec] = rs.parse_empresas(["MX | Meta (Muse) | Muse Meta"])
+        items = "".join(
+            f"<item><title>Muse, el agente de IA de Meta, nota {i} - Medio</title>"
+            f"<link>https://news.google.com/rss/articles/x{i}</link>"
+            "<pubDate>Wed, 11 Nov 2026 10:00:00 GMT</pubDate></item>" for i in range(8))
+        rss = f'<?xml version="1.0"?><rss version="2.0"><channel><title>t</title>{items}</channel></rss>'
+        session = mock.Mock()
+        session.headers = {}
+        session.get.return_value = mock.Mock(content=rss.encode(), raise_for_status=lambda: None)
+        with mock.patch.object(rs, "decode_google_news_url", side_effect=lambda link, s: link.replace(
+                "news.google.com/rss/articles", "medio.example")):
+            got = rs.collect([spec], datetime(2026, 11, 10), datetime(2026, 11, 12),
+                             session=session, pause=0, max_per_spec=4)
+        self.assertEqual(len(got), 4)
+
+    def test_config_files_parse(self):
+        from agents.gatherers import regulator_sources as rs
+        root = Path(__file__).resolve().parent.parent / "config"
+        empresas = rs.load_empresas(str(root))
+        self.assertGreaterEqual(len(empresas), 10)
+        self.assertTrue(all(e.query for e in empresas))
+        regs = rs.load_regulators(str(root))
+        self.assertTrue({"FTC", "CFPB", "FinCEN", "SUGEF"} <= {r.name for r in regs})
+
+
 if __name__ == "__main__":
     unittest.main()

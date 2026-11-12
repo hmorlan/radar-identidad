@@ -20,6 +20,7 @@ import argparse
 import importlib.util
 import json
 import sys
+import time
 import urllib.request
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
@@ -100,7 +101,7 @@ def read_entries(path: Path, include_pending: bool) -> list[tuple[str, bool]]:
     return out
 
 
-def fetch(url: str, ua: str = UA) -> tuple[int | None, bytes, str]:
+def _fetch_once(url: str, ua: str) -> tuple[int | None, bytes, str]:
     req = urllib.request.Request(url, headers={"User-Agent": ua})
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
@@ -109,6 +110,18 @@ def fetch(url: str, ua: str = UA) -> tuple[int | None, bytes, str]:
         return e.code, b"", str(e.reason)
     except Exception as e:  # noqa: BLE001 - report any network failure
         return None, b"", type(e).__name__ + ": " + str(e)[:80]
+
+
+def fetch(url: str, ua: str = UA, attempts: int = 3) -> tuple[int | None, bytes, str]:
+    """GET con reintentos: algunos sitios (INCIBE) rechazan a veces una visita con una
+    redirección de seguridad o un 404 falso; un fallo aislado no es una fuente caída."""
+    result = _fetch_once(url, ua)
+    for _ in range(attempts - 1):
+        if result[0] == 200:
+            break
+        time.sleep(2)
+        result = _fetch_once(url, ua)
+    return result
 
 
 def newest_feed_date(body: bytes) -> tuple[int, datetime | None]:
@@ -204,6 +217,24 @@ def check_regulators(now: datetime, days: int) -> List[Result]:
     return out
 
 
+def check_empresas() -> List[Result]:
+    """Empresas observadas: cada búsqueda de Google News debe responder.
+
+    Que no haya notas de identidad sobre una empresa en una semana es normal
+    (SIN RESULTADOS); solo una búsqueda que no responde es FALLA.
+    """
+    reg = _load_regulator_module()
+    out = []
+    for spec in reg.load_empresas(str(CONFIG)):
+        status, body, err = fetch(reg.search_url(spec, 7), reg.BROWSER_UA)
+        if status != 200:
+            out.append(_result("empresas", spec.label, status, 0, None, err or "HTTP error", FAIL))
+            continue
+        n, newest = newest_feed_date(body)
+        out.append(_result("empresas", spec.label, status, n, newest, "", OK if n else NO_RESULTS))
+    return out
+
+
 def run_checks(include_pending: bool = False, days: int = 60,
                now: Optional[datetime] = None) -> List[Result]:
     now = now or datetime.now(timezone.utc)
@@ -223,6 +254,7 @@ def run_checks(include_pending: bool = False, days: int = 60,
             results.append(check_arxiv(now))
 
     results.extend(check_regulators(now, days))
+    results.extend(check_empresas())
     return results
 
 

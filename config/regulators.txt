@@ -22,8 +22,9 @@ ES | AEPD | aepd.es
 ES | Banco de España | bde.es
 ES | CNMV | cnmv.es
 ES | CCN-CERT | ccn-cert.cni.es
-# INCIBE: pasó a config/rss_feeds.txt (feeds de avisos a la ciudadanía e INCIBE-CERT, 2026-11-11).
-# ES | INCIBE | incibe.es
+# INCIBE: los avisos técnicos de INCIBE-CERT van por RSS (config/rss_feeds.txt); el resto,
+# incluidos los avisos a la ciudadanía (su feed es inestable), sigue por aquí.
+ES | INCIBE | incibe.es
 
 # ===== Colombia =====
 CO | Superintendencia Financiera (SFC) | superfinanciera.gov.co
@@ -39,3 +40,20 @@ CL | CMF | cmfchile.cl
 CL | ANCI (Agencia Nacional de Ciberseguridad) | anci.gob.cl
 CL | Banco Central de Chile | bcentral.cl
 CL | CSIRT de Gobierno | csirt.gob.cl
+
+# ===== Perú (agregado 2026-11-11) =====
+# SBS regula la banca peruana (incluido Banco Falabella). Su página en gob.pe carga
+# las noticias con JavaScript, así que va por Google News.
+PE | SBS (Superintendencia de Banca, Seguros y AFP) | sbs.gob.pe
+
+# ===== Costa Rica (agregado 2026-11-11) =====
+# SUGEF regula la banca costarricense (BCR, SINPE). Sin listado de prensa legible.
+CR | SUGEF | sugef.fi.cr
+
+# ===== Estados Unidos (agregado 2026-11-11) =====
+# Sus feeds dan 404 o 403; se consultan por Google News en inglés.
+# FTC: robo de identidad, suplantación, data brokers. CFPB: open banking (regla 1033),
+# fraude en pagos. FinCEN: alertas de fraude con deepfakes en KYC.
+US | FTC | ftc.gov
+US | CFPB | consumerfinance.gov
+US | FinCEN | fincen.gov

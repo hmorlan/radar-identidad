@@ -9,6 +9,12 @@ es el que debe citarse.
 
 La lista de reguladores vive en ``config/regulators.txt``.
 
+El mismo mecanismo sirve para las **empresas observadas** (``config/empresas.txt``):
+bancos, retailers, aerolíneas y plataformas que adoptan identidad digital o agentes
+de IA. Para ellas no se busca ``site:`` sino el nombre de la empresa en toda la
+prensa de los últimos días y se filtran los títulos por tema (TOPIC_RE): así llega
+tanto su comunicado como la nota independiente que lo cubre.
+
 Uso independiente (sin LLM, sin costo) para revisar qué traería:
 
     python3 -m agents.gatherers.regulator_sources --hours 72
@@ -41,6 +47,11 @@ COUNTRY_NAMES = {
     "CO": "Colombia",
     "AR": "Argentina",
     "CL": "Chile",
+    "PE": "Perú",
+    "CR": "Costa Rica",
+    "GT": "Guatemala",
+    "US": "EE. UU.",
+    "LATAM": "Latinoamérica",
 }
 
 # Palabras clave en la consulta: reducen lo que Google devuelve a temas del radar.
@@ -50,11 +61,22 @@ QUERY_KEYWORDS = (
     'OR "datos personales" OR "inteligencia artificial" OR credenciales)'
 )
 
-# Mismo criterio aplicado a lo que se lee directo de las páginas de prensa.
+# Consulta en inglés (reguladores de EE. UU.).
+QUERY_KEYWORDS_EN = (
+    '(identity OR "identity theft" OR impersonation OR fraud OR scam OR phishing OR '
+    'authentication OR password OR biometric OR deepfake OR "account takeover" OR '
+    '"data broker" OR "personal data" OR privacy OR "artificial intelligence" OR "AI agent")'
+)
+
+# Mismo criterio aplicado a lo que se lee directo de las páginas de prensa y a los
+# títulos que devuelve Google News (español e inglés).
 TOPIC_RE = re.compile(
     r"identidad|suplant|fraude|estafa|phishing|autentic|contraseñ|biom[eé]tr|firma electr[oó]n|"
-    r"ciberseg|ciberataque|datos personales|inteligencia artificial|credencial|"
-    r"robo de cuenta|verificaci[oó]n|deepfake|criptograf|agentes? de ia|\bIA\b",
+    r"ciberseg|ciberataque|hackeo|datos personales|inteligencia artificial|credencial|"
+    r"robo de cuenta|verificaci[oó]n|deepfake|criptograf|agentes? de ia|\bIA\b|\bmuse\b|"
+    r"reconocimiento facial|passkey|"
+    r"identity|impersonat|fraud|scam|authenticat|password|biometric|account takeover|"
+    r"data broker|personal data|privacy|artificial intelligence|\bAI\b|cyber",
     re.I,
 )
 
@@ -66,7 +88,9 @@ SPANISH_MONTHS = {m: i for i, m in enumerate(
 EVERGREEN_TITLE = re.compile(
     r"^(glosario|formulario|registro|registros|reportar|about|funciones|responsable|"
     r"buscador|preguntas frecuentes|contacto|inicio|leyes|dictámenes|alertas|csirt|"
-    r"sala de prensa|noticias|comunicados|transparencia)\b",
+    r"sala de prensa|noticias|comunicados|transparencia|"
+    r"what (?:should|is|are|to do)|get help|how to|key terms|frequently asked|"
+    r"credit reports and scores|consumer advice)\b",
     re.I,
 )
 
@@ -77,6 +101,7 @@ class RegulatorSpec:
     name: str
     site: str
     page: Optional[str] = None  # página de prensa legible directamente (scraping)
+    query: Optional[str] = None  # empresas observadas: búsqueda libre en vez de site:
 
     @property
     def label(self) -> str:
@@ -117,6 +142,32 @@ def load_regulators(config_dir: str) -> List[RegulatorSpec]:
     return parse_regulators(path.read_text(encoding="utf-8").splitlines())
 
 
+def parse_empresas(lines: Iterable[str]) -> List[RegulatorSpec]:
+    """Parse ``PAÍS | Nombre | consulta`` lines (empresas observadas), ignoring comments.
+
+    La consulta es texto libre de Google News, p. ej. ``"Coppel" OR "BanCoppel"``.
+    """
+    specs = []
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = [p.strip() for p in line.split("|")]
+        if len(parts) != 3 or not all(parts):
+            logger.warning(f"Línea de empresa inválida, se omite: {line!r}")
+            continue
+        country, name, query = parts
+        specs.append(RegulatorSpec(country.upper(), name, "", None, query))
+    return specs
+
+
+def load_empresas(config_dir: str) -> List[RegulatorSpec]:
+    path = Path(config_dir) / "empresas.txt"
+    if not path.exists():
+        return []
+    return parse_empresas(path.read_text(encoding="utf-8").splitlines())
+
+
 def clean_title(title: str) -> str:
     """Drop the ' - Source name' suffix Google News appends."""
     return re.sub(r"\s+-\s+[^-]{2,80}$", "", title or "").strip()
@@ -136,11 +187,16 @@ def is_evergreen(title: str, spec: RegulatorSpec) -> bool:
 
 
 def search_url(spec: RegulatorSpec, days: int) -> str:
-    query = f"site:{spec.site} {QUERY_KEYWORDS} when:{max(days, 1)}d"
-    return (
-        f"{GOOGLE_NEWS_SEARCH}?q={urllib.parse.quote(query)}"
-        "&hl=es-419&gl=MX&ceid=MX:es-419"
-    )
+    if spec.query:
+        # Sin palabras clave: con ellas Google ordena por relevancia y devuelve notas
+        # de hace meses. Solo el nombre y la ventana; el tema lo filtra TOPIC_RE.
+        query = f"({spec.query}) when:{max(days, 1)}d"
+    else:
+        keywords = QUERY_KEYWORDS_EN if spec.country == "US" else QUERY_KEYWORDS
+        query = f"site:{spec.site} {keywords} when:{max(days, 1)}d"
+    locale = ("&hl=en-US&gl=US&ceid=US:en" if spec.country == "US" and not spec.query
+              else "&hl=es-419&gl=MX&ceid=MX:es-419")
+    return f"{GOOGLE_NEWS_SEARCH}?q={urllib.parse.quote(query)}{locale}"
 
 
 def decode_google_news_url(link: str, session: requests.Session, timeout: int = 20) -> Optional[str]:
@@ -266,8 +322,13 @@ def collect(
     today: Optional[str] = None,
     on_spec: Optional[Callable[[RegulatorSpec, int], None]] = None,
     pause: float = 0.3,
+    max_per_spec: Optional[int] = None,
 ) -> List[RegulatorItem]:
-    """Collect regulator items published in [start, end] (naive UTC datetimes)."""
+    """Collect regulator items published in [start, end] (naive UTC datetimes).
+
+    ``max_per_spec`` limita las notas por fuente (empresas observadas: una campaña
+    como el Buen Fin no debe inundar el triage).
+    """
     session = session or requests.Session()
     session.headers.setdefault("User-Agent", BROWSER_UA)
     today = today or end.strftime("%Y-%m-%d")
@@ -316,6 +377,8 @@ def collect(
             continue
 
         for entry in feed.entries:
+            if max_per_spec is not None and found >= max_per_spec:
+                break
             when = entry.get("published_parsed") or entry.get("updated_parsed")
             if not when:
                 continue
@@ -351,14 +414,16 @@ def _main() -> None:
     ap = argparse.ArgumentParser(description="Muestra lo que traería el recolector de reguladores.")
     ap.add_argument("--hours", type=int, default=72, help="ventana hacia atrás (default 72)")
     ap.add_argument("--config-dir", default=str(Path(__file__).resolve().parents[2] / "config"))
+    ap.add_argument("--empresas", action="store_true", help="revisa las empresas observadas en vez de los reguladores")
     args = ap.parse_args()
     logging.basicConfig(level=logging.WARNING)
 
     end = datetime.now(timezone.utc).replace(tzinfo=None)
     start = end - timedelta(hours=args.hours)
-    specs = load_regulators(args.config_dir)
+    specs = load_empresas(args.config_dir) if args.empresas else load_regulators(args.config_dir)
     counts = {}
-    items = collect(specs, start, end, on_spec=lambda s, n: counts.__setitem__(s.label, n))
+    items = collect(specs, start, end, on_spec=lambda s, n: counts.__setitem__(s.label, n),
+                    max_per_spec=4 if args.empresas else None)
     for spec in specs:
         print(f"{counts.get(spec.label, 0):>3}  {spec.label}")
     print(f"\n{len(items)} notas en las últimas {args.hours} horas:\n")
