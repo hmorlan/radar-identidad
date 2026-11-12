@@ -306,8 +306,25 @@ REVIEW_PROMPT = {
 }
 
 
+def _parse_review(text: str) -> Optional[Dict[str, Any]]:
+    m = re.search(r"\{.*\}", text or "", re.S)
+    if not m:
+        return None
+    try:
+        data = json.loads(m.group(0))
+    except ValueError:
+        return None
+    return data if isinstance(data, dict) and "ok" in data else None
+
+
 async def review_image(image_jpeg: bytes, tecnica: str) -> Tuple[bool, str, Optional[float]]:
-    """Revisión sí/no con el modelo ligero. Sin key o con error: no bloquea."""
+    """Revisión sí/no con el modelo ligero.
+
+    Solo una respuesta legible con ok=false bloquea una candidata. Sin key, con
+    error de la API o con una respuesta que no se puede leer (dos intentos), la
+    revisión no bloquea: el control de color ya se aplicó y el motivo queda en
+    el registro de intentos. Así un fallo del revisor no deja la edición sin imagen.
+    """
     model = os.getenv("PIPELINE_LIGHT_MODEL", "claude-haiku-5-5")
     if not os.getenv("ANTHROPIC_API_KEY"):
         return True, "revisión visual omitida (sin ANTHROPIC_API_KEY)", None
@@ -316,25 +333,42 @@ async def review_image(image_jpeg: bytes, tecnica: str) -> Tuple[bool, str, Opti
         client = anthropic.AsyncAnthropic()
         small = hp.resize_width(hp.to_image(hp.load_rgb(image_jpeg)), 1200)
         b64 = base64.b64encode(hp.jpeg_bytes(small, 85)).decode()
-        resp = await client.messages.create(
-            model=model,
-            max_tokens=300,
-            messages=[{"role": "user", "content": [
-                {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": b64}},
-                {"type": "text", "text": REVIEW_PROMPT[tecnica]},
-            ]}],
-        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"Revisión visual no disponible ({e}); no bloquea la imagen")
+        return True, f"revisión visual no disponible ({type(e).__name__})", None
+
+    last_text = ""
+    for attempt in range(2):
+        try:
+            resp = await client.messages.create(
+                model=model,
+                # Holgado: si el modelo piensa antes de responder, el pensamiento
+                # cuenta contra este tope y una respuesta corta se quedaba vacía.
+                max_tokens=4000,
+                messages=[{"role": "user", "content": [
+                    {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": b64}},
+                    {"type": "text", "text": REVIEW_PROMPT[tecnica]},
+                ]}],
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"Revisión visual falló ({e}); no bloquea la imagen")
+            return True, f"revisión visual no disponible ({type(e).__name__})", None
         usage = {"input_tokens": resp.usage.input_tokens, "output_tokens": resp.usage.output_tokens}
         get_tracker().record_call(caller="hero.review", usage=usage, model=model, thinking_level="NONE")
-        text = "".join(getattr(b, "text", "") for b in resp.content)
-        m = re.search(r"\{.*\}", text, re.S)
-        data = json.loads(m.group(0)) if m else {}
-        foco = data.get("foco_x")
-        foco = float(foco) if isinstance(foco, (int, float)) and 0 <= foco <= 100 else None
-        return bool(data.get("ok")), str(data.get("motivo") or "")[:200], foco
-    except Exception as e:  # noqa: BLE001
-        logger.warning(f"Revisión visual falló ({e}); no bloquea la imagen")
-        return True, f"revisión visual no disponible ({type(e).__name__})", None
+        last_text = "".join(getattr(b, "text", "") or "" for b in resp.content
+                            if getattr(b, "type", "") == "text")
+        data = _parse_review(last_text)
+        if data is not None:
+            foco = data.get("foco_x")
+            foco = float(foco) if isinstance(foco, (int, float)) and 0 <= foco <= 100 else None
+            ok = data.get("ok")
+            ok = ok if isinstance(ok, bool) else str(ok).strip().lower() in ("true", "sí", "si", "yes")
+            reason = str(data.get("motivo") or ("sin observaciones" if ok else "rechazada sin motivo"))[:200]
+            logger.info(f"Revisión visual ({tecnica}): {'ok' if ok else 'rechazada'} · {reason}")
+            return ok, reason, foco
+        logger.warning(f"Revisión visual ilegible (intento {attempt + 1}, stop={resp.stop_reason}): "
+                       f"{last_text[:300]!r}")
+    return True, "revisión visual ilegible; no bloquea", None
 
 
 # --------------------------------------------------------------------------
@@ -385,8 +419,13 @@ def _focus_from(axes: Axes, foco_x: Optional[float]) -> str:
     return axes.foco
 
 
-async def produce(client: Any, axes: Axes, sunday: bool) -> Optional[HeroOutcome]:
-    """Candidatas → control → respaldo. Nunca devuelve una imagen que no pasó."""
+async def produce(client: Any, axes: Axes, sunday: bool,
+                  keep_dir: Optional[Path] = None) -> Optional[HeroOutcome]:
+    """Candidatas → control → respaldo. Nunca devuelve una imagen que no pasó.
+
+    ``keep_dir``: carpeta donde se guarda cada candidata y el motivo de su
+    resultado (va en el artefacto de diagnóstico, no se publica).
+    """
     blocks = load_prompt_blocks()
     hp.configure(blocks.get("control"))
     refs = load_references()
@@ -399,6 +438,17 @@ async def produce(client: Any, axes: Axes, sunday: bool) -> Optional[HeroOutcome
         total += cost or 0.0
         ok, reason, foco_x = await _evaluate(resp, tecnica)
         attempts.append(Attempt(tecnica, via, ok, reason, cost))
+        if keep_dir is not None:
+            try:
+                keep_dir.mkdir(parents=True, exist_ok=True)
+                n = len(attempts)
+                name = f"candidata-{n}-{tecnica}-{'ok' if ok else 'rechazada'}.jpg"
+                (keep_dir / name).write_bytes(hp.jpeg_bytes(hp.to_image(hp.load_rgb(resp.image_data)), 90))
+                (keep_dir / "intentos.json").write_text(json.dumps(
+                    {"ejes": axes.to_dict(), "intentos": [a.__dict__ for a in attempts]},
+                    ensure_ascii=False, indent=1), encoding="utf-8")
+            except Exception as e:  # noqa: BLE001
+                logger.warning(f"No se pudo guardar la candidata: {e}")
         if ok:
             return HeroOutcome(resp.image_data, tecnica, axes, _focus_from(axes, foco_x), prompt, attempts, total)
         logger.info(f"Candidata descartada ({tecnica}, {via}): {reason}")
@@ -493,7 +543,8 @@ async def generate_v32(client: Any, llm_client: Any, edition: Dict[str, Any], to
     history = load_history()
     axes, notice = await choose_axes(llm_client, edition, topics, history, date)
     logger.info(f"Imagen v3.2: {axes.registro} · {axes.motivo} · {axes.composicion} · {axes.estado}")
-    outcome = await produce(client, axes, sunday)
+    keep_dir = ROOT / "data" / "checkpoints" / date / "hero"
+    outcome = await produce(client, axes, sunday, keep_dir=keep_dir)
     if outcome is None:
         return None
     hero = publish(outcome, web_dir, date)

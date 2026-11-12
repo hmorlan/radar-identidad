@@ -35,3 +35,9 @@ jobs:
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: python3 scripts/check_image_model.py
+
+      - name: Revisión visual de la imagen (Haiku con las referencias)
+        if: always()
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 scripts/check_hero_review.py
