@@ -36,10 +36,15 @@ grabado: >-
   empty paper on the left. No text, no letters, no ruled lines that simulate text,
   no frames, no borders, no landscape background.
 
-# §6.4 Control automático de las candidatas. Medido con la máscara de croma de
-# §6.3 (croma = max(R,G,B) - min(R,G,B), de 0 a 1).
+# §6.4 Control automático de las candidatas (croma = max(R,G,B) - min(R,G,B)).
+# Calibrado el 11 nov con las 16 imágenes aprobadas de las pruebas v3.2 y de
+# consistencia: el oro se mide por encima de la croma mediana de cada imagen,
+# porque el fondo de arena varía de 0.13 a 0.22. Las aprobadas miden 1.6–13.8%;
+# las referencias, 0.15% (Troya) y 1.3% (Cerbero). La revisión visual con Haiku
+# hace el resto del control.
 control:
-  croma_oro: 0.30      # umbral de croma para contar un píxel como oro
-  oro_min: 0.015       # 1.5% de la imagen
-  oro_max: 0.10        # 10%
-  ajenos_max: 0.003    # tolerancia a ruido JPEG para colores ajenos al oro
+  croma_oro_sobre_fondo: 0.10   # oro = tono dorado y croma > mediana + 0.10
+  oro_min: 0.001                # 0.1%: que haya oro
+  oro_max: 0.15                 # 15%: que no sea un mosaico dorado
+  croma_ajenos: 0.30            # saturación a partir de la cual un color ajeno cuenta
+  ajenos_max: 0.003             # tolerancia a ruido JPEG

@@ -49,7 +49,7 @@ Autoalojada con `@fontsource` (la CSP del sitio solo permite fuentes propias):
 - **Diario: mosaico romano con circuitos de oro.** Bloque de prompt fijo + 3 ejes variables (escena, composición, estado del mosaico) + 2 imágenes de referencia.
 - **Domingo y respaldo: grabado al buril** sepia, sin oro.
 - **Banco de motivos con memoria:** 4 registros (mito, vida cotidiana, crónica, emblema). El mismo motivo no se repite en 8 semanas ni se repiten composición o registro en ediciones seguidas.
-- **2 candidatas en Batch API** con control automático: oro medido, colores ajenos y revisión visual con Haiku. Si ninguna pasa, un mosaico más y después el grabado. Nunca se publica una imagen que no pasó.
+- **2 candidatas en Batch API** con control automático: oro medido, colores ajenos y revisión visual con Haiku. El oro se mide por encima de la croma mediana de cada imagen (el fondo de arena varía de 0.13 a 0.22); calibrado con las 16 imágenes aprobadas del 11 nov, que miden de 1.6% a 14%. El umbral absoluto de la especificación (0.3) contaba el fondo cálido como oro en unas imágenes y no veía el oro fino en otras. Si ninguna pasa, un mosaico más y después el grabado. Nunca se publica una imagen que no pasó.
 - **Postproceso local, sin costo:** tono del mosaico emparejado al marfil de referencia, papel del grabado blanqueado, variante oscura derivada protegiendo el oro (nunca se le pide al modelo).
 
 ## Dónde vive cada pieza
@@ -72,8 +72,6 @@ Autoalojada con `@fontsource` (la CSP del sitio solo permite fuentes propias):
 
 ## Pendientes
 
-- [ ] Calibrar el umbral de oro con las imágenes originales del 11 nov antes de usarlo como filtro duro.
-- [ ] Reemplazar las referencias por los archivos originales de `banco-imagenes/referencias/`.
 - [ ] Foto o video para la franja humana.
 - [ ] Plantilla completa del domingo (firma, capitular, cifra, ilustración interior).
 - [ ] Logotipo y favicon; `og:image`.

@@ -11,11 +11,11 @@
 				<a href="/about" class="no-underline hover:text-tinta">Acerca de</a>
 				<a href="/archive" class="no-underline hover:text-tinta">Archivo</a>
 				<a href="/feeds" class="no-underline hover:text-tinta">RSS</a>
-				<span>&copy; {currentYear} Hiram Morlan</span>
+				<span>&copy; {currentYear} Hiram Morlán</span>
 			</nav>
 		</div>
 		<p class="font-serif italic text-[14px] leading-relaxed text-tinta-suave">
-			Curaduría asistida por IA y revisada por Hiram Morlan, solo con fuentes públicas. Cada nota
+			Curaduría asistida por IA y revisada por Hiram Morlán, solo con fuentes públicas. Cada nota
 			pasa por una segunda verificación contra su fuente y enlaza al original; aun así puede contener
 			errores. <a href="/about" class="enlace">Cómo funciona</a>
 		</p>

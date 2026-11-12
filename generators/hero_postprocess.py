@@ -20,11 +20,20 @@ GAIN_MIN, GAIN_MAX = 0.85, 1.18
 OBSIDIAN = np.array([14, 15, 18], dtype=np.float32) / 255.0      # --papel oscuro
 IVORY_INK = np.array([236, 230, 216], dtype=np.float32) / 255.0  # --tinta oscura
 
-# Oro: croma > 0.3 (§6.4) y tono entre ~25° y ~65° (ámbar a amarillo).
-GOLD_CHROMA = 0.30
+# Oro: tono entre ~25° y ~65° (ámbar a amarillo) y croma por encima del fondo.
+# Calibrado el 11 nov con las 16 imágenes de las pruebas v3.2 y de consistencia
+# más las 2 referencias: el fondo de arena tiene croma de 0.13 a 0.22 según la
+# imagen, así que un umbral absoluto de 0.3 (el de la especificación) contaba el
+# fondo cálido como oro en unas y no veía el oro fino en otras. Con un umbral
+# relativo (mediana de la imagen + 0.10) las 16 aprobadas miden de 1.6% a 13.8%
+# y las referencias 0.15% (Troya, oro en línea fina) y 1.3% (Cerbero).
+GOLD_CHROMA_OVER_MEDIAN = 0.10
+GOLD_CHROMA = 0.30                # solo para colores ajenos (saturación fuerte)
 GOLD_HUE = (25.0 / 360.0, 65.0 / 360.0)
-GOLD_RANGE = (0.015, 0.10)        # entre 1.5% y 10% de la imagen
+GOLD_RANGE = (0.001, 0.15)        # 0.1% (hay oro) a 15% (no es un mosaico dorado)
 FOREIGN_MAX = 0.003               # tolerancia a ruido JPEG: 0.3% de píxeles
+# Máscara de la variante oscura: rampa sobre la croma relativa al fondo.
+DARK_MASK_START, DARK_MASK_WIDTH = 0.12, 0.12
 
 SERVE_WIDTH = 2400                # §6.6: ~2400 px para el paneo
 THUMB_WIDTH = 640
@@ -98,10 +107,11 @@ class ColorCheck:
 
 def configure(control: dict | None) -> None:
     """Toma los umbrales de config/hero_prompt.yaml (bloque control)."""
-    global GOLD_CHROMA, GOLD_RANGE, FOREIGN_MAX
+    global GOLD_CHROMA, GOLD_CHROMA_OVER_MEDIAN, GOLD_RANGE, FOREIGN_MAX
     if not control:
         return
-    GOLD_CHROMA = float(control.get("croma_oro", GOLD_CHROMA))
+    GOLD_CHROMA = float(control.get("croma_ajenos", GOLD_CHROMA))
+    GOLD_CHROMA_OVER_MEDIAN = float(control.get("croma_oro_sobre_fondo", GOLD_CHROMA_OVER_MEDIAN))
     GOLD_RANGE = (float(control.get("oro_min", GOLD_RANGE[0])), float(control.get("oro_max", GOLD_RANGE[1])))
     FOREIGN_MAX = float(control.get("ajenos_max", FOREIGN_MAX))
 
@@ -116,7 +126,8 @@ def color_check(a: np.ndarray) -> ColorCheck:
     croma = small.max(-1) - small.min(-1)
     saturated = croma > GOLD_CHROMA
     hue = _hue(small)
-    gold = saturated & (hue >= GOLD_HUE[0]) & (hue <= GOLD_HUE[1])
+    above_background = croma > float(np.median(croma)) + GOLD_CHROMA_OVER_MEDIAN
+    gold = above_background & (hue >= GOLD_HUE[0]) & (hue <= GOLD_HUE[1])
     # Ajeno: saturado y fuera de un margen amplio alrededor del oro (rojizos a
     # verdosos tolerados como sombra del oro), es decir verdes, cianes, azules, morados.
     foreign = saturated & ((hue < 10 / 360) | (hue > 75 / 360))
@@ -154,7 +165,10 @@ def dark_mosaic(a: np.ndarray) -> np.ndarray:
     h, l, s = rgb_to_hls(a)
     dark = np.clip(hls_to_rgb(h, 1 - l, s), 0, 1)
     croma = a.max(-1) - a.min(-1)
-    m = np.clip((croma - .22) / .13, 0, 1)
+    # Relativa al fondo: en mosaicos cálidos la arena ya tiene croma ~0.2 y una
+    # rampa absoluta (0.22) la protegería como si fuera oro.
+    start = float(np.median(croma)) + DARK_MASK_START
+    m = np.clip((croma - start) / DARK_MASK_WIDTH, 0, 1)
     mask = to_image(np.repeat(m[..., None], 3, -1)).convert("L")
     mask = mask.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(1.2))
     m = (np.asarray(mask, dtype=np.float32) / 255.0)[..., None]

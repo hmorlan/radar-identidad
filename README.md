@@ -79,6 +79,6 @@ Las API keys nunca se suben al repo: `config/providers.yaml` está en `.gitignor
 
 ## Créditos y licencia
 
-Proyecto personal de Hiram Morlan, construido exclusivamente con fuentes públicas.
+Proyecto personal de Hiram Morlán, construido exclusivamente con fuentes públicas.
 
 El código parte de [flyryan/ai-news-aggregator](https://github.com/flyryan/ai-news-aggregator) y se distribuye bajo la misma licencia [Apache 2.0](LICENSE). Los cambios respecto al original están descritos en [NOTICE](NOTICE). La documentación técnica del proyecto original está en [`docs/upstream/`](docs/upstream/).

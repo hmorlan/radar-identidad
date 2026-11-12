@@ -4,7 +4,7 @@ Instrucciones para Claude (y cualquier asistente de código) al trabajar en este
 
 ## Qué es este proyecto
 
-**Radar de Identidad** es un radar de inteligencia **en español** sobre identidad digital y sobre las noticias de IA y ciberseguridad que cambian **cómo decidimos en quién o en qué confiar**. Es un proyecto personal de Hiram Morlan, construido solo con fuentes públicas.
+**Radar de Identidad** es un radar de inteligencia **en español** sobre identidad digital y sobre las noticias de IA y ciberseguridad que cambian **cómo decidimos en quién o en qué confiar**. Es un proyecto personal de Hiram Morlán, construido solo con fuentes públicas.
 
 El código parte de [flyryan/ai-news-aggregator](https://github.com/flyryan/ai-news-aggregator) (Apache 2.0), pero es un **proyecto aparte**, con otro propósito, otra marca y otras fuentes. Los cambios respecto al original están en `NOTICE` y la documentación técnica original se conserva en `docs/upstream/`.
 

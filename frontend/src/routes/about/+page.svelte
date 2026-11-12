@@ -52,7 +52,7 @@
 		<h2 class="t-label text-electric mb-3">Créditos</h2>
 		<div class="prose-summary t-body max-w-none">
 			<p>
-				Proyecto personal de Hiram Morlan, con fuentes exclusivamente públicas. El código parte del
+				Proyecto personal de Hiram Morlán, con fuentes exclusivamente públicas. El código parte del
 				proyecto de código abierto
 				<a href="https://github.com/flyryan/ai-news-aggregator" target="_blank" rel="noopener noreferrer">ai-news-aggregator</a>
 				(licencia Apache 2.0), adaptado para este fin.
