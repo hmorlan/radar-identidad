@@ -334,6 +334,8 @@ class JSONGenerator:
             value = re.sub(r'<[^>]*>', '', str(hero.get(key) or '')).strip()
             if value:
                 out[key] = value[:300]
+        if hero.get('archivo') is True:
+            out['archivo'] = True
         return out
 
     def _copy_hero_image(self, date_dir: str, date: str) -> None:

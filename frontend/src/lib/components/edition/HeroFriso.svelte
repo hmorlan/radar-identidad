@@ -20,7 +20,7 @@
 	$: modelo = hero.modelo || 'Gemini 3 Pro Image';
 	$: credito = [
 		`${hero.motivo ? hero.motivo + ': ' : ''}${tecnicaTexto}`,
-		`Imagen generada con ${modelo}`,
+		hero.archivo ? `Imagen de archivo, generada con ${modelo}` : `Imagen generada con ${modelo}`,
 		dateLabel ? `Edición del ${dateLabel}` : ''
 	]
 		.filter(Boolean)

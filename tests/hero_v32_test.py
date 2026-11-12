@@ -198,3 +198,116 @@ class PublishAndPostprocessTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CostAndArchiveTest(unittest.TestCase):
+    """Costo real (todo lo generado) y respaldo de archivo: nunca sin imagen."""
+
+    def setUp(self):
+        self.axes = hv.Axes("mito", "Talos", "Talos...", "figura centrada", "grietas", "Talos.")
+        patcher = mock.patch.object(hv, "review_image", side_effect=self._review)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.review_ok = True
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp)
+
+    async def _review(self, data, tecnica):
+        return self.review_ok, "revisión simulada", 40.0
+
+    def test_both_batch_candidates_are_billed_even_if_first_wins(self):
+        client = FakeClient([jpeg(0.04), jpeg(0.04)], [])
+        ledger = hv.Ledger()
+        out = run(hv.produce(client, self.axes, sunday=False, ledger=ledger))
+        self.assertEqual(len(out.attempts), 1)          # solo se evaluó la primera
+        self.assertEqual(ledger.generated, 2)           # pero se pagaron las dos
+        one = hv._cost(Resp(jpeg(0.04), batch=True))
+        self.assertGreater(one, 0)
+        self.assertAlmostEqual(out.cost_usd, 2 * one, places=6)
+
+    def test_pick_archive_rules(self):
+        archive = [
+            {"archivo": "a.jpg", "tecnica": "mosaico", "motivo": "Eco"},
+            {"archivo": "b.jpg", "tecnica": "mosaico", "motivo": "El enigma de la Esfinge"},
+            {"archivo": "c.jpg", "tecnica": "grabado", "motivo": "Jano"},
+        ]
+        hist = [{"fecha": "2026-11-09", "motivo": "Eco"}]
+        self.assertEqual(hv.pick_archive(hist, "2026-11-13", False, archive)["archivo"], "b.jpg")
+        self.assertEqual(hv.pick_archive(hist, "2026-11-15", True, archive)["archivo"], "c.jpg")
+        # Todas recientes: se repite la de uso más antiguo antes que quedarse sin imagen.
+        hist2 = [{"fecha": "2026-11-02", "motivo": "El enigma de la Esfinge"},
+                 {"fecha": "2026-11-09", "motivo": "Eco"}]
+        self.assertEqual(hv.pick_archive(hist2, "2026-11-13", False, archive)["archivo"], "b.jpg")
+        self.assertIsNone(hv.pick_archive([], "2026-11-13", False, []))
+
+    def test_archive_files_exist_and_mosaics_pass_color_check(self):
+        entries = hv.load_archive()
+        raw = (hv.yaml.safe_load(hv.ARCHIVE_FILE.read_text(encoding="utf-8")) or {})["imagenes"]
+        self.assertEqual(len(entries), len(raw))        # ninguna apunta a un archivo inexistente
+        self.assertTrue(any(e["tecnica"] == "mosaico" for e in entries))
+        self.assertTrue(any(e["tecnica"] == "grabado" for e in entries))
+        hp.configure(hv.load_prompt_blocks().get("control"))
+        for e in entries:
+            self.assertTrue(e.get("alt") and e.get("motivo"), e["archivo"])
+            if e["tecnica"] == "mosaico":
+                data = (hv.ARCHIVE_DIR / e["archivo"]).read_bytes()
+                self.assertTrue(hp.color_check(hp.load_rgb(data)).ok, e["archivo"])
+
+    def _generate(self, client):
+        hist = self.tmp / "hist.json"
+        axes = hv.Axes("mito", "Talos", "Talos...", "figura centrada", "grietas", "Talos.")
+        load_orig, remember_orig = hv.load_history, hv.remember
+        with mock.patch.object(hv, "ROOT", self.tmp), \
+             mock.patch.object(hv, "choose_axes", mock.AsyncMock(return_value=(axes, None))), \
+             mock.patch.object(hv, "load_history", lambda path=hist: load_orig(hist)), \
+             mock.patch.object(hv, "remember", lambda d, o, path=hist: remember_orig(d, o, hist)):
+            return run(hv.generate_v32(client, None, {}, [], "2026-11-13", self.tmp / "web"))
+
+    def test_gemini_down_uses_archive_image(self):
+        class Down(FakeClient):
+            async def generate_batch(self, *a, **k):
+                raise RuntimeError("429 spend cap")
+
+            async def generate(self, *a, **k):
+                raise RuntimeError("429 spend cap")
+        res = self._generate(Down([], []))
+        self.assertIsNotNone(res)
+        self.assertTrue(res["hero_image"]["archivo"])
+        self.assertEqual(res["usage"]["imagenes_generadas"], 0)
+        self.assertIn("Gemini no respondió", res["notice"])
+        for name in ("hero-light.jpg", "hero-dark.jpg", "hero-thumb.jpg"):
+            self.assertTrue((self.tmp / "web" / "data" / "2026-11-13" / name).exists())
+        hist = json.loads((self.tmp / "hist.json").read_text())["imagenes"]
+        self.assertTrue(hist[-1]["archivo"])
+
+    def test_rejected_candidates_use_archive_and_report_full_cost(self):
+        self.review_ok = False
+        client = FakeClient([jpeg(0.04), jpeg(0.04)], [jpeg(0.04), jpeg(0.04)])
+        res = self._generate(client)
+        self.assertTrue(res["hero_image"]["archivo"])
+        self.assertEqual(res["usage"]["imagenes_generadas"], 4)
+        self.assertGreater(res["usage"]["cost_usd"], 0)
+        self.assertIn("ninguna de 4 candidatas", res["notice"])
+
+
+class EditionImageGateTest(unittest.TestCase):
+    def test_gate(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "check_edition_image", Path(__file__).resolve().parent.parent / "scripts" / "check_edition_image.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        day = tmp / "data" / "2026-11-13"
+        day.mkdir(parents=True)
+        self.assertTrue(mod.problems("2026-11-13", tmp))               # sin summary
+        (day / "summary.json").write_text(json.dumps({"date": "2026-11-13"}))
+        self.assertIn("no tiene imagen", mod.problems("2026-11-13", tmp)[0])
+        urls = {k: f"/data/2026-11-13/hero-{n}.jpg" for k, n in
+                (("light_url", "light"), ("dark_url", "dark"), ("thumb_url", "thumb"))}
+        (day / "summary.json").write_text(json.dumps({"hero_image": urls}))
+        self.assertEqual(len(mod.problems("2026-11-13", tmp)), 3)     # archivos faltantes
+        for n in ("light", "dark", "thumb"):
+            (day / f"hero-{n}.jpg").write_bytes(b"x")
+        self.assertEqual(mod.problems("2026-11-13", tmp), [])

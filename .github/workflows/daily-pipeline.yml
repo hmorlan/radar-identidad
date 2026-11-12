@@ -780,6 +780,15 @@ jobs:
             config/ecosystem_context.yaml
           if-no-files-found: error
 
+      # Radar: una edición nunca se publica sin imagen. Si falta, este paso falla,
+      # los dos siguientes no corren (R2 y Pages) y la corrida queda en rojo.
+      - name: Verificar la imagen de la edición
+        if: success() && steps.schedule_gate.outputs.should_run == 'true' && env.CLOUDFLARE_API_TOKEN != '' && env.COMMIT_OUTPUTS != 'true'
+        shell: bash
+        run: |
+          edition_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
+          python3 scripts/check_edition_image.py "$edition_date" --web-dir web
+
       # Radar: publica la edición en Cloudflare Pages sin guardarla en el repo
       # público. Solo corre si existen los secretos de Cloudflare.
       - name: Guardar el archivo de ediciones en R2

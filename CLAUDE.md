@@ -103,7 +103,7 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | X y Reddit | Desactivados (APIs de pago) |
 | Prompts editoriales | `config/prompts.yaml` (en español) |
 | Modelos, keys y URL base | `config/providers.yaml` (copia de `providers.yaml.example`) |
-| Imagen de cada edición (v3.2) | `config/hero_prompt.yaml` (bloque fijo, referencias, grabado y umbrales de control), `config/hero_motivos.yaml` (banco de motivos), `assets/hero-ref/` (2 referencias), `generators/hero_v32.py` y `generators/hero_postprocess.py`; memoria en `data/hero_historial.json` (viaja en R2) |
+| Imagen de cada edición (v3.2) | `config/hero_prompt.yaml` (bloque fijo, referencias, grabado y umbrales de control), `config/hero_motivos.yaml` (banco de motivos), `assets/hero-ref/` (2 referencias), `config/hero_archivo.yaml` + `assets/hero-archivo/` (respaldo: nunca una edición sin imagen), `generators/hero_v32.py` y `generators/hero_postprocess.py`; memoria en `data/hero_historial.json` (viaja en R2) |
 | Identidad visual del sitio | `docs/identidad-visual.md` |
 | Estado de las fuentes | `docs/fuentes.md` |
 

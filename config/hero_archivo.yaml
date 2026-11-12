@@ -1,0 +1,68 @@
+# Imágenes de archivo: el último respaldo de la imagen de cada edición.
+#
+# Se usan solo cuando ninguna candidata pasa el control (o Gemini no responde: tope de
+# gasto, caída, cuota). Así una edición nunca sale sin imagen. Todas son pruebas
+# aprobadas del 11 nov 2026 (banco-imagenes), con el mismo bloque de prompt v3.2.
+#
+# Elección (generators/hero_v32.py, pick_archive): misma técnica que tocaba (mosaico
+# entre semana, grabado en domingo), sin repetir un motivo de las últimas 8 semanas y,
+# entre las que quedan, la que lleva más tiempo sin usarse. Si todas se usaron hace
+# poco, se toma igual la más antigua: una imagen repetida es mejor que ninguna.
+#
+# Para agregar una: copiar la imagen original a assets/hero-archivo/ (máx. 2400 px de
+# ancho), añadirla aquí y correr los tests.
+
+imagenes:
+  - archivo: mosaico-sirenas.jpg
+    tecnica: mosaico
+    registro: mito
+    motivo: Ulises y las sirenas
+    escena: Ulises atado al mástil mientras las sirenas lo llaman con hilos de oro
+    composicion: friso horizontal
+    foco: "50% 45%"
+    alt: Mosaico romano de Ulises atado al mástil de su barco frente a tres sirenas en las rocas; hilos de oro van de ellas hacia el barco.
+
+  - archivo: mosaico-esfinge.jpg
+    tecnica: mosaico
+    registro: mito
+    motivo: El enigma de la Esfinge
+    escena: Edipo frente a la Esfinge, separados por un disco de circuitos de oro
+    composicion: dos figuras en diálogo
+    foco: "50% 45%"
+    alt: Mosaico romano de Edipo con bastón frente a la Esfinge alada; entre ambos, un disco con circuitos de oro del que salen grietas doradas.
+
+  - archivo: mosaico-eco.jpg
+    tecnica: mosaico
+    registro: mito
+    motivo: Eco
+    escena: La voz de Eco convertida en ondas de oro que se multiplican
+    composicion: sujeto a la izquierda
+    foco: "28% 45%"
+    alt: Mosaico romano del perfil de Eco; de su boca sale una línea de oro que se divide en cuatro ondas iguales.
+
+  - archivo: mosaico-euriclea.jpg
+    tecnica: mosaico
+    registro: mito
+    motivo: La cicatriz de Ulises (Euriclea)
+    escena: Euriclea reconoce a Ulises por la cicatriz, que tiene un sensor de oro
+    composicion: dos figuras en diálogo
+    foco: "50% 45%"
+    alt: Mosaico romano de la anciana Euriclea lavando la pierna de Ulises; en la cicatriz brilla un pequeño sensor con trazos de oro.
+
+  - archivo: grabado-jano.jpg
+    tecnica: grabado
+    registro: mito
+    motivo: Jano
+    escena: Las dos caras de Jano, una intacta y otra agrietada, cada una con su puerta
+    composicion: sujeto a la derecha
+    foco: "72% 45%"
+    alt: Grabado al buril de las dos caras de Jano en piedra; la de la derecha está agrietada y deja ver una puerta abierta.
+
+  - archivo: grabado-automata.jpg
+    tecnica: grabado
+    registro: emblema
+    motivo: El autómata y la huella
+    escena: Un maniquí articulado sostiene una huella dactilar enorme
+    composicion: sujeto a la derecha
+    foco: "72% 45%"
+    alt: Grabado al buril de un maniquí articulado de madera que sostiene en la mano una gran huella dactilar.

@@ -10,7 +10,8 @@ Flujo por edición:
 4. **Control**: oro medido, colores ajenos y revisión visual con Haiku. Gana la
    primera que pase.
 5. **Respaldo** (§6.4b): un mosaico más; si también falla, grabado al buril con el
-   mismo sujeto. Si el grabado falla la revisión, no se publica imagen.
+   mismo sujeto. Si el grabado tampoco pasa (o Gemini no responde), se usa una
+   imagen de archivo ya aprobada (config/hero_archivo.yaml). Nunca sin imagen.
 6. **Postproceso** (§6.7, §6.3): tono, variante oscura derivada, miniatura.
 7. **Memoria** (§6.5): se registra en data/hero_historial.json.
 
@@ -41,6 +42,8 @@ PROMPT_FILE = ROOT / "config" / "hero_prompt.yaml"
 MOTIVOS_FILE = ROOT / "config" / "hero_motivos.yaml"
 REF_DIR = ROOT / "assets" / "hero-ref"
 HISTORY_FILE = ROOT / "data" / "hero_historial.json"
+ARCHIVE_FILE = ROOT / "config" / "hero_archivo.yaml"
+ARCHIVE_DIR = ROOT / "assets" / "hero-archivo"
 
 MOTIVO_COOLDOWN_DAYS = 56          # 8 semanas
 BATCH_WAIT_SECONDS = float(os.getenv("HERO_BATCH_WAIT_MINUTES", "30")) * 60
@@ -396,6 +399,25 @@ class HeroOutcome:
     prompt: str
     attempts: List[Attempt] = field(default_factory=list)
     cost_usd: float = 0.0
+    archivo: bool = False
+
+
+@dataclass
+class Ledger:
+    """Todo lo que se pagó y se intentó, pase o no alguna candidata.
+
+    Google cobra cada imagen generada, aunque no se llegue a evaluar (las dos del
+    batch se pagan aunque gane la primera), así que el costo se suma al generar.
+    """
+    attempts: List[Attempt] = field(default_factory=list)
+    cost_usd: float = 0.0
+    generated: int = 0
+
+    def charge(self, response: Any) -> Optional[float]:
+        cost = _cost(response)
+        self.cost_usd += cost or 0.0
+        self.generated += 1
+        return cost
 
 
 def _cost(response: Any) -> Optional[float]:
@@ -423,7 +445,8 @@ def _focus_from(axes: Axes, foco_x: Optional[float]) -> str:
 
 
 async def produce(client: Any, axes: Axes, sunday: bool,
-                  keep_dir: Optional[Path] = None) -> Optional[HeroOutcome]:
+                  keep_dir: Optional[Path] = None,
+                  ledger: Optional[Ledger] = None) -> Optional[HeroOutcome]:
     """Candidatas → control → respaldo. Nunca devuelve una imagen que no pasó.
 
     ``keep_dir``: carpeta donde se guarda cada candidata y el motivo de su
@@ -432,13 +455,16 @@ async def produce(client: Any, axes: Axes, sunday: bool,
     blocks = load_prompt_blocks()
     hp.configure(blocks.get("control"))
     refs = load_references()
-    attempts: List[Attempt] = []
-    total = 0.0
+    ledger = ledger if ledger is not None else Ledger()
+    attempts = ledger.attempts
+    costs: Dict[int, Optional[float]] = {}
+
+    def charged(resp: Any) -> Any:
+        costs[id(resp)] = ledger.charge(resp)
+        return resp
 
     async def accept(resp, tecnica, via, prompt) -> Optional[HeroOutcome]:
-        nonlocal total
-        cost = _cost(resp)
-        total += cost or 0.0
+        cost = costs.get(id(resp))
         ok, reason, foco_x = await _evaluate(resp, tecnica)
         attempts.append(Attempt(tecnica, via, ok, reason, cost))
         if keep_dir is not None:
@@ -453,7 +479,8 @@ async def produce(client: Any, axes: Axes, sunday: bool,
             except Exception as e:  # noqa: BLE001
                 logger.warning(f"No se pudo guardar la candidata: {e}")
         if ok:
-            return HeroOutcome(resp.image_data, tecnica, axes, _focus_from(axes, foco_x), prompt, attempts, total)
+            return HeroOutcome(resp.image_data, tecnica, axes, _focus_from(axes, foco_x), prompt,
+                               attempts, ledger.cost_usd)
         logger.info(f"Candidata descartada ({tecnica}, {via}): {reason}")
         return None
 
@@ -465,13 +492,14 @@ async def produce(client: Any, axes: Axes, sunday: bool,
             try:
                 results = await client.generate_batch([prompt, prompt], reference_images=refs,
                                                       max_wait_seconds=BATCH_WAIT_SECONDS)
-                candidates = [(r, "batch") for r in results if r is not None]
+                candidates = [(charged(r), "batch") for r in results if r is not None]
             except Exception as e:  # noqa: BLE001
                 logger.warning(f"Batch de imágenes no disponible ({e}); se generan al momento")
         if not candidates:
             for _ in range(2):
                 try:
-                    candidates.append((await client.generate(prompt=prompt, reference_images=refs), "directo"))
+                    candidates.append((charged(await client.generate(prompt=prompt, reference_images=refs)),
+                                       "directo"))
                 except Exception as e:  # noqa: BLE001
                     logger.warning(f"Candidata directa falló: {e}")
         for resp, via in candidates:
@@ -480,7 +508,7 @@ async def produce(client: Any, axes: Axes, sunday: bool,
                 return outcome
         # 2) Respaldo: un mosaico más (§6.4b).
         try:
-            outcome = await accept(await client.generate(prompt=prompt, reference_images=refs),
+            outcome = await accept(charged(await client.generate(prompt=prompt, reference_images=refs)),
                                    "mosaico", "directo", prompt)
             if outcome:
                 return outcome
@@ -490,13 +518,63 @@ async def produce(client: Any, axes: Axes, sunday: bool,
     # 3) Grabado con el mismo sujeto (domingo, o respaldo final).
     prompt = engraving_prompt(blocks, axes)
     try:
-        outcome = await accept(await client.generate(prompt=prompt), "grabado", "directo", prompt)
+        outcome = await accept(charged(await client.generate(prompt=prompt)), "grabado", "directo", prompt)
         if outcome:
             return outcome
     except Exception as e:  # noqa: BLE001
         logger.warning(f"Grabado falló: {e}")
-    logger.error("Ninguna imagen pasó el control; la edición se publica sin imagen")
+    logger.error("Ninguna imagen generada pasó el control")
     return None
+
+
+# --------------------------------------------------------------------------
+# Archivo: el último respaldo (nunca una edición sin imagen)
+# --------------------------------------------------------------------------
+
+def load_archive(path: Path = ARCHIVE_FILE) -> List[Dict[str, Any]]:
+    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    out = []
+    for e in data.get("imagenes") or []:
+        if isinstance(e, dict) and e.get("archivo") and (ARCHIVE_DIR / e["archivo"]).is_file():
+            out.append(e)
+    return out
+
+
+def pick_archive(history: List[Dict[str, Any]], today: str, sunday: bool,
+                 archive: Optional[List[Dict[str, Any]]] = None) -> Optional[Dict[str, Any]]:
+    """Imagen de archivo para hoy: la técnica que toca, sin motivos recientes y la
+    que lleva más tiempo sin usarse. Si todas se usaron hace poco, la más antigua."""
+    archive = load_archive() if archive is None else archive
+    if not archive:
+        return None
+    wanted = "grabado" if sunday else "mosaico"
+    pool = [e for e in archive if e.get("tecnica") == wanted] or archive
+    prior = [e for e in history if e.get("fecha", "") < today]
+    last_used: Dict[str, str] = {}
+    for e in prior:
+        key = _norm(e.get("motivo", ""))
+        last_used[key] = max(last_used.get(key, ""), e.get("fecha", ""))
+    banned = set(memory_constraints(history, today)["motivos_prohibidos"])
+    fresh = [e for e in pool if _norm(e.get("motivo", "")) not in banned]
+    candidates = fresh or pool
+    # Nunca usadas primero (""), luego la de uso más antiguo; empate: orden del archivo.
+    return min(candidates, key=lambda e: last_used.get(_norm(e.get("motivo", "")), ""))
+
+
+def archive_outcome(entry: Dict[str, Any], ledger: Ledger) -> HeroOutcome:
+    tecnica = "grabado" if entry.get("tecnica") == "grabado" else "mosaico"
+    axes = Axes(
+        registro=str(entry.get("registro") or "mito"),
+        motivo=str(entry.get("motivo") or ""),
+        escena=str(entry.get("escena") or ""),
+        composicion=str(entry.get("composicion") or "figura centrada"),
+        estado="",
+        alt=str(entry.get("alt") or ""),
+        foco=str(entry.get("foco") or DEFAULT_FOCUS),
+    )
+    image = (ARCHIVE_DIR / entry["archivo"]).read_bytes()
+    return HeroOutcome(image, tecnica, axes, axes.foco, f"(archivo: {entry['archivo']})",
+                       ledger.attempts, ledger.cost_usd, archivo=True)
 
 
 def publish(outcome: HeroOutcome, web_dir: Path, date: str) -> Dict[str, Any]:
@@ -521,6 +599,7 @@ def publish(outcome: HeroOutcome, web_dir: Path, date: str) -> Dict[str, Any]:
         "motivo": outcome.axes.motivo,
         "alt": outcome.axes.alt,
         "modelo": MODEL_DISPLAY,
+        **({"archivo": True} if outcome.archivo else {}),
     }
 
 
@@ -535,6 +614,7 @@ def remember(date: str, outcome: HeroOutcome, path: Path = HISTORY_FILE) -> None
         "estado": outcome.axes.estado,
         "tecnica": outcome.tecnica,
         "foco": outcome.foco,
+        **({"archivo": True} if outcome.archivo else {}),
     })
     save_history(entries, path)
 
@@ -547,15 +627,35 @@ async def generate_v32(client: Any, llm_client: Any, edition: Dict[str, Any], to
     axes, notice = await choose_axes(llm_client, edition, topics, history, date)
     logger.info(f"Imagen v3.2: {axes.registro} · {axes.motivo} · {axes.composicion} · {axes.estado}")
     keep_dir = ROOT / "data" / "checkpoints" / date / "hero"
-    outcome = await produce(client, axes, sunday, keep_dir=keep_dir)
+    ledger = Ledger()
+    outcome = None
+    if client is not None:
+        try:
+            outcome = await produce(client, axes, sunday, keep_dir=keep_dir, ledger=ledger)
+        except Exception as e:  # noqa: BLE001 - el archivo cubre cualquier falla
+            logger.error(f"La generación de imagen falló: {e}")
     if outcome is None:
-        return None
+        entry = pick_archive(history, date, sunday)
+        if entry is None:
+            logger.error("Sin imagen generada ni de archivo; la edición queda sin imagen")
+            return None
+        outcome = archive_outcome(entry, ledger)
+        motivo_hoy = axes.motivo
+        reason = "Gemini no respondió" if ledger.generated == 0 else \
+            f"ninguna de {ledger.generated} candidatas pasó el control"
+        archive_notice = (f"se usó la imagen de archivo «{outcome.axes.motivo}» "
+                          f"({reason}; el motivo elegido era «{motivo_hoy}»)")
+        logger.warning(f"Imagen: {archive_notice}")
+        notice = f"{notice}; {archive_notice}" if notice else archive_notice
     hero = publish(outcome, web_dir, date)
     remember(date, outcome)
     usage = {
-        "cost_usd": round(outcome.cost_usd, 6),
+        # Todo lo que Google cobró, incluidas las candidatas que no se evaluaron.
+        "cost_usd": round(ledger.cost_usd, 6),
         "model": getattr(client, "model", None),
-        "intentos": [a.__dict__ for a in outcome.attempts],
+        "imagenes_generadas": ledger.generated,
+        "intentos": [a.__dict__ for a in ledger.attempts],
+        **({"archivo": True} if outcome.archivo else {}),
     }
     return {
         "path": hero["light_url"],

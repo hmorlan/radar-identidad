@@ -50,6 +50,8 @@ Autoalojada con `@fontsource` (la CSP del sitio solo permite fuentes propias):
 - **Domingo y respaldo: grabado al buril** sepia, sin oro.
 - **Banco de motivos con memoria:** 4 registros (mito, vida cotidiana, crónica, emblema). El mismo motivo no se repite en 8 semanas ni se repiten composición o registro en ediciones seguidas.
 - **2 candidatas en Batch API** con control automático: oro medido, colores ajenos y revisión visual con Haiku. El oro se mide por encima de la croma mediana de cada imagen (el fondo de arena varía de 0.13 a 0.22); calibrado con las 16 imágenes aprobadas del 11 nov, que miden de 1.6% a 14%. El umbral absoluto de la especificación (0.3) contaba el fondo cálido como oro en unas imágenes y no veía el oro fino en otras. Si ninguna pasa, un mosaico más y después el grabado. Nunca se publica una imagen que no pasó.
+- **Nunca sin imagen:** si tampoco pasa el grabado, o Gemini no responde (tope de gasto, caída, cuota), se usa una **imagen de archivo** ya aprobada (`config/hero_archivo.yaml`, 4 mosaicos y 2 grabados): la técnica del día, sin repetir un motivo de las últimas 8 semanas. El crédito dice "Imagen de archivo" y la corrida lo anota. Además, el workflow no publica una edición sin imagen (`scripts/check_edition_image.py`): si falta, no sube a R2 ni a Pages y la corrida queda en rojo.
+- **Costo real:** se cuenta toda imagen generada, incluida la segunda candidata del batch aunque gane la primera (~US$0.14 por edición cuando pasa la primera).
 - **Postproceso local, sin costo:** tono del mosaico emparejado al marfil de referencia, papel del grabado blanqueado, variante oscura derivada protegiendo el oro (nunca se le pide al modelo).
 
 ## Dónde vive cada pieza
@@ -66,6 +68,7 @@ Autoalojada con `@fontsource` (la CSP del sitio solo permite fuentes propias):
 | Prompts de imagen y umbrales de control | `config/hero_prompt.yaml` |
 | Banco de motivos | `config/hero_motivos.yaml` |
 | Referencias | `assets/hero-ref/ref-troya.jpg`, `assets/hero-ref/ref-cerbero.jpg` |
+| Imágenes de archivo (respaldo) | `config/hero_archivo.yaml`, `assets/hero-archivo/` |
 | Pipeline de imagen | `generators/hero_v32.py`, `generators/hero_postprocess.py`, `generators/image_client.py` (batch) |
 | Memoria de imágenes | `data/hero_historial.json` (viaja en R2, no se publica) |
 | Portada del repositorio | `docs/img/portada.jpg` (Ulises y las sirenas, prueba v3.2) |

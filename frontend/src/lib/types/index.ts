@@ -106,6 +106,8 @@ export interface HeroImage {
 	alt?: string;
 	/** Nombre visible del modelo, p. ej. "Gemini 3 Pro Image". */
 	modelo?: string;
+	/** Imagen de archivo (respaldo cuando ninguna candidata del día pasó). */
+	archivo?: boolean;
 }
 
 export interface DaySummary {
