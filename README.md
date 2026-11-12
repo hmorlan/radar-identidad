@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/img/portada.jpg" alt="Radar de Identidad: un observatorio clásico escanea la ciudad en busca de identidades comprometidas" width="100%"></p>
+<p align="center"><img src="docs/img/portada.jpg" alt="Mosaico romano: Ulises atado al mástil frente a tres sirenas que sostienen sensores; su canto viaja como trazos de circuito en oro" width="100%"></p>
 
 # Radar de Identidad
 
@@ -28,9 +28,20 @@ Cada nota tiene el mismo formato:
 - **Lunes, miércoles y viernes:** ediciones publicadas.
 - **Domingo:** "La semana en identidad", análisis de fondo.
 
+## Identidad visual
+
+Dirección **"mármol, tinta y oro"**: una revista de criterio, no un dashboard. Papel cálido, serif legible y un solo detalle dorado por pantalla.
+
+- **Entre semana, mosaico romano:** cada edición abre con un friso en mosaico de teselas marfil, arena y grafito, con un elemento de tecnología contemporánea (chips, circuitos, lentes, sensores) y oro solo como acento. La escena sale de un banco de motivos grecorromanos (Jano, Cerbero, Hermes, Ulises y las sirenas, Eco, Argos…) con memoria para no repetirse.
+- **Domingo, grabado al buril:** "La semana en identidad" usa grabado sepia sobre papel, más sobrio y sin oro.
+- **Modo claro y oscuro:** claro por defecto o según el sistema. La versión oscura de cada imagen se deriva del original protegiendo el oro, no se le pide al modelo.
+- **Tipografía:** Cormorant Garamond en titulares, Newsreader en el texto, Inter en la interfaz y Marcellus SC solo en el nombre.
+
+Las imágenes se generan con Gemini 3 Pro Image (dos candidatas por edición, con control automático de calidad). La especificación completa está en [`docs/identidad-visual.md`](docs/identidad-visual.md).
+
 ## Cómo funciona
 
-Un pipeline en Python recolecta fuentes públicas (RSS, arXiv, Mastodon y Bluesky), las filtra y redacta las notas con modelos de Claude, y genera un sitio estático en Svelte. El motor corre en GitHub Actions y el sitio se publicará en Cloudflare Pages.
+Un pipeline en Python recolecta fuentes públicas (RSS, arXiv, Mastodon y Bluesky), las filtra y redacta las notas con modelos de Claude, y genera un sitio estático en Svelte. El motor corre en GitHub Actions y el sitio se publica en Cloudflare Pages.
 
 | Qué | Dónde |
 |---|---|
@@ -40,7 +51,7 @@ Un pipeline en Python recolecta fuentes públicas (RSS, arXiv, Mastodon y Bluesk
 | Cuentas de Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
 | Prompts editoriales | `config/prompts.yaml` |
 | Modelos y API keys (local, no se sube) | `config/providers.yaml` (copia de `providers.yaml.example`) |
-| Estilo de las imágenes de cada edición | `config/hero_style.md` |
+| Prompts de imagen y banco de motivos | `config/hero_prompt.yaml`, `config/hero_motivos.yaml` |
 | Identidad visual del sitio | [`docs/identidad-visual.md`](docs/identidad-visual.md) |
 
 ## Correrlo en local

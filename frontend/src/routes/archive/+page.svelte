@@ -2,16 +2,14 @@
 	import { goto } from '$app/navigation';
 	import { availableDates } from '$lib/stores/dateStore';
 	import { loadIndex } from '$lib/services/dataLoader';
-	import { formatDate } from '$lib/services/dateUtils';
-	import { CATEGORY_CONFIG, type Category, type DataIndex, type DateEntry } from '$lib/types';
+	import { dataUrl } from '$lib/services/dataBase';
+	import type { DataIndex, DateEntry } from '$lib/types';
 	import Calendar from '$lib/components/calendar/Calendar.svelte';
 	import LoadingSpinner from '$lib/components/common/LoadingSpinner.svelte';
-	import EmptyState from '$lib/components/common/EmptyState.svelte';
 
 	let index: DataIndex | null = null;
 	let loading = true;
 
-	// Load index on mount
 	loadIndex()
 		.then((data) => {
 			index = data;
@@ -24,78 +22,102 @@
 	function handleDateSelect(event: CustomEvent<{ date: string }>) {
 		goto(`/?date=${event.detail.date}`);
 	}
+
+	const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+	const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+	const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+	function parse(date: string): Date {
+		const [y, m, d] = date.split('-').map(Number);
+		return new Date(Date.UTC(y, m - 1, d));
+	}
+
+	/** Lunes de la semana (las semanas del radar van de lunes a domingo). */
+	function weekStart(date: string): string {
+		const d = parse(date);
+		const offset = (d.getUTCDay() + 6) % 7;
+		d.setUTCDate(d.getUTCDate() - offset);
+		return d.toISOString().slice(0, 10);
+	}
+
+	function shortLabel(date: string): string {
+		const d = parse(date);
+		return `${DIAS[d.getUTCDay()]} ${d.getUTCDate()} ${MESES[d.getUTCMonth()]}`;
+	}
+
+	function weekLabel(start: string): string {
+		const d = parse(start);
+		return `Semana del ${d.getUTCDate()} de ${MESES_LARGOS[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
+	}
+
+	function isSunday(entry: DateEntry): boolean {
+		return entry.tipo === 'domingo';
+	}
+
+	$: weeks = groupByWeek(index?.dates ?? []);
+
+	function groupByWeek(dates: DateEntry[]): { start: string; entries: DateEntry[] }[] {
+		const map = new Map<string, DateEntry[]>();
+		for (const entry of dates) {
+			const key = weekStart(entry.date);
+			if (!map.has(key)) map.set(key, []);
+			map.get(key)!.push(entry);
+		}
+		return [...map.entries()]
+			.sort((a, b) => b[0].localeCompare(a[0]))
+			.map(([start, entries]) => ({ start, entries: entries.sort((a, b) => a.date.localeCompare(b.date)) }));
+	}
 </script>
 
 <svelte:head>
-	<title>Archive | AI News Daily</title>
+	<title>Archivo | Radar de Identidad</title>
 </svelte:head>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-	<h1 class="text-2xl font-bold text-radar-gray-800 dark:text-radar-gray-100 mb-8">
-		News Archive
-	</h1>
+<div class="max-w-[1080px] mx-auto px-4 sm:px-6 py-10">
+	<h1 class="font-display font-medium text-[40px] sm:text-[48px] leading-tight text-tinta">Archivo</h1>
+	<p class="font-serif italic text-[17px] text-tinta-suave mt-2 mb-8" id="semana">
+		Mosaico entre semana, grabado los domingos. Las columnas de «La semana en identidad»
+		llevan su distintivo dorado.
+	</p>
 
 	{#if loading}
 		<div class="py-20">
 			<LoadingSpinner size="lg" />
 		</div>
 	{:else}
-		<div class="grid gap-8 lg:grid-cols-3">
-			<!-- Calendar -->
-			<div class="lg:col-span-1">
-				<Calendar on:select={handleDateSelect} />
-			</div>
+		<div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
+			<div>
+				<h2 class="t-kicker text-oro mb-4">Reportes disponibles ({$availableDates.length})</h2>
 
-			<!-- Date List -->
-			<div class="lg:col-span-2">
-				<h2 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100 mb-4">
-					Available Reports ({$availableDates.length})
-				</h2>
-
-				{#if $availableDates.length === 0}
-					<EmptyState
-						title="No reports available"
-						message="Run the pipeline to generate news reports."
-					/>
+				{#if !weeks.length}
+					<p class="font-serif text-tinta-suave">Todavía no hay ediciones publicadas.</p>
 				{:else}
-					<div class="max-h-[480px] overflow-y-auto pr-2">
-						<div class="space-y-3">
-						{#each index?.dates || [] as dateEntry}
-							<a
-								href="/?date={dateEntry.date}"
-								class="card block hover:border-radar-accent transition-colors"
-							>
-								<div class="flex items-center justify-between">
-									<div>
-										<h3 class="font-medium text-radar-gray-800 dark:text-radar-gray-100">
-											{formatDate(dateEntry.date, "EEEE d 'de' MMMM 'de' yyyy")}
-										</h3>
-										<p class="text-sm text-radar-gray-500 mt-1">
-											{dateEntry.total_items} items analyzed
-										</p>
-									</div>
-
-									<!-- Category breakdown -->
-									<div class="flex items-center gap-2">
-										{#each Object.entries(dateEntry.categories) as [category, info]}
-											{@const config = CATEGORY_CONFIG[category as Category]}
-											{#if config}
-												<span
-													class="text-xs px-2 py-1 rounded-full bg-radar-gray-100 dark:bg-radar-gray-700 text-radar-gray-600 dark:text-radar-gray-400 border"
-													style="border-color: {config.color}"
-												>
-													{info.count}
-												</span>
+					{#each weeks as week (week.start)}
+						<section class="border-t border-filete pt-5 pb-6">
+							<h3 class="t-label text-tinta-suave mb-3">{weekLabel(week.start)}</h3>
+							<ul class="flex flex-col gap-3">
+								{#each week.entries as entry (entry.date)}
+									<li>
+										<a href="/?date={entry.date}" class="group flex items-baseline gap-4 no-underline">
+											<span class="t-ui !text-[10.5px] text-tinta-suave w-[86px] flex-none">{shortLabel(entry.date)}</span>
+											<span class="font-display font-medium text-[21px] leading-snug text-tinta group-hover:underline decoration-oro decoration-1 underline-offset-4">
+												{entry.titular || `Edición del ${shortLabel(entry.date).toLowerCase()}`}
+											</span>
+											{#if isSunday(entry)}
+												<span class="t-label text-oro border border-oro px-1.5 py-0.5 flex-none">La semana</span>
 											{/if}
-										{/each}
-									</div>
-								</div>
-							</a>
-						{/each}
-						</div>
-					</div>
+										</a>
+									</li>
+								{/each}
+							</ul>
+						</section>
+					{/each}
 				{/if}
 			</div>
+
+			<aside class="lg:pt-9">
+				<Calendar on:select={handleDateSelect} />
+			</aside>
 		</div>
 	{/if}
 </div>

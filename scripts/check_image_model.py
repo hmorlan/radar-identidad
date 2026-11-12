@@ -27,14 +27,15 @@ DEFAULT_MODEL = NativeGeminiClient.DEFAULT_MODEL
 
 
 def style_prompt() -> str:
-    path = ROOT / "config" / "hero_style.md"
-    lines = [l for l in path.read_text(encoding="utf-8").splitlines() if not l.lstrip().startswith("#")]
-    return "\n".join(lines).strip()
+    import yaml
+    return yaml.safe_load((ROOT / "config" / "hero_prompt.yaml").read_text(encoding="utf-8"))["mosaico"]
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--model", default=os.getenv("PIPELINE_IMAGE_MODEL", DEFAULT_MODEL))
+    ap.add_argument("--also", nargs="*", default=["gemini-3-pro-image-preview"],
+                    help="otros nombres a consultar (solo informativo, sin costo)")
     ap.add_argument("--generate", action="store_true", help="genera una imagen de prueba (~US$0.14)")
     ap.add_argument("--out", default="prueba-imagen.png")
     args = ap.parse_args()
@@ -49,6 +50,14 @@ def main() -> int:
 
     print(f"google-genai {getattr(genai, '__version__', '?')} · API {NativeGeminiClient.API_VERSION}")
     client = genai.Client(api_key=key, http_options=types.HttpOptions(api_version=NativeGeminiClient.API_VERSION))
+    for other in args.also:
+        if other == args.model:
+            continue
+        try:
+            client.models.get(model=other)
+            print(f"info: {other} también existe.")
+        except Exception as e:  # noqa: BLE001
+            print(f"info: {other} no está disponible ({str(e)[:120]}).")
     try:
         info = client.models.get(model=args.model)
     except Exception as e:  # noqa: BLE001
@@ -60,9 +69,9 @@ def main() -> int:
         return 0
 
     prompt = (
-        "A classical marble automaton with gold kintsugi seams holds a split bronze tessera "
-        "whose two halves no longer match; one half glows sapphire, the other flickers out.\n\n"
-        + style_prompt()
+        style_prompt()
+        + "\nSUBJECT: Hermes hands a sealed envelope with a microchip seal to a marble automaton."
+        + "\nCOMPOSITION: two figures in dialogue.\nMOSAIC STATE: intact mosaic, gold only on the subject."
     )
     native = NativeGeminiClient(api_key=key, model=args.model)
     resp = asyncio.run(native.generate(prompt=prompt, aspect_ratio="21:9", image_size="2K"))

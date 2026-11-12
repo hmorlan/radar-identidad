@@ -259,6 +259,7 @@ class JSONGenerator:
             'hero_image_url': result.get('hero_image_url'),
             'hero_image_prompt': result.get('hero_image_prompt'),
             'hero_image_usage': result.get('hero_image_usage'),
+            'hero_image': self._sanitize_hero_image(result.get('hero_image')),
             'generated_at': result.get('generated_at', datetime.now().isoformat()),
             'categories': categories
         }
@@ -315,6 +316,26 @@ class JSONGenerator:
             self._write_json(output_path, category_data)
             logger.info(f"Generated {category}.json ({self._file_size_kb(output_path)} KB, {len(all_items)} items)")
 
+    _FOCUS_RE = re.compile(r'^\d{1,3}(\.\d+)?% \d{1,3}(\.\d+)?%$')
+
+    def _sanitize_hero_image(self, hero: Any) -> Optional[Dict[str, Any]]:
+        """Imagen v3.2: solo rutas locales /data/…, foco válido y texto plano."""
+        if not isinstance(hero, dict) or not str(hero.get('light_url') or '').startswith('/data/'):
+            return None
+        out: Dict[str, Any] = {}
+        for key in ('light_url', 'dark_url', 'thumb_url'):
+            value = str(hero.get(key) or '')
+            if value.startswith('/data/') and '..' not in value:
+                out[key] = value
+        focus = str(hero.get('focus') or '').strip()
+        out['focus'] = focus if self._FOCUS_RE.match(focus) else '50% 45%'
+        out['tecnica'] = 'grabado' if hero.get('tecnica') == 'grabado' else 'mosaico'
+        for key in ('motivo', 'alt', 'modelo'):
+            value = re.sub(r'<[^>]*>', '', str(hero.get(key) or '')).strip()
+            if value:
+                out[key] = value[:300]
+        return out
+
     def _copy_hero_image(self, date_dir: str, date: str) -> None:
         """Copy hero image - no-op since we now serve from single data dir."""
         pass
@@ -339,6 +360,18 @@ class JSONGenerator:
             'total_items': result.get('total_items_analyzed', 0),
             'categories': {}
         }
+        # v3.2: el archivo lista cada edición con su titular y su miniatura.
+        edition = self._sanitize_edition(result.get('edition') or {})
+        if edition.get('titular'):
+            date_entry['titular'] = edition['titular']
+        try:
+            is_sunday = datetime.strptime(date, '%Y-%m-%d').weekday() == 6
+        except ValueError:
+            is_sunday = False
+        date_entry['tipo'] = 'domingo' if is_sunday else 'diario'
+        hero = self._sanitize_hero_image(result.get('hero_image'))
+        if hero and hero.get('thumb_url'):
+            date_entry['hero_thumb'] = hero['thumb_url']
 
         for category, report in category_reports.items():
             all_items = report.get('all_items', [])

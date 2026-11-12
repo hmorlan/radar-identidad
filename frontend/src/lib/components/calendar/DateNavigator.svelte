@@ -22,8 +22,8 @@
 		disabled={!$navigation.hasPrevious}
 		class="p-2 rounded-lg transition-colors
 		       {$navigation.hasPrevious
-			? 'hover:bg-radar-gray-200 dark:hover:bg-radar-gray-700 text-radar-gray-700 dark:text-radar-gray-300'
-			: 'text-radar-gray-400 cursor-not-allowed'}"
+			? 'text-tinta hover:text-oro'
+			: 'text-filete cursor-not-allowed'}"
 		aria-label="Edición anterior"
 	>
 		<svg
@@ -41,17 +41,17 @@
 	<!-- Date display -->
 	<div class="text-center flex-1">
 		<div>
-			<span class="font-medium text-radar-gray-800 dark:text-radar-gray-200">
+			<span class="font-display text-[20px] text-tinta">
 				{dateDisplay}
 			</span>
 			{#if isLatest}
-				<span class="ml-2 text-xs bg-radar-accent text-white px-2 py-0.5 rounded-full">
+				<span class="ml-2 t-label text-oro border border-oro px-2 py-0.5 align-middle">
 					Más reciente
 				</span>
 			{/if}
 		</div>
 		{#if coverageDisplay}
-			<div class="text-sm text-radar-gray-500 dark:text-radar-gray-400 mt-1">
+			<div class="t-meta text-tinta-suave mt-1">
 				Noticias hasta el {coverageDisplay}
 			</div>
 		{/if}
@@ -63,8 +63,8 @@
 		disabled={!$navigation.hasNext}
 		class="p-2 rounded-lg transition-colors
 		       {$navigation.hasNext
-			? 'hover:bg-radar-gray-200 dark:hover:bg-radar-gray-700 text-radar-gray-700 dark:text-radar-gray-300'
-			: 'text-radar-gray-400 cursor-not-allowed'}"
+			? 'text-tinta hover:text-oro'
+			: 'text-filete cursor-not-allowed'}"
 		aria-label="Edición siguiente"
 	>
 		<svg

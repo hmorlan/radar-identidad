@@ -184,7 +184,7 @@
 			on:select={(e) => selectResult(e.detail)}
 		/>
 	{:else if isOpen && query.length >= 2 && results.length === 0}
-		<div class="absolute z-[60] w-full mt-2 p-4 bg-white dark:bg-radar-gray-800 rounded-xl shadow-lg border border-radar-gray-200 dark:border-radar-gray-700">
+		<div class="absolute z-[60] w-full mt-2 p-4 bg-papel border border-filete">
 			<p class="text-sm text-radar-gray-500 text-center">
 				No results found for "{query}"
 			</p>

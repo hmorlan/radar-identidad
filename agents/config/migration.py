@@ -147,7 +147,7 @@ llm:
 # =============================================================================
 # Image Provider (hero image generation)
 # =============================================================================
-# Generates the hero image for each edition (style: config/hero_style.md).
+# Generates the hero image for each edition (v3.2: config/hero_prompt.yaml).
 # Comment out this entire section to skip hero image generation.
 #
 image:

@@ -35,6 +35,7 @@ BUCKET = os.getenv("R2_ARCHIVE_BUCKET", "radar-identidad-archivo")
 WRANGLER = os.getenv("WRANGLER_PKG", "wrangler@4.151.2")
 PREFIX = "archivo"
 ROOT_KEY = f"{PREFIX}/raiz.tar.gz"
+HISTORY_KEY = f"{PREFIX}/hero_historial.json"  # memoria de imágenes (v3.2 §6.5), no se publica
 MANIFEST = ".archivo.json"
 MARKER = ".archivo-descargado"
 DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -95,6 +96,23 @@ def changed_days(data: Path, since: Optional[float]) -> List[str]:
         if newest > since:
             out.append(day)
     return out
+
+
+def pull_history(target: Path, run: Callable = wrangler) -> None:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        r2_get(HISTORY_KEY, target, run)
+        print(f"Memoria de imágenes restaurada en {target}.")
+    except Missing:
+        print("Sin memoria de imágenes en R2 todavía.")
+
+
+def push_history(source: Path, run: Callable = wrangler) -> None:
+    if source.exists():
+        proc = run("r2", "object", "put", f"{BUCKET}/{HISTORY_KEY}", "--file", str(source),
+                   "--content-type", "application/json", "--remote")
+        if proc.returncode != 0:
+            raise RuntimeError(f"no se pudo subir {HISTORY_KEY}: {(proc.stderr or '').strip()[-300:]}")
 
 
 def pull(data: Path, run: Callable = wrangler) -> int:
@@ -165,12 +183,21 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("action", choices=["ensure", "pull", "push"])
     ap.add_argument("data", nargs="?", default="web/data")
+    ap.add_argument("--historial", help="también sincroniza la memoria de imágenes (p. ej. data/hero_historial.json)")
     args = ap.parse_args()
     if args.action == "ensure":
         return ensure()
     data = Path(args.data)
     try:
-        return pull(data) if args.action == "pull" else push(data)
+        if args.action == "pull":
+            code = pull(data)
+            if args.historial:
+                pull_history(Path(args.historial))
+            return code
+        code = push(data)
+        if args.historial:
+            push_history(Path(args.historial))
+        return code
     except RuntimeError as e:
         print(f"::error::{e}", file=sys.stderr)
         return 1

@@ -17,7 +17,7 @@ import logging
 import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 import httpx
 from PIL import Image
@@ -143,6 +143,14 @@ async def _post_json_with_retries(
     return data
 
 
+def _sniff_mime(data: bytes) -> str:
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    return "image/jpeg"
+
+
 @dataclass
 class ImageResponse:
     """Response from image generation."""
@@ -241,7 +249,8 @@ class NativeGeminiClient(BaseImageClient):
     Recommended for users with Google AI API keys.
     """
 
-    DEFAULT_MODEL = "gemini-3-pro-image-preview"
+    # v3.2 (docs/identidad-visual.md §6). Se verifica con scripts/check_image_model.py.
+    DEFAULT_MODEL = "gemini-3-pro-image"
     API_VERSION = "v1beta"
 
     def __init__(
@@ -255,7 +264,7 @@ class NativeGeminiClient(BaseImageClient):
 
         Args:
             api_key: Google AI API key (explicit, not from env vars)
-            model: Model name (default: gemini-3-pro-image-preview)
+            model: Model name (default: gemini-3-pro-image)
             timeout: Request timeout in seconds (converted to ms for SDK)
         """
         self.model = model or self.DEFAULT_MODEL
@@ -280,15 +289,19 @@ class NativeGeminiClient(BaseImageClient):
         prompt: str,
         reference_image: Optional[bytes] = None,
         aspect_ratio: str = "21:9",
-        image_size: str = "2K"
+        image_size: str = "2K",
+        reference_images: Optional[List[bytes]] = None,
     ) -> ImageResponse:
-        """Generate image using google-genai SDK."""
+        """Generate image using google-genai SDK.
+
+        ``reference_images`` (v3.2) sends several style references before the
+        prompt; ``reference_image`` is kept for older callers.
+        """
         contents = []
 
-        # Add reference image if provided (must be PIL Image for SDK)
-        if reference_image:
-            pil_image = Image.open(io.BytesIO(reference_image))
-            contents.append(pil_image)
+        # Add reference images if provided (must be PIL Image for SDK)
+        for ref in ([reference_image] if reference_image else []) + list(reference_images or []):
+            contents.append(Image.open(io.BytesIO(ref)))
 
         contents.append(prompt)
 
@@ -338,6 +351,95 @@ class NativeGeminiClient(BaseImageClient):
             "No image returned from Gemini API. "
             "Check that the model supports image generation and the prompt is valid."
         )
+
+    async def generate_batch(
+        self,
+        prompts: List[str],
+        reference_images: Optional[List[bytes]] = None,
+        aspect_ratio: str = "21:9",
+        image_size: str = "2K",
+        max_wait_seconds: float = 1800.0,
+        poll_seconds: float = 20.0,
+    ) -> List[Optional[ImageResponse]]:
+        """Generate several images through the Gemini Batch API (half price).
+
+        Returns one entry per prompt (None for a request that produced no image).
+        Raises TimeoutError if the job does not finish within ``max_wait_seconds``
+        -- the job is cancelled first, so nothing is billed twice when the caller
+        falls back to the synchronous path -- and RuntimeError on API errors.
+        Each response's ``usage`` carries ``"batch": True``.
+        """
+        import asyncio
+        import time
+
+        ref_parts = [
+            types.Part.from_bytes(data=ref, mime_type=_sniff_mime(ref))
+            for ref in (reference_images or [])
+        ]
+        requests = [
+            types.InlinedRequest(
+                contents=[types.Content(role="user", parts=ref_parts + [types.Part.from_text(text=p)])],
+                config=types.GenerateContentConfig(
+                    response_modalities=["IMAGE"],
+                    image_config=types.ImageConfig(aspect_ratio=aspect_ratio, image_size=image_size),
+                ),
+            )
+            for p in prompts
+        ]
+        try:
+            job = await self.client.aio.batches.create(
+                model=self.model,
+                src=requests,
+                config=types.CreateBatchJobConfig(display_name="radar-hero"),
+            )
+        except errors.APIError as e:
+            raise RuntimeError(f"Gemini batch create failed (code={e.code}): {e.message}") from e
+
+        done = {"JOB_STATE_SUCCEEDED", "JOB_STATE_PARTIALLY_SUCCEEDED", "JOB_STATE_FAILED",
+                "JOB_STATE_CANCELLED", "JOB_STATE_EXPIRED"}
+        started = time.monotonic()
+        logger.info(f"Gemini batch {job.name} created with {len(prompts)} request(s)")
+        while True:
+            state = str(getattr(job.state, "name", job.state))
+            if state in done:
+                break
+            if time.monotonic() - started > max_wait_seconds:
+                try:
+                    await self.client.aio.batches.cancel(name=job.name)
+                    logger.warning(f"Gemini batch {job.name} cancelled after {max_wait_seconds:.0f}s")
+                except Exception as e:  # noqa: BLE001
+                    logger.warning(f"Could not cancel Gemini batch {job.name}: {e}")
+                raise TimeoutError(f"Gemini batch {job.name} still {state} after {max_wait_seconds:.0f}s")
+            await asyncio.sleep(poll_seconds)
+            job = await self.client.aio.batches.get(name=job.name)
+
+        if state not in ("JOB_STATE_SUCCEEDED", "JOB_STATE_PARTIALLY_SUCCEEDED"):
+            raise RuntimeError(f"Gemini batch {job.name} ended in {state}: {getattr(job, 'error', None)}")
+
+        out: List[Optional[ImageResponse]] = []
+        inlined = (job.dest.inlined_responses if job.dest else None) or []
+        for item in inlined:
+            response = getattr(item, "response", None)
+            image = None
+            if response is not None:
+                usage = native_usage_to_openai_shape(getattr(response, "usage_metadata", None))
+                if usage is not None:
+                    usage["batch"] = True
+                for part in (response.parts or []):
+                    if part.inline_data:
+                        image = ImageResponse(
+                            image_data=part.inline_data.data,
+                            mime_type=part.inline_data.mime_type or "image/png",
+                            usage=usage,
+                            model=self.model,
+                        )
+                        break
+            if image is None:
+                logger.warning(f"Batch request returned no image: {getattr(item, 'error', None)}")
+            out.append(image)
+        while len(out) < len(prompts):
+            out.append(None)
+        return out
 
 
 class OpenAICompatibleClient(BaseImageClient):

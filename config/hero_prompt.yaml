@@ -1,0 +1,45 @@
+# Prompts de imagen v3.2 (docs/identidad-visual.md §6). En inglés porque van al
+# modelo de imagen. El bloque fijo es idéntico en todas las ediciones; solo
+# cambian los tres ejes (SUBJECT, COMPOSITION, MOSAIC STATE). La proporción 21:9
+# va en el parámetro aspect_ratio de la API, no en el texto.
+
+# §6.1 Edición diaria: mosaico romano con circuitos de oro.
+mosaico: >-
+  Create an image: an ancient Roman floor mosaic made of uniform small square
+  stone tesserae, about 250 tesserae across the full width of the image, in light
+  ivory, pale sand and soft warm gray tones, bright and light overall. Dark
+  graphite contour lines outline the figures, and the background tesserae touch
+  the dark graphite contour directly, in the same rows as the rest of the floor.
+  Every figure and object is built from tesserae. The background is a plain,
+  continuous field of uniform tesserae that runs to all four edges of the image.
+  The ancient scene always contains one clearly readable element of contemporary
+  technology, built from the same tesserae: microchips, circuit traces, camera
+  lenses, sensors or fiber-optic cables. Gold glass tesserae are the only bright
+  accent and cover about 3 to 5 percent of the image; every other tessera is
+  ivory, sand, warm gray or graphite. Matte stone, even light, straight-on
+  documentation photograph of a mosaic floor. No text or letters, no mobile
+  phones, keypads or screens.
+
+# Precede a las 2 imágenes de referencia (assets/hero-ref/).
+referencias: >-
+  Match the tessera size, palette, gold treatment and line weight of the two
+  attached mosaic images, which show different subjects. Create a new subject and
+  a new composition; do not reuse their figures, objects or layouts.
+
+# §6.2 Domingo y respaldo: grabado al buril. [SUJETO] se reemplaza por la escena.
+grabado: >-
+  Sepia copperplate engraving, burin etching on cream paper, fine cross-hatching,
+  in the style of 18th-century book illustration. [SUJETO]: Greco-Roman marble
+  busts, draped figures and ruins combined with anachronistic technology (server
+  racks, cables, circuit traces, fingerprint ridges). Sober monochrome sepia ink
+  only, no gold, no color. Wide 21:9 composition with the subject on the right and
+  empty paper on the left. No text, no letters, no ruled lines that simulate text,
+  no frames, no borders, no landscape background.
+
+# §6.4 Control automático de las candidatas. Medido con la máscara de croma de
+# §6.3 (croma = max(R,G,B) - min(R,G,B), de 0 a 1).
+control:
+  croma_oro: 0.30      # umbral de croma para contar un píxel como oro
+  oro_min: 0.015       # 1.5% de la imagen
+  oro_max: 0.10        # 10%
+  ajenos_max: 0.003    # tolerancia a ruido JPEG para colores ajenos al oro

@@ -23,13 +23,14 @@
 	disabled={!available}
 	class="
 		relative aspect-square p-1 rounded-lg text-sm transition-all
-		{inMonth ? 'text-radar-gray-700 dark:text-radar-gray-300' : 'text-radar-gray-400 dark:text-radar-gray-600'}
+		{selected
+			? 'bg-oro !text-papel hover:bg-oro-hover'
+			: inMonth
+				? 'text-radar-gray-700 dark:text-radar-gray-300'
+				: 'text-radar-gray-400 dark:text-radar-gray-600'}
 		{available
 			? 'cursor-pointer hover:bg-radar-accent/10'
 			: 'cursor-default'}
-		{selected
-			? 'bg-radar-accent text-white hover:bg-radar-accent'
-			: ''}
 		{today && !selected
 			? 'ring-2 ring-radar-accent ring-inset'
 			: ''}

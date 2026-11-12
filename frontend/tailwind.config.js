@@ -4,57 +4,73 @@ export default {
 	darkMode: 'class',
 	theme: {
 		extend: {
-			// Radar de Identidad — design system "Radar de Identidad" (tokens.json).
-			// Los colores semánticos son variables CSS (src/app.css) con valor
-			// distinto en claro y oscuro. Los radar-* son alias para los componentes
-			// heredados, de modo que adoptan la misma paleta.
+			// Radar de Identidad — dirección v3.2 "mármol, tinta y oro"
+			// (docs/identidad-visual.md). Los colores son variables CSS (src/app.css)
+			// con valor distinto en claro y oscuro. Los nombres anteriores (ground,
+			// ink, electric, sapphire…) quedan como alias para que los componentes
+			// heredados adopten la paleta nueva sin azul ni cian.
 			colors: {
-				ground: 'rgb(var(--ground) / <alpha-value>)',
-				surface: 'rgb(var(--surface) / <alpha-value>)',
-				line: 'rgb(var(--line) / <alpha-value>)',
-				ink: 'rgb(var(--ink) / <alpha-value>)',
-				'ink-body': 'rgb(var(--ink-body) / <alpha-value>)',
-				'ink-muted': 'rgb(var(--ink-muted) / <alpha-value>)',
-				electric: 'rgb(var(--electric-blue) / <alpha-value>)',
-				sapphire: 'rgb(var(--sapphire) / <alpha-value>)',
-				gold: 'rgb(var(--signal-gold) / <alpha-value>)',
-				glow: 'rgb(var(--core-glow) / <alpha-value>)',
-				'hero-ground': '#050608',
-				'hero-ink': '#F1F2F4',
-				'radar-accent': 'rgb(var(--electric-blue) / <alpha-value>)',
-				'radar-accent-dark': 'rgb(var(--sapphire) / <alpha-value>)',
-				'radar-bronze': 'rgb(var(--signal-gold) / <alpha-value>)',
-				'radar-dark': '#050608',
+				papel: 'rgb(var(--papel) / <alpha-value>)',
+				piedra: 'rgb(var(--piedra) / <alpha-value>)',
+				filete: 'rgb(var(--filete) / <alpha-value>)',
+				caja: 'rgb(var(--caja) / <alpha-value>)',
+				tinta: 'rgb(var(--tinta) / <alpha-value>)',
+				'tinta-cuerpo': 'rgb(var(--tinta-cuerpo) / <alpha-value>)',
+				'tinta-suave': 'rgb(var(--tinta-suave) / <alpha-value>)',
+				oro: 'rgb(var(--oro) / <alpha-value>)',
+				'oro-hover': 'rgb(var(--oro-hover) / <alpha-value>)',
+				foco: 'rgb(var(--foco) / <alpha-value>)',
+				terracota: 'rgb(var(--terracota) / <alpha-value>)',
+				// Alias heredados
+				ground: 'rgb(var(--papel) / <alpha-value>)',
+				surface: 'rgb(var(--caja) / <alpha-value>)',
+				line: 'rgb(var(--filete) / <alpha-value>)',
+				ink: 'rgb(var(--tinta) / <alpha-value>)',
+				'ink-body': 'rgb(var(--tinta-cuerpo) / <alpha-value>)',
+				'ink-muted': 'rgb(var(--tinta-suave) / <alpha-value>)',
+				electric: 'rgb(var(--oro) / <alpha-value>)',
+				sapphire: 'rgb(var(--oro) / <alpha-value>)',
+				gold: 'rgb(var(--oro) / <alpha-value>)',
+				glow: 'rgb(var(--tinta) / <alpha-value>)',
+				'radar-accent': 'rgb(var(--oro) / <alpha-value>)',
+				'radar-accent-dark': 'rgb(var(--oro) / <alpha-value>)',
+				'radar-bronze': 'rgb(var(--oro) / <alpha-value>)',
+				'radar-dark': 'rgb(var(--tinta) / <alpha-value>)',
+				// Escala fija (no por variable): los componentes heredados ya alternan
+				// tonos con dark:, así que la escala va de papel (50) a obsidiana (900).
 				'radar-gray': {
-					50: '#F4F5F7',
-					100: '#F4F5F7',
-					200: '#DCE0E6',
-					300: '#C3C9D1',
-					400: '#8D96A3',
-					500: '#5B6472',
-					600: '#3A4250',
-					700: '#1D232C',
-					800: '#0C0E12',
-					900: '#050608'
+					50: '#F5F1E8',
+					100: '#EFE9DB',
+					200: '#DCD4BF',
+					300: '#C9C1AD',
+					400: '#A39D8F',
+					500: '#5A5F66',
+					600: '#3A3D44',
+					700: '#2A2B2F',
+					800: '#17181D',
+					900: '#0E0F12'
 				},
-				// Categorías: sin verdes ni naranjas (reglas del design system).
-				'category-news': '#1E5BFF',
-				'category-research': '#0B63CE',
-				'category-social': '#5B6472',
-				'category-reddit': '#5B6472'
+				// Categorías: sin azul ni cian; oro y tinta suave.
+				'category-news': 'rgb(var(--oro) / <alpha-value>)',
+				'category-research': 'rgb(var(--oro) / <alpha-value>)',
+				'category-social': 'rgb(var(--tinta-suave) / <alpha-value>)',
+				'category-reddit': 'rgb(var(--tinta-suave) / <alpha-value>)'
 			},
 			fontFamily: {
 				sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-				display: ['"Marcellus SC"', 'Georgia', 'serif']
+				serif: ['Newsreader', 'Georgia', 'serif'],
+				display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+				wordmark: ['"Marcellus SC"', 'Georgia', 'serif']
 			},
 			borderRadius: {
-				sm: '6px',
-				md: '10px',
-				lg: '14px'
+				sm: '0px',
+				md: '0px',
+				lg: '0px'
 			},
 			boxShadow: {
-				'card': '0 2px 8px rgba(0, 0, 0, 0.08)',
-				'card-hover': '0 4px 12px rgba(0, 0, 0, 0.12)'
+				// Sin sombras (§8): filetes de 1px en vez de cajas.
+				'card': 'none',
+				'card-hover': 'none'
 			},
 			typography: {
 				DEFAULT: {

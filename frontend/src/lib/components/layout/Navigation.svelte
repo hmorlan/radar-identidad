@@ -1,112 +1,85 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
-	import { CATEGORY_CONFIG, type Category } from '$lib/types';
-
-	// Reddit desactivado por ahora (API de pago).
-	const categories: Category[] = ['news', 'research', 'social'];
+	import type { Category } from '$lib/types';
 
 	// Guard searchParams access for prerendering compatibility
 	$: pathname = $page.url.pathname;
 	$: dateParam = browser ? $page.url.searchParams.get('date') : null;
 	$: categoryParam = browser ? $page.url.searchParams.get('category') : null;
-	$: hasExplicitDate = !!dateParam;
 
-	// Explicit active state computations
-	$: homeActive = pathname === '/' && !categoryParam;
-	$: archiveActive = pathname === '/archive';
-	$: aboutActive = pathname === '/about';
-
-	function isCategoryActive(cat: string): boolean {
-		return categoryParam === cat;
+	function categoryHref(category: Category): string {
+		return dateParam ? `/?date=${dateParam}&category=${category}` : `/?category=${category}`;
 	}
 
-	function getCategoryHref(category: Category): string {
-		return hasExplicitDate && dateParam
-			? `/?date=${dateParam}&category=${category}`
-			: `/?category=${category}`;
-	}
+	// v3.2 §3: menú centrado bajo un filete. Redes y Reddit siguen accesibles desde
+	// "Todo lo revisado" al pie de cada edición.
+	$: items = [
+		{ label: 'Inicio', short: 'Inicio', href: '/', active: pathname === '/' && !categoryParam },
+		{ label: 'Noticias', short: 'Noticias', href: categoryHref('news'), active: categoryParam === 'news' },
+		{
+			label: 'Investigación y estándares',
+			short: 'Investigación',
+			href: categoryHref('research'),
+			active: categoryParam === 'research'
+		},
+		{ label: 'Archivo', short: 'Archivo', href: '/archive', active: pathname === '/archive' },
+		{ label: 'La semana en identidad', short: 'La semana', href: '/archive#semana', active: false },
+		{ label: 'Acerca de', short: 'Acerca de', href: '/about', active: pathname === '/about' }
+	];
 </script>
 
-<nav class="bg-ground/90 backdrop-blur border-b border-line sticky top-0 z-50">
-	<div class="max-w-7xl mx-auto px-4 sm:px-10">
-		<div class="flex items-center h-12">
-			<!-- Main navigation -->
-			<ul class="flex w-full items-center justify-evenly sm:justify-start sm:w-auto sm:gap-1">
-				<!-- Home: icon on mobile (no bg), text+bg on desktop -->
-				<li>
-					<a
-						href="/"
-						class="nav-link whitespace-nowrap hover:bg-transparent {homeActive ? 'nav-link-active' : ''}"
-						aria-label="Inicio"
-					>
-						<svg
-							class="w-5 h-5 sm:hidden"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							stroke-width="2"
-						>
-							<path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-						</svg>
-						<span class="hidden sm:inline">Inicio</span>
-					</a>
-				</li>
-
-				<!-- Categories: text on all sizes, standard active styling -->
-				{#each categories as category}
-					<li>
-						<a
-							href={getCategoryHref(category)}
-							class="nav-link whitespace-nowrap {isCategoryActive(category) ? 'nav-link-active' : ''}"
-						>
-							<!--
-								Long labels are held back to `lg:`, not `sm:`.
-
-								Measured at 640px: the seven items need 786px of content against
-								592px of track, so the full-label set ("AI News" / "Social Media" /
-								"Reddit Discussions" …) overflowed the viewport by 194px from the
-								moment `sm:` fired. They do not actually fit until ~836px. Short
-								labels plus the tightened `lg:px-4` padding fit comfortably in the
-								tablet band, and 1024px up is byte-identical to before.
-							-->
-							<span class="lg:hidden">{CATEGORY_CONFIG[category].shortTitle}</span>
-							<span class="hidden lg:inline">{CATEGORY_CONFIG[category].title}</span>
-						</a>
-					</li>
-				{/each}
-
-				<!-- Archive: icon on mobile (no bg), text+bg on desktop -->
-				<li>
-					<a
-						href="/archive"
-						class="nav-link whitespace-nowrap hover:bg-transparent {archiveActive ? 'nav-link-active' : ''}"
-						aria-label="Archivo"
-					>
-						<svg
-							class="w-5 h-5 sm:hidden"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							stroke-width="2"
-						>
-							<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-						</svg>
-						<span class="hidden sm:inline">Archivo</span>
-					</a>
-				</li>
-
-				<!-- About: desktop only (mobile users access via footer) -->
-				<li class="hidden sm:block">
-					<a
-						href="/about"
-						class="nav-link whitespace-nowrap {aboutActive ? 'nav-link-active' : ''}"
-						aria-label="Acerca de"
-					>
-						Acerca de
-					</a>
-				</li>
-			</ul>
-		</div>
-	</div>
+<!-- Sticky y siempre opaca (§3.1): nunca translúcida ni con blur. -->
+<nav aria-label="Secciones" class="menu">
+	<ul class="max-w-[1080px] mx-auto">
+		{#each items as item}
+			<li>
+				<a
+					href={item.href}
+					class="nav-link whitespace-nowrap {item.active ? 'nav-link-active' : ''}"
+					aria-current={item.active ? 'page' : undefined}
+				>
+					<span class="lg:hidden">{item.short}</span>
+					<span class="hidden lg:inline">{item.label}</span>
+				</a>
+			</li>
+		{/each}
+	</ul>
 </nav>
+
+<style>
+	.menu {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		background: rgb(var(--papel));
+		border-top: 1px solid rgb(var(--filete));
+		border-bottom: 1px solid rgb(var(--filete));
+	}
+	ul {
+		display: flex;
+		justify-content: center;
+		gap: 30px;
+		list-style: none;
+		margin: 0 auto;
+		padding: 12px 24px;
+	}
+	/* Móvil (§3.9): scroll horizontal sin barra visible y desvanecido al borde. */
+	@media (max-width: 680px) {
+		ul {
+			justify-content: flex-start;
+			gap: 20px;
+			padding: 10px 16px;
+			overflow-x: auto;
+			scrollbar-width: none;
+			-webkit-mask-image: linear-gradient(90deg, #000 80%, transparent);
+			mask-image: linear-gradient(90deg, #000 80%, transparent);
+		}
+		ul::-webkit-scrollbar {
+			display: none;
+		}
+		li:last-child {
+			padding-right: 40px;
+		}
+	}
+</style>

@@ -121,6 +121,7 @@ class OrchestratorResult:
     # Token counts and cost for the hero image, when the provider reported them.
     # None means unreported, which the replay renders as "n/a" -- never as $0.
     hero_image_usage: Optional[Dict[str, Any]] = None
+    hero_image: Optional[Dict[str, Any]] = None  # v3.2: variantes, foco y crédito
     phase_status: List[Dict[str, Any]] = field(default_factory=list)  # Phase tracker records
     # Non-fatal failures that left the report incomplete (lost analysis batches,
     # a failed reduce pass, unenriched summaries). Empty means the run produced
@@ -148,6 +149,7 @@ class OrchestratorResult:
             'hero_image_url': self.hero_image_url,
             'hero_image_prompt': self.hero_image_prompt,
             'hero_image_usage': self.hero_image_usage,
+            'hero_image': self.hero_image,
             'phase_status': self.phase_status,
             'degradations': list(self.degradations),
             'edition': self.edition,
@@ -1131,6 +1133,7 @@ class MainOrchestrator:
         hero_image_url = None
         hero_image_prompt = None
         hero_image_usage = None
+        hero_image_v32 = None
 
         # Any resume past Phase 4 reuses the hero this date already published,
         # when one was checkpointed -- except --resume-from 4.7, which names
@@ -1154,6 +1157,7 @@ class MainOrchestrator:
             hero_image_url = hero_checkpoint.get('hero_image_url')
             hero_image_prompt = hero_checkpoint.get('hero_image_prompt')
             hero_image_usage = hero_checkpoint.get('hero_image_usage')
+            hero_image_v32 = hero_checkpoint.get('hero_image')
             logger.info(f"Phase 4.7: Reusing checkpointed hero image: {hero_image_url}")
             self._restore_or_skip_phase(phases, "Phase 4.7: Hero Image", hero_checkpoint, "loaded from checkpoint")
         elif self.replay_context is None and (resume_from is None or resume_from <= 4.7):
@@ -1167,11 +1171,16 @@ class MainOrchestrator:
                     hero_result = await self.hero_generator.generate(
                         top_topics=hero_topics,
                         date=self.target_date,
-                        output_dir=Path(self.web_dir)
+                        output_dir=Path(self.web_dir),
+                        edition=edition.to_dict() if edition is not None else None,
+                        llm_client=self.async_client,
                     )
                     if hero_result:
                         hero_image_url = hero_result['path']
-                        hero_file = Path(self.web_dir) / "data" / self.target_date / "hero.webp"
+                        hero_image_v32 = hero_result.get('hero_image')
+                        if hero_result.get('notice'):
+                            self.degradations.append(f"imagen: {hero_result['notice']}")
+                        hero_file = Path(self.web_dir) / hero_result['path'].lstrip('/')
                         if hero_file.exists():
                             mtime = int(hero_file.stat().st_mtime)
                             hero_image_url = f"{hero_image_url}?v={mtime}"
@@ -1190,6 +1199,7 @@ class MainOrchestrator:
                             'hero_image_url': hero_image_url,
                             'hero_image_prompt': hero_image_prompt,
                             'hero_image_usage': hero_image_usage,
+                            'hero_image': hero_image_v32,
                         })
                     else:
                         logger.warning("Hero image generation returned no result")
@@ -1260,6 +1270,7 @@ class MainOrchestrator:
             hero_image_url=hero_image_url,
             hero_image_prompt=hero_image_prompt,
             hero_image_usage=hero_image_usage,
+            hero_image=hero_image_v32,
             phase_status=phases.to_dict(),
             degradations=list(self.degradations),
             edition=edition.to_dict(),

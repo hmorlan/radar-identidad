@@ -24,7 +24,7 @@
 </script>
 
 <div
-	class="absolute z-[60] w-full mt-2 bg-white dark:bg-radar-gray-800 rounded-xl shadow-lg border border-radar-gray-200 dark:border-radar-gray-700 max-h-96 overflow-y-auto"
+	class="absolute z-[60] w-full mt-2 bg-papel border border-filete max-h-96 overflow-y-auto"
 >
 	<ul class="py-2">
 		{#each results as result, i (result.ref)}

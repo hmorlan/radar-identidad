@@ -107,7 +107,7 @@
 					<h2 class="text-lg font-semibold text-radar-gray-800 dark:text-radar-gray-100">
 						{feeds.main.name}
 					</h2>
-					<span class="text-xs px-2 py-0.5 bg-radar-accent text-white rounded-full">Recommended</span>
+					<span class="text-xs px-2 py-0.5 bg-oro text-papel rounded-full">Recommended</span>
 				</div>
 				<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400">
 					{feeds.main.description}
@@ -115,7 +115,7 @@
 			</div>
 			<a
 				href={feeds.main.url}
-				class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-radar-accent text-white rounded-lg hover:bg-radar-accent-dark transition-colors"
+				class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-oro text-papel rounded-lg hover:bg-radar-accent-dark transition-colors"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 					<circle cx="6.18" cy="17.82" r="2.18"/>
@@ -142,7 +142,7 @@
 					<h3 class="font-semibold text-radar-gray-800 dark:text-radar-gray-100">
 						{summaryFeeds.executive.name}
 					</h3>
-					<span class="text-xs px-2 py-0.5 bg-radar-accent/80 text-white rounded-full">Most Popular</span>
+					<span class="text-xs px-2 py-0.5 bg-oro text-papel rounded-full">Most Popular</span>
 				</div>
 				<p class="text-sm text-radar-gray-600 dark:text-radar-gray-400">
 					{summaryFeeds.executive.description}
@@ -150,7 +150,7 @@
 			</div>
 			<a
 				href={summaryFeeds.executive.url}
-				class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-radar-accent/80 text-white rounded-lg hover:bg-radar-accent transition-colors"
+				class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-oro text-papel rounded-lg hover:bg-radar-accent transition-colors"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 					<circle cx="6.18" cy="17.82" r="2.18"/>

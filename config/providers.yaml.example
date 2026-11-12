@@ -104,7 +104,7 @@ image:
   # native (default):
   #   - Uses google-genai SDK directly
   #   - Requires Google AI API key
-  #   - Model: gemini-3-pro-image-preview
+  #   - Model: gemini-3-pro-image
   #   - No endpoint needed (SDK handles it)
   #
   # openai-compatible:
@@ -132,7 +132,7 @@ image:
   # endpoint: "https://your-proxy.example.com/v1"
 
   # Model name
-  # - native: gemini-3-pro-image-preview
+  # - native: gemini-3-pro-image
   # - openai-compatible: depends on your proxy (e.g., gemini-3-pro-image)
   # - openrouter: OpenRouter slug (default google/gemini-3-pro-image)
   model: "gemini-3-pro-image-preview"

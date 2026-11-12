@@ -91,9 +91,9 @@ jobs:
       PIPELINE_BASE_URL: ${{ vars.PIPELINE_BASE_URL || 'https://radar.hirammorlan.com' }}
       PIPELINE_COMMIT_PATHS: ${{ vars.PIPELINE_COMMIT_PATHS || 'web/data config/model_releases.yaml config/ecosystem_context.yaml' }}
       # Radar de Identidad usa la API de Google directa (image mode "native"), donde el
-      # modelo se llama `gemini-3-pro-image-preview` (probado el 2026-11-05: 17 imágenes
-      # sin error). `gemini-3-pro-image` era el alias del proxy del proyecto original.
-      PIPELINE_IMAGE_MODEL: ${{ vars.PIPELINE_IMAGE_MODEL || 'gemini-3-pro-image-preview' }}
+      # modelo es `gemini-3-pro-image` (dirección v3.2, docs/identidad-visual.md §6;
+      # se verifica sin costo con el workflow "Comprobar modelos").
+      PIPELINE_IMAGE_MODEL: ${{ vars.PIPELINE_IMAGE_MODEL || 'gemini-3-pro-image' }}
       # Radar de Identidad: modelo ligero (triage) y tope de gasto por corrida (USD).
       PIPELINE_LIGHT_MODEL: ${{ vars.PIPELINE_LIGHT_MODEL || 'claude-haiku-5-5' }}
       PIPELINE_MAX_COST_USD: ${{ vars.PIPELINE_MAX_COST_USD || '6' }}
@@ -618,7 +618,7 @@ jobs:
             python3 scripts/archive_r2.py ensure || true
             # GitHub corre bash con -e: capturar el código sin abortar el paso.
             code=0
-            python3 scripts/archive_r2.py pull web/data || code=$?
+            python3 scripts/archive_r2.py pull web/data --historial data/hero_historial.json || code=$?
             if [[ $code -eq 0 ]]; then exit 0; fi
             [[ $code -eq 3 ]] || echo "::warning::No se pudo leer el archivo en R2; se usa el respaldo."
           fi
@@ -787,7 +787,7 @@ jobs:
         # Si R2 falla, la edición se publica igual y queda en el artefacto de respaldo.
         continue-on-error: true
         shell: bash
-        run: python3 scripts/archive_r2.py push web/data
+        run: python3 scripts/archive_r2.py push web/data --historial data/hero_historial.json
 
       - name: Publicar el sitio en Cloudflare Pages
         if: success() && steps.schedule_gate.outputs.should_run == 'true' && env.CLOUDFLARE_API_TOKEN != ''

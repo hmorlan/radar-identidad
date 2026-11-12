@@ -3,9 +3,10 @@
 Hero Image Generator
 
 Generates the hero image for each Radar de Identidad edition via the configured
-image provider. The visual style lives in config/hero_style.md so it can be tuned
-without touching code; an optional reference image (assets/hero-reference.jpg|png|webp)
-is sent for style guidance when present.
+image provider. Dirección v3.2: generators/hero_v32.py, con los prompts en
+config/hero_prompt.yaml, el banco de motivos en config/hero_motivos.yaml y las
+referencias en assets/hero-ref/. El camino con custom_prompt queda para regenerar
+a mano una imagen suelta.
 
 Supports two initialization modes:
 1. New: HeroGenerator.from_config(config) - uses unified ImageClient abstraction
@@ -39,8 +40,8 @@ class HeroGenerator:
                      for ext in ("jpg", "png", "webp")) if p.exists()),
         Path(__file__).parent.parent / "assets" / "hero-reference.jpg",
     )
-    # Editable visual-style brief appended to every hero prompt.
-    STYLE_FILE = Path(__file__).parent.parent / "config" / "hero_style.md"
+    # Bloque fijo del mosaico (v3.2), usado también por el camino manual.
+    STYLE_FILE = Path(__file__).parent.parent / "config" / "hero_prompt.yaml"
 
     # Tabla de símbolos del radar (v1). Clave: fragmento del nombre del tema en
     # español o inglés (minúsculas). Se usa la primera coincidencia por tema.
@@ -275,10 +276,8 @@ Build the scene around Topic 1 (the lead story) and weave in 1-2 others only if 
     def _load_style(self) -> str:
         """Read the visual-style brief, falling back to a neutral default."""
         try:
-            text = self.STYLE_FILE.read_text(encoding="utf-8")
-            # Drop comment lines so notes for humans don't reach the model.
-            lines = [l for l in text.splitlines() if not l.lstrip().startswith("#")]
-            style = "\n".join(lines).strip()
+            import yaml
+            style = (yaml.safe_load(self.STYLE_FILE.read_text(encoding="utf-8")) or {}).get("mosaico", "").strip()
             if style:
                 return style
         except OSError as e:
@@ -293,10 +292,17 @@ Build the scene around Topic 1 (the lead story) and weave in 1-2 others only if 
         top_topics: List[Any],
         date: str,
         output_dir: Path,
-        custom_prompt: Optional[str] = None
+        custom_prompt: Optional[str] = None,
+        edition: Optional[Dict[str, Any]] = None,
+        llm_client: Any = None,
     ) -> Optional[Dict[str, str]]:
         """
         Generate hero image based on top topics.
+
+        Radar de Identidad v3.2: without ``custom_prompt`` this delegates to
+        generators.hero_v32 (fixed style block + 3 axes, 2 references, 2 batch
+        candidates with automatic checks, engraving fallback, light/dark variants).
+        ``custom_prompt`` keeps the legacy single-image path for manual regens.
 
         Args:
             top_topics: List of TopTopic objects or dicts with topic info
@@ -307,6 +313,14 @@ Build the scene around Topic 1 (the lead story) and weave in 1-2 others only if 
         Returns:
             Dict with 'path' (relative URL path) and 'prompt' (used prompt), or None on failure
         """
+        if not custom_prompt:
+            from generators.hero_v32 import generate_v32
+            try:
+                return await generate_v32(self.client, llm_client, edition or {}, top_topics, date, Path(output_dir))
+            except Exception as e:  # noqa: BLE001
+                logger.error(f"Hero image v3.2 failed: {e}")
+                return None
+
         # Optional style reference image
         reference_bytes = None
         if self.STYLE_REFERENCE.exists():

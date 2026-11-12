@@ -60,7 +60,7 @@
 	}
 </script>
 
-<div class="bg-white dark:bg-radar-gray-800 rounded-xl shadow-card p-4">
+<div class="bg-papel border border-filete p-4 font-sans">
 	<!-- Header with month navigation -->
 	<div class="flex items-center justify-between mb-4">
 		<button
@@ -135,11 +135,11 @@
 	<div class="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-radar-gray-200 dark:border-radar-gray-700 text-xs text-radar-gray-500">
 		<div class="flex items-center gap-1.5">
 			<span class="w-3 h-3 rounded-full bg-radar-accent"></span>
-			<span>Has data</span>
+			<span>Con edición</span>
 		</div>
 		<div class="flex items-center gap-1.5">
 			<span class="w-3 h-3 rounded-full border-2 border-radar-accent"></span>
-			<span>Today</span>
+			<span>Hoy</span>
 		</div>
 	</div>
 </div>

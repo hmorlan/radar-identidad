@@ -1,16 +1,23 @@
 <!--
-	Radar de Identidad — vista "Editorial" de una edición.
-	Hero a pantalla completa (se queda oscuro en ambos modos), notas numeradas en
-	una columna y barra lateral con el resumen, los temas y el análisis semanal.
+	Radar de Identidad — vista de una edición, dirección v3.2 "mármol, tinta y oro"
+	(docs/identidad-visual.md). Una sola columna centrada, sin barra lateral.
+	Orden: friso → kicker, titular y metadatos → En 60 segundos → notas →
+	navegación entre ediciones → franja humana → Cada domingo → temas y todo lo
+	revisado → suscripción. El colofón va en el pie global.
 	Todo el texto de las notas se pinta como texto (nunca HTML).
 -->
 <script lang="ts">
-	import type { DaySummary, Category, EditionNote } from '$lib/types';
+	import type { DaySummary, Category, EditionNote, HeroImage } from '$lib/types';
 	import { CATEGORY_CONFIG } from '$lib/types';
 	import { formatDate, formatDayOfWeek } from '$lib/services/dateUtils';
 	import { safeHtml } from '$lib/services/safeHtml';
 	import { isSafeUrl } from '$lib/services/sanitize';
+	import { dataUrl } from '$lib/services/dataBase';
 	import DateNavigator from '$lib/components/calendar/DateNavigator.svelte';
+	import HeroFriso from './HeroFriso.svelte';
+	import NotaEdicion from './NotaEdicion.svelte';
+	import SelloArmilar from './SelloArmilar.svelte';
+	import { LINKEDIN_URL, HUMAN_STRIP } from '$lib/config/site';
 
 	export let summary: DaySummary;
 	export let heroImageUrl: string | null = null;
@@ -18,287 +25,345 @@
 	export let validCategories: Category[] = [];
 	export let executiveSummaryHtml = '';
 
-	const SIGNAL_LABEL: Record<string, string> = { alta: 'Señal alta', media: 'Señal media', baja: 'Señal baja' };
-	const VERIFICATION_LABEL: Record<string, string> = {
-		verificada: 'Verificada contra la fuente',
-		corregida: 'Corregida tras verificar la fuente',
-		sin_verificar: 'Sin verificación automática'
-	};
+	/** Notas completas al inicio; el resto, colapsadas con su numeral (§3.4). */
+	const EXPANDED = 2;
 
 	$: notes = (summary.edition?.notas ?? []) as EditionNote[];
+	$: domingo = summary.edition?.tipo === 'domingo';
 	$: weekday = formatDayOfWeek(summary.date);
-	$: kicker = `Edición del ${weekday} · ${formatDate(summary.date)}`;
+	$: dateLong = formatDate(summary.date);
+	$: kicker = domingo
+		? `La semana en identidad · ${capitalize(weekday)} ${dateLong}`
+		: `Edición del ${weekday} · ${dateLong}`;
 	$: headline = summary.edition?.titular || notes[0]?.title || 'La edición de hoy';
 	$: wordCount = notes.reduce(
 		(n, note) => n + `${note.que_paso} ${note.por_que_importa} ${note.pregunta_de_fondo ?? ''}`.split(/\s+/).length,
 		0
 	);
 	$: readingMinutes = Math.max(1, Math.round(wordCount / 220));
+	$: meta = [
+		notes.length ? `${notes.length} notas` : '',
+		notes.length ? `${readingMinutes} min` : '',
+		`${summary.total_items_analyzed} fuentes revisadas`
+	]
+		.filter(Boolean)
+		.join(' · ');
+	// "En 60 segundos" (§3.3): una línea por cada una de las primeras notas.
+	$: sesenta = notes.slice(0, 4).map((n) => n.title);
 	$: topics = summary.top_topics ?? [];
+	$: hero = buildHero(summary, heroImageUrl);
 
-	function pad(n: number): string {
-		return String(n).padStart(2, '0');
+	function capitalize(s: string): string {
+		return s ? s[0].toUpperCase() + s.slice(1) : s;
 	}
 
-	function host(url: string): string {
-		try {
-			return new URL(url).hostname.replace(/^www\./, '');
-		} catch {
-			return '';
+	function buildHero(s: DaySummary, legacyUrl: string | null): HeroImage | null {
+		const h = s.hero_image;
+		if (h?.light_url) {
+			return {
+				...h,
+				light_url: dataUrl(h.light_url),
+				dark_url: h.dark_url ? dataUrl(h.dark_url) : undefined
+			};
 		}
+		return legacyUrl ? { light_url: legacyUrl, modelo: s.image_model_display } : null;
 	}
 </script>
 
-<!-- HERO -->
-<section class="hero" aria-label="Portada de la edición">
-	{#if heroImageUrl}
-		<img class="hero-img" src={heroImageUrl} alt="" />
+{#if hero}
+	<HeroFriso {hero} dateLabel={dateLong} {domingo} />
+{/if}
+
+<section class="encabezado-edicion">
+	{#if domingo}
+		<SelloArmilar />
 	{/if}
-	<div class="hero-shade"></div>
-	<div class="hero-content max-w-7xl mx-auto px-4 sm:px-10">
-		<p class="t-kicker hero-kicker">{kicker}</p>
-		<h1 class="t-display-hero hero-title">{headline}</h1>
-		<p class="t-meta hero-meta">
-			{notes.length ? `${notes.length} notas · ${readingMinutes} min de lectura · ` : ''}{summary.total_items_analyzed} fuentes revisadas
-		</p>
+	<span class="t-kicker text-oro">{kicker}</span>
+	<h1 class="titular">{headline}</h1>
+	<span class="t-ui !text-[11.5px] text-tinta-suave">{meta}</span>
+</section>
+
+{#if notes.length}
+	{#if sesenta.length >= 3}
+		<section class="columna sesenta" aria-labelledby="sesenta">
+			<h2 id="sesenta" class="t-kicker text-oro">En 60 segundos</h2>
+			<ul>
+				{#each sesenta as linea}
+					<li><span class="rombo" aria-hidden="true">◆</span><span>{linea}</span></li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
+
+	<div class="notas">
+		{#each notes as note, i (note.item_id)}
+			<NotaEdicion {note} index={i} collapsed={i >= EXPANDED} />
+		{/each}
+	</div>
+{:else}
+	<section class="columna resumen">
+		<h2 class="t-kicker text-oro mb-3">Resumen de la edición</h2>
+		<div class="prose-summary t-body">
+			{@html safeHtml(executiveSummaryHtml)}
+		</div>
+	</section>
+{/if}
+
+<div class="columna navegador">
+	<DateNavigator coverageDate={summary.coverage_date} />
+</div>
+
+<!-- Franja humana (§4.9) -->
+<section class="columna franja">
+	<div class="franja-media">
+		{#if HUMAN_STRIP.kind !== 'placeholder' && HUMAN_STRIP.src}
+			<img src={HUMAN_STRIP.src} alt={HUMAN_STRIP.alt ?? ''} />
+		{:else}
+			<span class="play" aria-hidden="true">▶</span>
+			<span class="t-label text-tinta-suave aqui">Aquí va tu foto o el video de la semana</span>
+		{/if}
+	</div>
+	<div class="franja-texto">
+		<span class="t-kicker text-oro">En cámara esta semana</span>
+		<span class="frase">{HUMAN_STRIP.frase}</span>
+		{#if HUMAN_STRIP.enlace && isSafeUrl(HUMAN_STRIP.enlace)}
+			<a class="t-ui text-oro no-underline hover:underline" href={HUMAN_STRIP.enlace} target="_blank" rel="noopener noreferrer">Ver en LinkedIn →</a>
+		{/if}
 	</div>
 </section>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-10">
-	<div class="py-5 border-b border-line">
-		<DateNavigator coverageDate={summary.coverage_date} />
-	</div>
-
-	<div class="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-x-14 gap-y-10 py-10">
-		<!-- NOTAS -->
-		<div>
-			{#if notes.length}
-				<p class="t-label text-electric mb-2">Las notas</p>
-				<ol class="list-none p-0 m-0">
-					{#each notes as note, i (note.item_id)}
-						<li id="nota-{note.item_id}" class="note">
-							<div class="t-numeral note-num" class:note-num-high={note.senal === 'alta'}>{pad(i + 1)}</div>
-							<div class="min-w-0">
-								<div class="flex flex-wrap items-center gap-2 mb-2">
-									<span class="chip chip-{note.senal}">{SIGNAL_LABEL[note.senal] ?? note.senal}</span>
-									<span class="t-meta text-ink-muted">{note.source}</span>
-								</div>
-								<h2 class="t-display-note text-ink">{note.title}</h2>
-
-								<p class="t-label text-ink-muted mt-4 mb-1">Qué pasó</p>
-								<p class="t-body text-ink-body">
-									{note.que_paso}
-									{#if isSafeUrl(note.url)}
-										<a class="source-link" href={note.url} target="_blank" rel="noopener noreferrer"
-											>Fuente: {host(note.url) || note.source}</a
-										>
-									{/if}
-								</p>
-
-								<p class="t-label text-ink-muted mt-4 mb-1">Por qué importa</p>
-								<p class="t-body text-ink-body">{note.por_que_importa}</p>
-
-								{#if note.pregunta_de_fondo}
-									<div class="question">
-										<p class="t-label text-ink-muted mb-1">La pregunta de fondo</p>
-										<p class="t-question text-glow">{note.pregunta_de_fondo}</p>
-									</div>
-								{/if}
-
-								<p class="t-meta text-ink-muted mt-4">
-									{VERIFICATION_LABEL[note.verificacion] ?? 'Sin verificación automática'}
-								</p>
-							</div>
-						</li>
-					{/each}
-				</ol>
-			{:else}
-				<p class="t-label text-electric mb-3">Resumen de la edición</p>
-				<div class="prose-summary max-w-none t-body">
-					{@html safeHtml(executiveSummaryHtml)}
-				</div>
-			{/if}
+<!-- Caja "Cada domingo" (§4.7) -->
+{#if !domingo}
+	<section class="columna domingo-caja">
+		<SelloArmilar />
+		<div class="flex flex-col gap-2">
+			<span class="t-kicker text-oro">Cada domingo</span>
+			<span class="frase">La semana en identidad: el análisis de fondo, firmado</span>
+			<span class="t-ui text-tinta-suave">Próximamente</span>
 		</div>
+	</section>
+{/if}
 
-		<!-- BARRA LATERAL -->
-		<aside class="space-y-6">
-			<section class="box">
-				<p class="t-label text-electric mb-3">La semana en identidad</p>
-				<p class="t-body text-ink-body">
-					Cada domingo, el análisis de fondo de la semana y el guion del video. Próximamente.
-				</p>
-			</section>
+<!-- Temas y todo lo revisado (§3.7: al pie, sin barra lateral) -->
+<section class="columna pie-edicion">
+	{#if topics.length}
+		<p>
+			<span class="t-label">Temas de la edición:</span>
+			{#each topics as topic, i}
+				<span title={topic.description}>{topic.name}</span>{i < topics.length - 1 ? ' · ' : ''}
+			{/each}
+		</p>
+	{/if}
+	{#if validCategories.length}
+		<p>
+			<span class="t-label">Todo lo revisado:</span>
+			{#each validCategories as category, i}
+				{@const cat = summary.categories[category]}
+				{#if cat}
+					<a class="enlace" href={categoryHref(category)}>{CATEGORY_CONFIG[category].title} ({cat.count})</a>{i < validCategories.length - 1 ? ' · ' : ''}
+				{/if}
+			{/each}
+		</p>
+	{/if}
+</section>
 
-			{#if notes.length && executiveSummaryHtml}
-				<section class="box">
-					<p class="t-label text-electric mb-3">Resumen de la edición</p>
-					<div class="prose-summary sidebar-prose max-w-none">
-						{@html safeHtml(executiveSummaryHtml)}
-					</div>
-				</section>
-			{/if}
-
-			{#if topics.length}
-				<section class="box">
-					<p class="t-label text-electric mb-3">Temas</p>
-					<ul class="flex flex-wrap gap-2 list-none p-0 m-0">
-						{#each topics as topic}
-							<li class="tag" title={topic.description}>{topic.name}</li>
-						{/each}
-					</ul>
-				</section>
-			{/if}
-
-			{#if validCategories.length}
-				<section class="box">
-					<p class="t-label text-electric mb-3">Todo lo revisado</p>
-					<ul class="list-none p-0 m-0 divide-y divide-line">
-						{#each validCategories as category}
-							{@const cat = summary.categories[category]}
-							{#if cat}
-								<li>
-									<a class="flex justify-between py-2 t-body text-ink hover:text-electric transition-colors" href={categoryHref(category)}>
-										<span>{CATEGORY_CONFIG[category].title}</span>
-										<span class="t-meta text-ink-muted">{cat.count}</span>
-									</a>
-								</li>
-							{/if}
-						{/each}
-					</ul>
-				</section>
-			{/if}
-		</aside>
-	</div>
-</div>
+<!-- Suscripción (§4.10) -->
+<section class="columna suscripcion">
+	<span class="frase">Recibe el radar lunes, miércoles y viernes</span>
+	<span class="flex gap-3">
+		{#if LINKEDIN_URL && isSafeUrl(LINKEDIN_URL)}
+			<a class="boton-solido" href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer">Seguir en LinkedIn</a>
+		{/if}
+		<a class="boton-contorno" href="/feeds">RSS</a>
+	</span>
+</section>
 
 <style>
-	.hero {
-		position: relative;
-		min-height: clamp(420px, 68vh, 760px);
-		background: #050608;
+	.columna {
+		max-width: 760px;
+		margin-left: auto;
+		margin-right: auto;
+		padding-left: 16px;
+		padding-right: 16px;
+	}
+	.encabezado-edicion {
+		max-width: 900px;
+		margin: 0 auto;
+		padding: 44px 16px 10px;
+		text-align: center;
 		display: flex;
-		align-items: flex-end;
+		flex-direction: column;
+		align-items: center;
+		gap: 14px;
+	}
+	.titular {
+		margin: 0;
+		font: 500 48px/1.1 'Cormorant Garamond', Georgia, serif;
+		color: rgb(var(--tinta));
+		text-wrap: balance;
+	}
+	.sesenta {
+		margin-top: 30px;
+		margin-bottom: 10px;
+	}
+	.sesenta h2 {
+		margin: 0 0 14px;
+	}
+	.sesenta ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.sesenta li {
+		display: flex;
+		font: 400 18px/1.55 'Newsreader', Georgia, serif;
+		color: rgb(var(--tinta-cuerpo));
+	}
+	.rombo {
+		color: rgb(var(--oro));
+		margin-right: 12px;
+	}
+	.notas {
+		margin-top: 30px;
+	}
+	.resumen {
+		margin-top: 30px;
+	}
+	.navegador {
+		margin-top: 10px;
+		padding-top: 22px;
+		padding-bottom: 22px;
+		border-top: 1px solid rgb(var(--filete));
+		border-bottom: 1px solid rgb(var(--filete));
+	}
+	.frase {
+		font: 500 24px/1.2 'Cormorant Garamond', Georgia, serif;
+		color: rgb(var(--tinta));
+	}
+	.franja {
+		margin-top: 40px;
+		display: grid;
+		grid-template-columns: 330px 1fr;
+		gap: 28px;
+		align-items: center;
+	}
+	.franja-media {
+		position: relative;
+		aspect-ratio: 16 / 9;
+		background: rgb(var(--piedra));
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		overflow: hidden;
 	}
-	.hero-img {
-		position: absolute;
-		inset: 0;
+	.franja-media img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 	}
-	.hero-shade {
+	.play {
+		width: 58px;
+		height: 58px;
+		border-radius: 50%;
+		border: 1px solid rgb(var(--oro));
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: rgb(var(--oro));
+		font-size: 20px;
+		padding-left: 4px;
+	}
+	.aqui {
 		position: absolute;
-		inset: 0;
-		background: linear-gradient(
-			to top,
-			rgb(5 6 8 / 0.96) 0%,
-			rgb(5 6 8 / 0.7) 32%,
-			rgb(5 6 8 / 0.15) 65%,
-			rgb(5 6 8 / 0) 100%
-		);
+		left: 12px;
+		bottom: 10px;
 	}
-	.hero-content {
-		position: relative;
-		width: 100%;
-		padding-top: 6rem;
-		padding-bottom: 3rem;
+	.franja-texto {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
 	}
-	.hero-kicker {
-		color: #ffd23f; /* signal-gold (oscuro): el hero se queda oscuro en ambos modos */
-		margin-bottom: 0.9rem;
+	.domingo-caja {
+		margin-top: 40px;
+		display: flex;
+		gap: 24px;
+		align-items: center;
+		border-top: 1px solid rgb(var(--tinta));
+		border-bottom: 1px solid rgb(var(--tinta));
+		padding-top: 24px;
+		padding-bottom: 24px;
 	}
-	.hero-title {
-		color: #f1f2f4;
-		max-width: 18ch;
-		text-wrap: balance;
+	.pie-edicion {
+		margin-top: 40px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		font: 400 14px/1.6 'Newsreader', Georgia, serif;
+		color: rgb(var(--tinta-suave));
 	}
-	.hero-meta {
-		color: #c3c9d1;
-		margin-top: 1rem;
+	.pie-edicion .t-label {
+		margin-right: 6px;
+	}
+	.suscripcion {
+		margin-top: 20px;
+		margin-bottom: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20px;
+		border-top: 1px solid rgb(var(--filete));
+		border-bottom: 1px solid rgb(var(--filete));
+		padding-top: 18px;
+		padding-bottom: 18px;
+	}
+	.suscripcion .frase {
+		font-size: 22px;
+	}
+	.boton-solido,
+	.boton-contorno {
+		font: 600 11.5px/1.4 'Inter', system-ui, sans-serif;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		text-decoration: none;
+		padding: 10px 16px;
+	}
+	.boton-solido {
+		color: rgb(var(--papel));
+		background: rgb(var(--oro));
+	}
+	.boton-solido:hover {
+		background: rgb(var(--oro-hover));
+	}
+	.boton-contorno {
+		color: rgb(var(--oro));
+		border: 1px solid rgb(var(--oro));
+		padding: 9px 16px;
+	}
+	.boton-contorno:hover {
+		color: rgb(var(--oro-hover));
 	}
 
-	.note {
-		display: grid;
-		grid-template-columns: 64px minmax(0, 1fr);
-		gap: 0 1.25rem;
-		padding: 2.25rem 0;
-		border-top: 1px solid rgb(var(--line));
-	}
-	.note:first-child {
-		border-top: 0;
-		padding-top: 1rem;
-	}
-	.note-num {
-		color: rgb(var(--sapphire));
-		padding-top: 0.15rem;
-	}
-	.note-num-high {
-		color: rgb(var(--signal-gold));
-	}
-	@media (max-width: 640px) {
-		.note {
+	@media (max-width: 680px) {
+		.encabezado-edicion {
+			padding-top: 26px;
+			text-align: left;
+			align-items: flex-start;
+		}
+		.titular {
+			font-size: 30px;
+		}
+		.sesenta li {
+			font-size: 16.5px;
+		}
+		.franja {
 			grid-template-columns: 1fr;
 		}
-		.note-num {
-			font-size: 28px;
-			margin-bottom: 0.5rem;
+		.suscripcion {
+			flex-direction: column;
+			align-items: flex-start;
 		}
-	}
-
-	.chip {
-		display: inline-block;
-		padding: 0.2rem 0.6rem;
-		border-radius: 999px;
-		font-size: 11px;
-		line-height: 1.4;
-		font-weight: 600;
-		letter-spacing: 2px;
-		text-transform: uppercase;
-		border: 1px solid rgb(var(--line));
-		color: rgb(var(--ink-muted));
-	}
-	.chip-alta {
-		color: rgb(var(--signal-gold));
-		border-color: rgb(var(--signal-gold) / 0.55);
-	}
-	.chip-media {
-		color: rgb(var(--electric-blue));
-		border-color: rgb(var(--electric-blue) / 0.5);
-	}
-
-	.source-link {
-		color: rgb(var(--electric-blue));
-		text-decoration: underline;
-		text-decoration-color: rgb(var(--electric-blue) / 0.4);
-		text-underline-offset: 3px;
-		white-space: nowrap;
-	}
-	.source-link:hover {
-		text-decoration-color: rgb(var(--electric-blue));
-	}
-
-	.question {
-		margin-top: 1.25rem;
-		padding: 0.25rem 0 0.25rem 1rem;
-		border-left: 2px solid rgb(var(--sapphire));
-	}
-
-	.box {
-		background: rgb(var(--surface));
-		border: 1px solid rgb(var(--line));
-		border-radius: 14px;
-		padding: 24px;
-	}
-	.tag {
-		padding: 0.25rem 0.6rem;
-		border-radius: 6px;
-		border: 1px solid rgb(var(--line));
-		font-size: 13px;
-		color: rgb(var(--ink-body));
-	}
-	.sidebar-prose :global(p),
-	.sidebar-prose :global(li) {
-		font-size: 14px;
 	}
 </style>

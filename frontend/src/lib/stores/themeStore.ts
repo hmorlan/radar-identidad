@@ -21,8 +21,8 @@ export const resolvedTheme = derived(themePreference, ($preference) => {
 	if (!browser) return 'light';
 
 	if ($preference === 'system') {
-		// Oscuro por defecto, salvo que el sistema pida claro explícitamente.
-		return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+		// Claro primero (v3.2), salvo que el sistema pida oscuro.
+		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 	}
 
 	return $preference;
@@ -56,8 +56,8 @@ export function toggleTheme(): void {
 
 	// If system, detect current and toggle to opposite
 	if (current === 'system') {
-		const systemLight = browser && window.matchMedia('(prefers-color-scheme: light)').matches;
-		setTheme(systemLight ? 'dark' : 'light');
+		const systemDark = browser && window.matchMedia('(prefers-color-scheme: dark)').matches;
+		setTheme(systemDark ? 'light' : 'dark');
 	} else {
 		setTheme(current === 'dark' ? 'light' : 'dark');
 	}
@@ -70,7 +70,7 @@ function applyTheme(theme: Theme): void {
 	if (!browser) return;
 
 	const isDark =
-		theme === 'dark' || (theme === 'system' && !window.matchMedia('(prefers-color-scheme: light)').matches);
+		theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
 	document.documentElement.classList.toggle('dark', isDark);
 }
@@ -87,7 +87,7 @@ export function initializeTheme(): void {
 	applyTheme(theme);
 
 	// Listen for system theme changes
-	window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
 		let current: Theme = 'system';
 		themePreference.subscribe((v) => (current = v))();
 

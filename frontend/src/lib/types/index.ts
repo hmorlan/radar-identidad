@@ -87,6 +87,25 @@ export interface EditionNote {
 export interface Edition {
 	titular: string;
 	notas: EditionNote[];
+	/** 'domingo' = "La semana en identidad" (plantilla con grabado y sello armilar). */
+	tipo?: 'diario' | 'domingo';
+}
+
+/** Imagen de la edición v3.2 (§6): variante clara y oscura derivada, punto focal y crédito. */
+export interface HeroImage {
+	light_url: string;
+	dark_url?: string;
+	/** object-position del punto focal, p. ej. "28% 45%". */
+	focus?: string;
+	/** "mosaico" (diario) o "grabado" (domingo o respaldo). */
+	tecnica?: 'mosaico' | 'grabado';
+	/** Motivo para el crédito tipo museo, p. ej. "Ulises y las sirenas". */
+	motivo?: string;
+	thumb_url?: string;
+	/** Texto alternativo descriptivo. */
+	alt?: string;
+	/** Nombre visible del modelo, p. ej. "Gemini 3 Pro Image". */
+	modelo?: string;
 }
 
 export interface DaySummary {
@@ -116,6 +135,8 @@ export interface DaySummary {
 	image_model_display?: string;
 	/** Radar de Identidad: notas de la edición (ausente en días anteriores). */
 	edition?: Edition;
+	/** Imagen v3.2 con variantes; si falta, se usa hero_image_url. */
+	hero_image?: HeroImage;
 }
 
 export interface CategoryNotice {
@@ -138,6 +159,11 @@ export interface CategoryData {
 export interface DateEntry {
 	date: string;
 	total_items: number;
+	/** Titular de la edición (v3.2: el archivo lista cada edición con su titular). */
+	titular?: string;
+	tipo?: 'diario' | 'domingo';
+	/** Miniatura clara de la imagen de la edición. */
+	hero_thumb?: string;
 	categories: Record<Category, { count: number; file_size: number }>;
 }
 
@@ -195,7 +221,7 @@ export const CATEGORY_CONFIG: Record<
 		title: 'Noticias',
 		singularTitle: 'Noticia',
 		shortTitle: 'Noticias',
-		color: '#1E5BFF',
+		color: '#7A5C18',
 		bgClass: 'bg-category-news',
 		textClass: 'text-category-news',
 		badgeClass: 'badge-news',
@@ -205,7 +231,7 @@ export const CATEGORY_CONFIG: Record<
 		title: 'Investigación y estándares',
 		singularTitle: 'Investigación',
 		shortTitle: 'Investigación',
-		color: '#0B63CE',
+		color: '#7A5C18',
 		bgClass: 'bg-category-research',
 		textClass: 'text-category-research',
 		badgeClass: 'badge-research',
@@ -215,7 +241,7 @@ export const CATEGORY_CONFIG: Record<
 		title: 'Redes',
 		singularTitle: 'Redes',
 		shortTitle: 'Redes',
-		color: '#5B6472',
+		color: '#5A5F66',
 		bgClass: 'bg-category-social',
 		textClass: 'text-category-social',
 		badgeClass: 'badge-social',
@@ -225,7 +251,7 @@ export const CATEGORY_CONFIG: Record<
 		title: 'Reddit Discussions',
 		singularTitle: 'Reddit Discussion',
 		shortTitle: 'Reddit',
-		color: '#5B6472',
+		color: '#5A5F66',
 		bgClass: 'bg-category-reddit',
 		textClass: 'text-category-reddit',
 		badgeClass: 'badge-reddit',

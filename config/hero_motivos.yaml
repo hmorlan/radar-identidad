@@ -1,0 +1,85 @@
+# Banco de motivos de la imagen de cada edición (docs/identidad-visual.md §6.5).
+# Es una semilla, no un límite: el modelo puede proponer otro motivo si la noticia
+# lo pide, siempre dentro de uno de los cuatro registros.
+#
+# Reglas de memoria (data/hero_historial.json, generators/hero_v32.py):
+#   - el mismo motivo no se repite en 8 semanas;
+#   - nunca dos ediciones seguidas con la misma composición ni el mismo registro;
+#   - si un motivo vuelve, debe ser otro momento del mito.
+
+registros:
+  mito: Escenas de mitología grecorromana. Cada mito da varias escenas.
+  cotidiana: "Vida cotidiana romana: cobrador, mercado, correo imperial, escriba, panadero que sella su pan."
+  cronica: "Crónica: la noticia del día traducida a Roma (un ataque a una aerolínea → una flota de trirremes)."
+  emblema: "Emblema: un objeto solo: sello, cerradura, anillo, tablilla de cera, symbolon."
+
+# Catálogo de composiciones y su punto focal (object-position del friso, §6.6).
+composiciones:
+  primer plano recortado: "50% 45%"
+  vista cenital: "50% 45%"
+  figura centrada: "50% 45%"
+  sujeto a la izquierda: "28% 45%"
+  sujeto a la derecha: "72% 45%"
+  dos figuras en diálogo: "50% 45%"
+  friso horizontal: "50% 45%"
+  diagonal: "50% 45%"
+
+# Estados del mosaico (eje MOSAIC STATE), en el inglés que recibe el modelo.
+estados:
+  grietas: cracks with gold that spring from the technology in the subject
+  laguna: a lacuna where tesserae are missing and a circuit shows in the mortar
+  intacto: intact mosaic, gold only on the subject
+  oro dibujo: gold as the main drawing
+
+temas:
+  - tema: Acceso / autenticación
+    claves: [acceso, access, autentic, authent, login, mfa, contraseñ, password, sesi, session]
+    motivos: [Jano con llave y sensor, "Cerbero (MFA: llave, lente, token)"]
+  - tema: Delegación / agentes
+    claves: [agente, agent, delega, oauth, mcp, autónom, autonom]
+    motivos: [Hermes con sobre sellado, Prometeo entrega la antorcha a un autómata, Talos]
+  - tema: Ingeniería social
+    claves: [phishing, ingenier, social engineering, engaño, lure, scam, estafa]
+    motivos: [Ulises y las sirenas, El caballo de Troya]
+  - tema: Challenge-response
+    claves: [challenge, desafío, reto, captcha]
+    motivos: [El enigma de la Esfinge]
+  - tema: Clonación de voz
+    claves: [voz, voice, clonaci, cloning]
+    motivos: [Eco]
+  - tema: Biometría / reconocimiento
+    claves: [biometr, facial, huella, fingerprint, reconocimiento, recognition, liveness]
+    motivos: ["La cicatriz de Ulises (Euriclea)", La mano con sensor]
+  - tema: Secreto compartido
+    claves: [secreto, secret, shared, compartid]
+    motivos: [Penélope y la prueba de la cama]
+  - tema: Seudónimos / spoofing
+    claves: [spoof, seudónim, pseudonym, suplantaci, impersonat]
+    motivos: [Ulises se presenta como "Nadie" ante Polifemo]
+  - tema: Identidad sintética / deepfakes
+    claves: [deepfake, sintétic, synthetic, falsific, fake]
+    motivos: [Pigmalión, Proteo, Narciso, La máscara y su copia poligonal, La caverna de Platón]
+  - tema: Tokens / secretos divididos
+    claves: [token, credencial, credential, passkey, llave, key, firma, signature, certificad]
+    motivos: [Symbolon partido, "La tessera con la contraseña de los centinelas (Polibio)"]
+  - tema: Monitoreo / privacidad
+    claves: [monitor, privacidad, privacy, vigilancia, surveillance, rastreo, tracking, datos personales]
+    motivos: [Argos, La figura con el espejo y la lente, El anillo de Giges]
+  - tema: Credential stuffing
+    claves: [stuffing, fuerza bruta, brute force, filtraci, leak, breach]
+    motivos: [La Hidra]
+  - tema: Exceso de privilegios
+    claves: [privilegi, privilege, permiso, permission, sobreautoriz]
+    motivos: [Ícaro]
+  - tema: Alertas ignoradas
+    claves: [alerta, alert, advertencia, warning, ignorad]
+    motivos: [Casandra]
+  - tema: Verificación
+    claves: [verific, kyc, validaci, prueba de identidad, proofing]
+    motivos: [Diógenes con su lámpara, Perseo mira a Medusa por el escudo]
+  - tema: Recuperación de cuenta
+    claves: [recuperaci, recovery, restablec, reset]
+    motivos: [El barco de Teseo]
+  - tema: Trazabilidad / federación
+    claves: [federaci, federation, trazab, traceab, sso, openid, saml]
+    motivos: ["Ariadna (laberinto en grafito, oro solo en el hilo)"]

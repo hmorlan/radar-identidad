@@ -42,7 +42,7 @@ Hoy el workflow `.github/workflows/daily-pipeline.yml` **no tiene horario**: sol
 | Triage diario | Claude Haiku 5.5 |
 | Redacción | Claude Opus 5.5 con pensamiento adaptativo |
 | Verificación y edición | Segunda pasada de Claude Opus 5.5 |
-| Imágenes | Gemini 3 Pro Image, `gemini-3-pro-image-preview` en modo `native` (API de Google; probado el 2026-11-05). `gemini-3-pro-image` era el alias del proxy del proyecto original y no aplica |
+| Imágenes | Gemini 3 Pro Image, `gemini-3-pro-image` en modo `native` (API `v1beta`), 2 candidatas por edición en Batch API; revisión visual de cada candidata con Haiku 5.5 |
 
 Usar Batch API donde no se necesite respuesta inmediata. **No usar Fable en el pipeline** (costo).
 
@@ -103,7 +103,7 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | X y Reddit | Desactivados (APIs de pago) |
 | Prompts editoriales | `config/prompts.yaml` (en español) |
 | Modelos, keys y URL base | `config/providers.yaml` (copia de `providers.yaml.example`) |
-| Estilo de imágenes | `config/hero_style.md` (las líneas `#` no se envían al modelo) |
+| Imagen de cada edición (v3.2) | `config/hero_prompt.yaml` (bloque fijo, referencias, grabado y umbrales de control), `config/hero_motivos.yaml` (banco de motivos), `assets/hero-ref/` (2 referencias), `generators/hero_v32.py` y `generators/hero_postprocess.py`; memoria en `data/hero_historial.json` (viaja en R2) |
 | Identidad visual del sitio | `docs/identidad-visual.md` |
 | Estado de las fuentes | `docs/fuentes.md` |
 
