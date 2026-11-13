@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="diagramas.css">
+<style>
+  .lienzo { width: 1600px; }
+  .fila { display: grid; grid-template-columns: 170px 1fr; gap: 28px; position: relative; }
+  .fila + .fila { margin-top: 0; }
+  .fase { text-align: right; padding-top: 18px; }
+  .fase .romano { font-size: 22px; display: block; }
+  .fase .label { display: block; margin-top: 2px; }
+  .riel { position: relative; padding: 14px 0 26px 34px; border-left: 1px solid var(--oro); }
+  .riel::before { content: ''; position: absolute; left: -6px; top: 24px; width: 11px; height: 11px; background: var(--papel); border: 1px solid var(--oro); transform: rotate(45deg); }
+  .cajas { display: grid; gap: 14px; }
+  .c2 { grid-template-columns: repeat(2, 1fr); } .c3 { grid-template-columns: repeat(3, 1fr); } .c4 { grid-template-columns: repeat(4, 1fr); }
+  .caja { border: 1px solid var(--filete); background: var(--caja); padding: 14px 16px; }
+  .caja.clave { border-color: var(--oro); }
+  .caja .titulo { font-size: 21px; }
+  .caja .texto { font-size: 14.5px; margin-top: 4px; }
+  .modelo { display: inline-block; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--oro); border: 1px solid var(--oro); padding: 2px 6px; margin-top: 8px; }
+  .modelo.sin { color: var(--suave); border-color: var(--filete); }
+  .cadena { display: flex; align-items: stretch; gap: 0; }
+  .cadena .caja { flex: 1; }
+  .flecha { align-self: center; padding: 0 8px; color: var(--oro); font-family: 'Inter', sans-serif; font-size: 18px; }
+  .lateral { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 8px; }
+  .encabezado { display: grid; grid-template-columns: 1fr auto; align-items: end; }
+  .leyenda { text-align: right; }
+  .leyenda .modelo { margin-left: 6px; }
+</style></head>
+<body><div class="lienzo">
+  <div class="encabezado">
+    <div>
+      <div class="marca">RADAR DE IDENTIDAD</div>
+      <h1>Arquitectura del pipeline</h1>
+      <p class="bajada">Agentes por fase, con el modelo de cada paso. Corre en GitHub Actions con un tope de US$6 por corrida.</p>
+    </div>
+    <div class="leyenda"><span class="label">Modelos</span><br>
+      <span class="modelo">Opus 5.5</span><span class="modelo">Haiku 5.5</span><span class="modelo">Gemini 3 Pro Image</span><span class="modelo sin">Sin modelo</span>
+    </div>
+  </div>
+  <div class="doble"></div>
+
+  <div class="fila"><div class="fase"><span class="romano">0</span><span class="label">Contexto</span></div>
+    <div class="riel"><div class="cajas c1"><div class="caja"><div class="titulo">Contexto del ecosistema</div><p class="texto">Fechas de lanzamiento de modelos de IA, para que el análisis no confunda lo nuevo con lo viejo.</p><span class="modelo sin">Sin modelo</span></div></div></div></div>
+
+  <div class="fila"><div class="fase"><span class="romano">1</span><span class="label">Recolección</span></div>
+    <div class="riel"><div class="cajas c3">
+      <div class="caja"><div class="titulo">Noticias</div><p class="texto">43 feeds de prensa, CERTs y negocios (los ruidosos con filtro de identidad) · 23 reguladores de 8 países · 11 empresas observadas · seguidor de enlaces.</p><span class="modelo">Haiku 5.5</span> <span class="modelo sin">Filtro sin modelo</span></div>
+      <div class="caja"><div class="titulo">Investigación y estándares</div><p class="texto">arXiv cs.CR · NIST, IETF, OpenID Foundation, W3C, UK NCSC · análisis de autores independientes.</p><span class="modelo sin">Sin modelo</span></div>
+      <div class="caja"><div class="titulo">Redes</div><p class="texto">9 cuentas de Bluesky (periodistas y organizaciones independientes) y Mastodon. Solo posts propios.</p><span class="modelo sin">Sin modelo</span></div>
+    </div></div></div>
+
+  <div class="fila"><div class="fase"><span class="romano">2</span><span class="label">Análisis</span></div>
+    <div class="riel"><div class="cajas c2">
+      <div class="caja"><div class="titulo">Map: leer cada nota</div><p class="texto">Por lotes y por categoría: resumen en español, título traducido, temas y puntaje de relevancia.</p><span class="modelo">Haiku 5.5</span></div>
+      <div class="caja clave"><div class="titulo">Reduce: elegir y resumir</div><p class="texto">Selección de lo que pasa la regla de entrada y resumen de cada categoría.</p><span class="modelo">Opus 5.5</span></div>
+    </div>
+    <div class="lateral" style="grid-template-columns:1fr 1fr">
+      <div class="caja"><div class="titulo">2.5 · Continuidad</div><p class="texto">Detecta seguimientos de historias ya cubiertas y un editor decide cómo enlazarlas.</p><span class="modelo">Haiku 5.5</span> <span class="modelo">Opus 5.5</span></div>
+      <div class="caja"><div class="titulo">2.7 · Frescura</div><p class="texto">Marca lo antiguo o ya cubierto («Seguimiento», «Ya cubierta»).</p><span class="modelo sin">Sin modelo</span></div>
+    </div></div></div>
+
+  <div class="fila"><div class="fase"><span class="romano">3–4</span><span class="label">Síntesis</span></div>
+    <div class="riel"><div class="cajas c3">
+      <div class="caja"><div class="titulo">3 · Temas transversales</div><p class="texto">Los hilos que cruzan noticias, investigación y redes.</p><span class="modelo">Opus 5.5</span></div>
+      <div class="caja"><div class="titulo">4 · Resumen ejecutivo</div><p class="texto">La lectura del día en pocas líneas.</p><span class="modelo">Opus 5.5</span></div>
+      <div class="caja clave"><div class="titulo">4.2–4.3 · Notas y verificación</div><p class="texto">Redacta cada nota (qué pasó, por qué importa, pregunta de fondo, señal) y una segunda pasada la contrasta con su fuente.</p><span class="modelo">Opus 5.5 × 2</span></div>
+    </div>
+    <div class="lateral" style="grid-template-columns:1fr 1fr">
+      <div class="caja"><div class="titulo">4.5 · Enlaces internos</div><p class="texto">Conecta los resúmenes con las notas que citan.</p><span class="modelo">Haiku 5.5</span></div>
+      <div class="caja"><div class="titulo">4.6 · Lanzamientos</div><p class="texto">Detecta lanzamientos nuevos para el contexto de la próxima corrida.</p><span class="modelo">Haiku 5.5</span></div>
+    </div></div></div>
+
+  <div class="fila"><div class="fase"><span class="romano">4.7</span><span class="label">Imagen</span></div>
+    <div class="riel"><div class="cadena">
+      <div class="caja"><div class="titulo">Ejes</div><p class="texto">Motivo, escena, composición y estado, sin repetir lo reciente.</p><span class="modelo">Haiku 5.5</span></div>
+      <span class="flecha">→</span>
+      <div class="caja clave"><div class="titulo">2 candidatas</div><p class="texto">Mosaico romano con 2 referencias, en Batch API.</p><span class="modelo">Gemini 3 Pro Image</span></div>
+      <span class="flecha">→</span>
+      <div class="caja"><div class="titulo">Control</div><p class="texto">Oro medido, colores ajenos y revisión visual.</p><span class="modelo">Haiku 5.5</span></div>
+      <span class="flecha">→</span>
+      <div class="caja"><div class="titulo">Respaldo</div><p class="texto">Otro mosaico → grabado → imagen de archivo aprobada.</p></div>
+      <span class="flecha">→</span>
+      <div class="caja"><div class="titulo">Variantes</div><p class="texto">Clara, oscura y miniatura, en local.</p><span class="modelo sin">Sin modelo</span></div>
+    </div></div></div>
+
+  <div class="fila"><div class="fase"><span class="romano">5–7</span><span class="label">Salida</span></div>
+    <div class="riel"><div class="cajas c4">
+      <div class="caja"><div class="titulo">Ensamblado y JSON</div><p class="texto">Los datos del sitio, con enlaces filtrados por esquema.</p></div>
+      <div class="caja"><div class="titulo">Feeds Atom</div><p class="texto">Edición, resúmenes y categorías.</p></div>
+      <div class="caja"><div class="titulo">Búsqueda</div><p class="texto">Corpus para el buscador del sitio.</p></div>
+      <div class="caja clave"><div class="titulo">Candado</div><p class="texto">Sin imagen no se publica: la corrida queda en rojo y avisa.</p></div>
+    </div></div></div>
+
+  <div class="fila"><div class="fase"><span class="romano">→</span><span class="label">Publicación</span></div>
+    <div class="riel" style="border-left-color:transparent"><div class="cadena">
+      <div class="caja"><div class="titulo">Cloudflare R2</div><p class="texto">Archivo de ediciones e historial de imágenes, fuera del repo público.</p></div>
+      <span class="flecha">→</span>
+      <div class="caja clave"><div class="titulo">Cloudflare Pages</div><p class="texto">Sitio estático en SvelteKit: radar.hirammorlan.com.</p></div>
+      <span class="flecha">·</span>
+      <div class="caja"><div class="titulo">Salud de las fuentes</div><p class="texto">Revisión diaria sin costo; si una fuente cae dos días seguidos, avisa por correo.</p><span class="modelo sin">Sin modelo</span></div>
+    </div></div></div>
+
+  <div class="pie"><span>Código: github.com/hmorlan/radar-identidad · Parte de ai-news-aggregator (Apache 2.0).</span><span class="oro">radar.hirammorlan.com</span></div>
+</div></body></html>

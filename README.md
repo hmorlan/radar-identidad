@@ -41,13 +41,28 @@ Las imágenes se generan con Gemini 3 Pro Image (dos candidatas por edición, co
 
 ## Cómo funciona
 
-Un pipeline en Python recolecta fuentes públicas (RSS, arXiv, Mastodon y Bluesky), las filtra y redacta las notas con modelos de Claude, y genera un sitio estático en Svelte. El motor corre en GitHub Actions y el sitio se publica en Cloudflare Pages.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/como-funciona-oscuro.png">
+  <img alt="Cómo funciona el Radar de Identidad en cinco pasos: fuentes públicas, filtro de identidad, lectura y clasificación con Claude Haiku, redacción y verificación con Claude Opus, y publicación de la edición." src="docs/img/como-funciona-claro.png">
+</picture>
+
+Un pipeline en Python recolecta fuentes públicas (prensa, CERTs, reguladores, empresas observadas, arXiv, Bluesky y Mastodon), las filtra y redacta las notas con modelos de Claude, y genera un sitio estático en Svelte. El motor corre en GitHub Actions y el sitio se publica en Cloudflare Pages.
+
+### Arquitectura
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/arquitectura-oscuro.png">
+  <img alt="Arquitectura del pipeline por fases, de la 0 a la 7, con el modelo de cada paso: recolección, análisis map-reduce con Haiku y Opus, síntesis, notas con verificación, imagen con Gemini y respaldo de archivo, salida y publicación en Cloudflare R2 y Pages." src="docs/img/arquitectura-claro.png">
+</picture>
+
+Los diagramas se generan desde [`docs/diagramas/`](docs/diagramas/) (HTML con la tipografía y la paleta del sitio): `node docs/diagramas/render.cjs`. Si cambia una fase o una fuente, se actualizan en el mismo commit.
 
 | Qué | Dónde |
 |---|---|
 | Fuentes de noticias | `config/rss_feeds.txt` |
 | Fuentes de investigación | `config/research_feeds.txt` |
 | Reguladores sin RSS | `config/regulators.txt` |
+| Empresas observadas | `config/empresas.txt` |
 | Cuentas de Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
 | Prompts editoriales | `config/prompts.yaml` |
 | Modelos y API keys (local, no se sube) | `config/providers.yaml` (copia de `providers.yaml.example`) |

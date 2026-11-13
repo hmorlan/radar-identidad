@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="diagramas.css">
+<style>
+  .lienzo { width: 1600px; }
+  .pasos { display: grid; grid-template-columns: repeat(5, 1fr); position: relative; }
+  .pasos::before { content: ''; position: absolute; left: 6%; right: 6%; top: 34px; border-top: 1px solid var(--oro); }
+  .paso { padding: 0 18px; position: relative; }
+  .nodo { width: 68px; height: 68px; border: 1px solid var(--oro); background: var(--papel); display: flex; align-items: center; justify-content: center; margin: 0 auto 22px; transform: rotate(45deg); }
+  .nodo span { transform: rotate(-45deg); font-size: 28px; }
+  .paso .label { text-align: center; display: block; }
+  .paso .titulo { font-size: 27px; text-align: center; margin: 6px 0 12px; }
+  .paso .texto { text-align: center; }
+  .regla { margin: 40px auto 0; max-width: 980px; border: 1px solid var(--oro); padding: 18px 26px; text-align: center; }
+  .regla .q { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 500; font-size: 30px; color: var(--tinta); margin-top: 6px; }
+  /* Versión vertical para teléfonos (html.movil). */
+  html.movil .lienzo { width: 720px; padding: 44px 40px 36px; }
+  html.movil h1 { font-size: 46px; }
+  html.movil .pasos { grid-template-columns: 1fr; row-gap: 30px; }
+  html.movil .pasos::before { left: 34px; right: auto; top: 34px; bottom: 60px; border-top: 0; border-left: 1px solid var(--oro); }
+  html.movil .paso { display: grid; grid-template-columns: 68px 1fr; column-gap: 26px; padding: 0; }
+  html.movil .nodo { margin: 0; grid-row: span 3; }
+  html.movil .paso .label, html.movil .paso .titulo, html.movil .paso .texto { text-align: left; }
+  html.movil .paso .titulo { margin: 2px 0 6px; }
+  html.movil .texto { font-size: 18px; }
+  html.movil .regla .q { font-size: 28px; }
+  html.movil .pie { flex-direction: column; gap: 6px; }
+</style></head>
+<body><div class="lienzo">
+  <div class="marca">RADAR DE IDENTIDAD</div>
+  <h1>Cómo funciona</h1>
+  <p class="bajada">De cientos de fuentes públicas a unas cuantas notas con criterio.</p>
+  <div class="doble"></div>
+
+  <div class="pasos">
+    <div class="paso">
+      <div class="nodo"><span class="romano">I</span></div>
+      <span class="label">Recolección</span>
+      <div class="titulo">Fuentes públicas</div>
+      <p class="texto">43 medios de prensa, CERTs y negocios · 10 de estándares e investigación · arXiv · 9 cuentas de Bluesky · 23 reguladores de 8 países · 11 empresas observadas.</p>
+    </div>
+    <div class="paso">
+      <div class="nodo"><span class="romano">II</span></div>
+      <span class="label">Filtro</span>
+      <div class="titulo">Solo identidad</div>
+      <p class="texto">Las fuentes con mucho ruido pasan por un filtro de tema: credenciales, fraude, suplantación, datos personales o agentes de IA. Lo demás no entra.</p>
+    </div>
+    <div class="paso">
+      <div class="nodo"><span class="romano">III</span></div>
+      <span class="label">Lectura</span>
+      <div class="titulo">Leer y clasificar</div>
+      <p class="texto">Un modelo ligero (Claude Haiku) lee cada nota, la resume en español, le pone título y la califica por relevancia.</p>
+    </div>
+    <div class="paso">
+      <div class="nodo"><span class="romano">IV</span></div>
+      <span class="label">Redacción</span>
+      <div class="titulo">Escribir y verificar</div>
+      <p class="texto">Claude Opus elige lo importante y redacta cada nota. Una segunda pasada la contrasta con el texto de su fuente.</p>
+    </div>
+    <div class="paso">
+      <div class="nodo"><span class="romano">V</span></div>
+      <span class="label">Edición</span>
+      <div class="titulo">Publicar</div>
+      <p class="texto">Qué pasó, por qué importa, la pregunta de fondo y su nivel de señal. Con su imagen en mosaico, archivo y RSS.</p>
+    </div>
+  </div>
+
+  <div class="regla">
+    <span class="kicker">La regla de entrada</span>
+    <div class="q">¿La noticia cambia cómo decidimos en quién o en qué confiar?</div>
+  </div>
+
+  <div class="pie"><span>Cada nota enlaza a su fuente original. Sin blogs ni comunicados de proveedores de identidad.</span><span class="oro">radar.hirammorlan.com</span></div>
+</div></body></html>

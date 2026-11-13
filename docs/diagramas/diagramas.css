@@ -1,0 +1,29 @@
+/* Diagramas del Radar de Identidad (v3.2: mármol, tinta y oro).
+   Fuente de las imágenes de docs/img/como-funciona-*.png y arquitectura-*.png.
+   Para regenerarlas: node docs/diagramas/render.mjs (necesita frontend/node_modules). */
+@font-face { font-family: 'Cormorant Garamond'; font-weight: 500; src: url('../../frontend/node_modules/@fontsource/cormorant-garamond/files/cormorant-garamond-latin-500-normal.woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-weight: 600; src: url('../../frontend/node_modules/@fontsource/cormorant-garamond/files/cormorant-garamond-latin-600-normal.woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 500; src: url('../../frontend/node_modules/@fontsource/cormorant-garamond/files/cormorant-garamond-latin-500-italic.woff2'); }
+@font-face { font-family: 'Newsreader'; font-weight: 400; src: url('../../frontend/node_modules/@fontsource/newsreader/files/newsreader-latin-400-normal.woff2'); }
+@font-face { font-family: 'Newsreader'; font-style: italic; font-weight: 400; src: url('../../frontend/node_modules/@fontsource/newsreader/files/newsreader-latin-400-italic.woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 400; src: url('../../frontend/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 500; src: url('../../frontend/node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 600; src: url('../../frontend/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2'); }
+@font-face { font-family: 'Marcellus SC'; font-weight: 400; src: url('../../frontend/node_modules/@fontsource/marcellus-sc/files/marcellus-sc-latin-400-normal.woff2'); }
+
+:root { --papel:#F5F1E8; --piedra:#E4DDCC; --filete:#DCD4BF; --caja:#EFE9DB; --tinta:#14171C; --cuerpo:#2A2E35; --suave:#5A5F66; --oro:#7A5C18; }
+html.oscuro { --papel:#0E0F12; --piedra:#2A2B2F; --filete:#2A2B2F; --caja:#17181D; --tinta:#ECE6D8; --cuerpo:#D9D3C5; --suave:#A39D8F; --oro:#D4AF5A; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--papel); color: var(--tinta); font-family: 'Newsreader', Georgia, serif; -webkit-font-smoothing: antialiased; }
+.lienzo { padding: 56px 64px 48px; }
+.marca { font-family: 'Marcellus SC', serif; letter-spacing: .3em; font-size: 15px; color: var(--suave); }
+h1 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 52px; line-height: 1.05; margin-top: 10px; }
+.bajada { font-style: italic; font-size: 20px; color: var(--suave); margin-top: 8px; }
+.doble { border-top: 1px solid var(--tinta); border-bottom: 1px solid var(--tinta); height: 5px; margin: 28px 0 32px; }
+.kicker { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--oro); }
+.label { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--suave); }
+.romano { font-family: 'Cormorant Garamond', serif; font-weight: 600; color: var(--oro); }
+.titulo { font-family: 'Cormorant Garamond', serif; font-weight: 600; color: var(--tinta); line-height: 1.15; }
+.texto { font-size: 16px; line-height: 1.5; color: var(--cuerpo); }
+.pie { font-style: italic; font-size: 15px; color: var(--suave); margin-top: 36px; border-top: 1px solid var(--filete); padding-top: 14px; display: flex; justify-content: space-between; }
+.oro { color: var(--oro); }
