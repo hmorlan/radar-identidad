@@ -21,6 +21,10 @@ on:
         description: "Optional LLM model ID override for this run."
         required: false
         type: string
+      max_cost_usd:
+        description: "Tope de gasto de Claude para esta corrida (US$). Por defecto, la variable PIPELINE_MAX_COST_USD o 6."
+        required: false
+        type: string
       commit_outputs:
         description: "Guardar las ediciones en el repo (público). En la beta: no."
         required: false
@@ -96,7 +100,7 @@ jobs:
       PIPELINE_IMAGE_MODEL: ${{ vars.PIPELINE_IMAGE_MODEL || 'gemini-3-pro-image' }}
       # Radar de Identidad: modelo ligero (triage) y tope de gasto por corrida (USD).
       PIPELINE_LIGHT_MODEL: ${{ vars.PIPELINE_LIGHT_MODEL || 'claude-haiku-5-5' }}
-      PIPELINE_MAX_COST_USD: ${{ vars.PIPELINE_MAX_COST_USD || '6' }}
+      PIPELINE_MAX_COST_USD: ${{ inputs.max_cost_usd || vars.PIPELINE_MAX_COST_USD || '6' }}
       LLM_TRUST_ENV_PROXY: ${{ vars.LLM_TRUST_ENV_PROXY || 'false' }}
       # Radar: las notas de la edición (Opus, effort max) pasaron de 240 s en la primera corrida.
       LLM_TIMEOUT_SECONDS: ${{ vars.LLM_TIMEOUT_SECONDS || '600' }}
