@@ -374,6 +374,10 @@ class JSONGenerator:
         hero = self._sanitize_hero_image(result.get('hero_image'))
         if hero and hero.get('thumb_url'):
             date_entry['hero_thumb'] = hero['thumb_url']
+            # Para la cuadrícula del archivo: motivo y texto alternativo de la miniatura.
+            for key, field in (('motivo', 'hero_motivo'), ('alt', 'hero_alt')):
+                if hero.get(key):
+                    date_entry[field] = hero[key]
 
         for category, report in category_reports.items():
             all_items = report.get('all_items', [])

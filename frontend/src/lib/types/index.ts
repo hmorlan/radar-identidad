@@ -168,6 +168,9 @@ export interface DateEntry {
 	tipo?: 'diario' | 'domingo';
 	/** Miniatura clara de la imagen de la edición. */
 	hero_thumb?: string;
+	/** Motivo de la imagen (p. ej. "Talos") y su texto alternativo. */
+	hero_motivo?: string;
+	hero_alt?: string;
 	categories: Record<Category, { count: number; file_size: number }>;
 }
 
