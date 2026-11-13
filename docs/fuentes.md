@@ -8,18 +8,19 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 |---|---|---|
 | Prensa de seguridad | The Record, Krebs on Security, Dark Reading, SecurityWeek, BleepingComputer; **desde 2026-11-11:** TechCrunch Security, 404 Media, CyberScoop, The Register (seguridad), Wired (seguridad), CSO Online, Infosecurity Magazine, Cybersecurity Dive | ~42 |
 | CERTs nacionales (nuevo) | CERT-FR (filtrado), INCIBE-CERT (filtrado) | ~1 tras el filtro |
-| Identidad | Biometric Update, FIDO Alliance | ~10 |
+| Identidad | Biometric Update, ID Tech (filtrada, desde 2026-11-12), FIDO Alliance | ~11 |
 | Español (LATAM y España) | Ciberseguridad LATAM, DPL News, Expansión Tecnología, iupana; **desde 2026-11-11, filtradas:** EL PAÍS, elDiario.es y ABC (Tecnología), EL TIEMPO (Colombia), LA NACION (Argentina), Bloomberg Línea | ~20 + ~1 tras el filtro |
 | Banca, pagos y agentes en EE. UU. (2026-11-11) | American Banker, Banking Dive, Payments Dive, The Verge (IA); PYMNTS y Axios filtradas | ~25 |
 | Gobierno de EE. UU. (2026-11-11) | CISA avisos y noticias (filtradas), FBI IC3 (avisos al público) | ~1 |
 | Negocios LatAm (2026-11-11, filtradas) | Expansión Empresas, El Economista, Portafolio, Gestión, Diario Financiero, El Financiero (Costa Rica), Just Retail Latam | ~1 tras el filtro |
-| Fundaciones de código abierto (2026-11-12) | Linux Foundation, comunicados (filtrado): estándares abiertos de agentes como Agent Name Service, AGNTCY o A2A | ~1/semana tras el filtro |
+| Fundaciones y estándares de agentes e identidad (2026-11-12, todos filtrados) | Linux Foundation (comunicados), Decentralized Identity Foundation, Model Context Protocol (blog oficial), AGNTCY, OWASP Gen AI Security Project, Coalition for Secure AI, OpenWallet Foundation; IETF Web Bot Auth, SPICE y SCIM | ~3/semana tras el filtro |
+| Iniciativas sin feed, por Google News (2026-11-12) | Protocolos e identidad de agentes (Agent Name Service, Agentic AI Foundation, A2A, AGNTCY, MCP) y la cartera europea de identidad digital (EUDI, eIDAS), en `config/empresas.txt`; ENISA en `config/regulators.txt` | según la semana |
 | Estándares y gobierno | NIST Cybersecurity Insights, NIST CSRC (borradores), IETF OAuth WG, IETF WIMSE WG, OpenID Foundation, W3C, UK NCSC | ~1.5 |
 | Redes | Brian Krebs (Mastodon); **Bluesky desde 2026-11-11:** Zack Whittaker, Lorenzo Franceschi-Bicchierai, 404 Media, EFF, Access Now, noyb, Derechos Digitales, R3D, Heather Flanagan | ~10 |
 | Análisis de autor | Juan Pablo Castro (Cybersecurity Compass), Heather Flanagan (Spherical Cow), Mike Jones (self-issued.info) | ~0.3 |
 | Investigación | arXiv cs.CR | ~35 |
 
-**Total: 54 feeds + 9 cuentas de Bluesky + arXiv cs.CR + 23 reguladores + 11 empresas observadas.** En noticias, ~100 entradas/día antes del triage (el 4 nov eran ~45). Medido con 7 días, los 15 feeds del 11 nov (segunda ronda) aportan ~35 entradas por semana después del filtro.
+**Total: 64 feeds + 9 cuentas de Bluesky + arXiv cs.CR + 24 reguladores + 13 empresas e iniciativas observadas.** En noticias, ~100 entradas/día antes del triage (el 4 nov eran ~45). Medido con 7 días, los 15 feeds del 11 nov (segunda ronda) aportan ~35 entradas por semana después del filtro.
 
 **Política agnóstica (2026-11-04):** no se usan blogs de proveedores (Okta, Auth0, Ping, Jumio y similares). Las empresas solo entran a través de fuentes independientes. El 2026-11-12 se retiraron WeLiveSecurity (blog de ESET) y Una al Día (Hispasec): son empresas de seguridad y la política excluye a proveedores de identidad, seguridad, fraude o verificación como fuente.
 
@@ -28,6 +29,8 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 **Bluesky (2026-11-11):** solo posts propios (sin respuestas ni reposts, porque un repost trae cuentas que no pasaron la revisión), máximo 10 por cuenta y día (`BLUESKY_MAX_POSTS_PER_HANDLE`). Los enlaces completos (facetas y tarjeta) se agregan al contenido para que el seguidor de enlaces llegue a la nota original. Las organizaciones de derechos digitales tienen postura: se citan por nombre, como el análisis de autor, no como noticia.
 
 **Empresas observadas (2026-11-11):** `config/empresas.txt` sigue por nombre a empresas que adoptan identidad digital o agentes: Meta (Muse), Mercado Libre y Mercado Pago, Coppel y BanCoppel, Liverpool, Aeroméxico, Volaris, Davivienda, Banco de Costa Rica, Banco Industrial, Banrural y Falabella. Mismo recolector que los reguladores (Google News), pero sin `site:` y sin palabras clave en la consulta (con ellas Google devuelve notas de hace meses): se buscan las notas de los últimos días y solo pasan los títulos que tocan identidad, fraude, datos personales, biometría o agentes. Máximo 4 por empresa y corrida. Entran como sujeto de la nota, nunca como fuente de análisis (ver CLAUDE.md). Se descartaron los scrapers de salas de prensa corporativas: frágiles (Liverpool publica en `.docx`, Aeroméxico muestra páginas de mantenimiento) y casi todo ruido. Medido con 7 días: 6 notas (4 sobre Muse en México, 2 de estafas que suplantan a Mercado Libre); Coppel, Davivienda y los bancos de Centroamérica no tuvieron notas de identidad esa semana.
+
+**Comunicados por agencia (2026-11-12):** en todo lo que llega por Google News (reguladores, empresas e iniciativas) se descartan los títulos de agencias de comunicados (GlobeNewswire, PR Newswire, Business Wire y similares): son comunicados de empresas tal cual, no cobertura independiente.
 
 **Descartadas:** El Financiero (sin notas de identidad), CISA y El Economista (403), feed antiguo de ESET (dominio muerto), Microsoft Entra (inactivo desde hace más de un año), OWASP (inactivo desde junio). En la ronda del 2026-11-11: Help Net Security y Finextra (muchas notas de producto y comunicados de empresas), Xataka, Omicrono y Clarín (casi nada de identidad), SC Media (feed vacío), Infobae (feed vacío), Forbes México (403).
 

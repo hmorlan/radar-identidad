@@ -99,8 +99,8 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | Fuentes de noticias | `config/rss_feeds.txt` |
 | Investigación y estándares | `config/research_feeds.txt` |
 | arXiv | `agents/gatherers/research_gatherer.py` (`CATEGORIES`, hoy solo `cs.CR`) |
-| Reguladores sin RSS (MX, ES, CO, AR, CL, PE, CR, EE. UU.) | `config/regulators.txt` → `agents/gatherers/regulator_sources.py` (página de prensa directa o Google News; vista previa: `python3 -m agents.gatherers.regulator_sources --hours 72`) |
-| Empresas observadas (bancos, retail, aerolíneas, plataformas) | `config/empresas.txt`, mismo recolector por Google News (vista previa: `python3 -m agents.gatherers.regulator_sources --empresas --hours 168`) |
+| Reguladores sin RSS (MX, ES, CO, AR, CL, PE, CR, EE. UU., UE) | `config/regulators.txt` → `agents/gatherers/regulator_sources.py` (página de prensa directa o Google News; vista previa: `python3 -m agents.gatherers.regulator_sources --hours 72`) |
+| Empresas e iniciativas observadas (bancos, retail, aerolíneas, plataformas, protocolos de agentes, cartera europea) | `config/empresas.txt`, mismo recolector por Google News (vista previa: `python3 -m agents.gatherers.regulator_sources --empresas --hours 168`) |
 | Filtro previo de identidad para fuentes ruidosas | Directiva `filtro=identidad` en `config/rss_feeds.txt` → `agents/gatherers/identity_filter.py` |
 | Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
 | X y Reddit | Desactivados (APIs de pago) |

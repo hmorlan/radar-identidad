@@ -1,5 +1,6 @@
 # Radar de Identidad: feeds de investigación, estándares y blogs técnicos, uno por línea.
-# Directiva opcional por feed: <url>  proxy=off | proxy=on
+# Directivas opcionales por feed: <url>  proxy=off | proxy=on, y filtro=identidad (solo
+# entradas con tema de identidad; ver agents/gatherers/identity_filter.py).
 # Verificado 2026-11-04 con scripts/check_feeds.py (respuesta 200 y publicación reciente).
 
 # ===== Estándares y gobierno =====
@@ -19,6 +20,29 @@ https://datatracker.ietf.org/group/wimse/documents/feed/?significant=1
 https://www.ncsc.gov.uk/api/1/services/v1/all-rss-feed.xml
 
 # ===== Análisis de autor (opinión de expertos independientes; citar por nombre) =====
+# ===== Estándares y fundaciones (agregado 2026-11-12, todos con filtro de identidad) =====
+# Decentralized Identity Foundation (DIF), ~1/semana: DIDs, credenciales verificables,
+# identidad de agentes
+https://blog.identity.foundation/rss/  filtro=identidad
+# Model Context Protocol, blog oficial (proyecto de la Agentic AI Foundation, Linux
+# Foundation), ~1-2/semana: su autorización se basa en OAuth
+https://blog.modelcontextprotocol.io/index.xml  filtro=identidad
+# AGNTCY (Linux Foundation), ~1/mes: directorio e identidad de agentes; soporta ANS
+https://blogs.agntcy.org/feed.xml  filtro=identidad
+# OWASP Gen AI Security Project, ~1/mes: riesgos de aplicaciones con agentes
+https://genai.owasp.org/feed/  filtro=identidad
+# Coalition for Secure AI (CoSAI, OASIS), ~1/mes: seguridad e identidad de agentes
+https://www.coalitionforsecureai.org/feed/  filtro=identidad
+# OpenWallet Foundation (Linux Foundation), ~1/mes: carteras de identidad digital
+https://openwallet.foundation/feed/  filtro=identidad
+# IETF Web Bot Auth WG: cómo se autentican bots y agentes ante los sitios web (todos los
+# cambios de sus borradores: con "significant=1" estos grupos chicos dejan el feed vacío)
+https://datatracker.ietf.org/group/webbotauth/documents/feed/
+# IETF SPICE WG: credenciales digitales y verificables
+https://datatracker.ietf.org/group/spice/documents/feed/
+# IETF SCIM WG: aprovisionamiento de identidades entre dominios
+https://datatracker.ietf.org/group/scim/documents/feed/
+
 # Juan Pablo Castro, Cybersecurity Compass (Medium), ~2-4/mes, en inglés; ensayos largos sobre
 # riesgo cibernético y agentes de IA. Útil para "La pregunta de fondo" y el análisis semanal.
 https://cybersecuritycompass.org/feed/
@@ -35,4 +59,9 @@ https://self-issued.info/?feed=rss2
 # (p. ej. Aaron Parecki, Start with Identity): fuera por la misma política.
 # INCIBE-CERT blog: el feed responde 404 (se probaron 4 rutas alternativas).
 # Microsoft Entra (Tech Community): sin publicaciones en más de un año.
-# OWASP: sin publicaciones desde junio de 2026.
+# OWASP (blog general): sin publicaciones desde junio de 2026; se usa su Gen AI Security Project.
+# Revisadas el 2026-11-12 y descartadas: Cloud Security Alliance (muchas entradas las
+# escriben empresas del sector), Trust Over IP y Kantara (inactivas desde enero y mayo),
+# OASIS (noticias generales). Sin RSS: Agentic AI Foundation, A2A, ENISA y la cartera
+# europea de identidad digital; se siguen por Google News (config/empresas.txt y
+# config/regulators.txt).

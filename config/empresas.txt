@@ -15,6 +15,13 @@
 # Formato: PAÍS | Nombre | consulta de Google News (entre comillas para nombres exactos;
 # con contexto cuando el nombre es ambiguo, como Liverpool o Banco Industrial).
 
+# ===== Estándares e iniciativas sin feed propio (agregado 2026-11-12) =====
+# Proyectos abiertos de identidad y protocolos de agentes que no publican RSS: se siguen
+# por nombre. Los comunicados que llegan por agencias (GlobeNewswire, PR Newswire...)
+# se descartan siempre: son comunicados de empresas tal cual.
+GLOBAL | Protocolos e identidad de agentes | "Agent Name Service" OR "Agentic AI Foundation" OR "Agent2Agent" OR "A2A protocol" OR AGNTCY OR "Model Context Protocol"
+EU | Cartera europea de identidad digital | "EUDI Wallet" OR "European Digital Identity Wallet" OR eIDAS
+
 # ===== Plataformas de agentes =====
 MX | Meta (Muse) | "Muse" Meta agente
 LATAM | Mercado Libre y Mercado Pago | "Mercado Pago" OR "Mercado Libre"

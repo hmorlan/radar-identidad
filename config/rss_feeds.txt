@@ -83,6 +83,8 @@ https://www.linuxfoundation.org/press/rss.xml  filtro=identidad
 # ===== Prensa especializada en identidad =====
 # Biometric Update, ~9/día; relevancia alta (verificación de identidad, KYC, ID digital, agentes)
 https://feeds.feedburner.com/biometricupdate
+# ID Tech, ~1-2/día: prensa del sector identidad (biometría, verificación, carteras); filtrado
+https://idtechwire.com/feed/  filtro=identidad
 # FIDO Alliance (noticias y cobertura de passkeys), ~5/semana; relevancia muy alta
 https://fidoalliance.org/feed/
 

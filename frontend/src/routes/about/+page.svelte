@@ -63,11 +63,11 @@
 			<summary class="t-ui !text-[12px] text-oro cursor-pointer">Ver la arquitectura completa</summary>
 			<figure class="mt-4 -mx-2 sm:mx-0">
 				<a href="/img/arquitectura-claro.webp" class="block dark:hidden" target="_blank" rel="noopener">
-					<img src="/img/arquitectura-claro.webp" width="2400" height="2595" loading="lazy" class="w-full h-auto border border-filete"
+					<img src="/img/arquitectura-claro.webp" width="2400" height="2628" loading="lazy" class="w-full h-auto border border-filete"
 						alt="Arquitectura del pipeline por fases, con el modelo de cada paso." />
 				</a>
 				<a href="/img/arquitectura-oscuro.webp" class="hidden dark:block" target="_blank" rel="noopener">
-					<img src="/img/arquitectura-oscuro.webp" width="2400" height="2595" loading="lazy" class="w-full h-auto border border-filete"
+					<img src="/img/arquitectura-oscuro.webp" width="2400" height="2628" loading="lazy" class="w-full h-auto border border-filete"
 						alt="Arquitectura del pipeline por fases, con el modelo de cada paso." />
 				</a>
 				<figcaption class="t-ui !normal-case !tracking-normal !text-[12px] text-tinta-suave mt-2">

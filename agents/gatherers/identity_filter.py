@@ -34,7 +34,8 @@ _TERMS = [
     r"fraud", r"estafa", r"arnaque", r"\bscams?\b", r"robo de datos", r"filtraci[oó]n de datos",
     r"data breach", r"fuite de donn",
     # Verificación, regulación e identidad digital
-    r"\bkyc\b", r"biometr", r"reconocimiento facial", r"facial recogn", r"reconnaissance faciale",
+    r"verifiable credential", r"credenciales? verificables?", r"decentrali[sz]ed identi",
+    r"identificador(?:es)? descentralizado", r"\bkyc\b", r"biometr", r"reconocimiento facial", r"facial recogn", r"reconnaissance faciale",
     r"verificaci[oó]n de (?:identidad|edad)", r"identity verification", r"age verification",
     r"v[ée]rification d.(?:identit|[aâ]ge)", r"eidas", r"digital wallet", r"identity wallet",
     r"cartera digital", r"\bcurp\b", r"firma electr", r"signature [ée]lectronique",

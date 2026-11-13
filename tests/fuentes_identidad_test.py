@@ -20,6 +20,7 @@ class IdentityFilterTest(unittest.TestCase):
             "Multiples vulnérabilités dans le greffon OpenID Connect",
             "Airbnb lanzará un agente de viajes con inteligencia artificial",
             "Nueva ley de protección de datos personales en Chile",
+            "DIF publishes a verifiable credentials interop profile",
         ]:
             self.assertTrue(identity_filter.matches(text), text)
 
@@ -152,6 +153,16 @@ class EmpresasYReguladoresTest(unittest.TestCase):
             got = rs.collect([spec], datetime(2026, 11, 10), datetime(2026, 11, 12),
                              session=session, pause=0, max_per_spec=4)
         self.assertEqual(len(got), 4)
+
+    def test_press_wires_and_english_watches(self):
+        from urllib.parse import urlparse, parse_qs
+        from agents.gatherers import regulator_sources as rs
+        self.assertTrue(rs.is_press_wire("Acme Joins Agentic AI Foundation - GlobeNewswire"))
+        self.assertTrue(rs.is_press_wire("Acme launches agent ID - PR Newswire"))
+        self.assertFalse(rs.is_press_wire("Linux Foundation launches Agent Name Service - IT Brief Australia"))
+        [watch] = rs.parse_empresas(['GLOBAL | Protocolos | "Agent Name Service"'])
+        self.assertIn("gl=US", rs.search_url(watch, 2))
+        self.assertTrue(rs.TOPIC_RE.search("Linux Foundation launches Agent Name Service for AI agents"))
 
     def test_config_files_parse(self):
         from agents.gatherers import regulator_sources as rs

@@ -51,6 +51,8 @@ COUNTRY_NAMES = {
     "CR": "Costa Rica",
     "GT": "Guatemala",
     "US": "EE. UU.",
+    "EU": "Unión Europea",
+    "GLOBAL": "Global",
     "LATAM": "Latinoamérica",
 }
 
@@ -61,7 +63,10 @@ QUERY_KEYWORDS = (
     'OR "datos personales" OR "inteligencia artificial" OR credenciales)'
 )
 
-# Consulta en inglés (reguladores de EE. UU.).
+# Países y ámbitos que se buscan en inglés (Google News de EE. UU.).
+ENGLISH_COUNTRIES = {"US", "EU", "GLOBAL"}
+
+# Consulta en inglés (reguladores de EE. UU. y la UE).
 QUERY_KEYWORDS_EN = (
     '(identity OR "identity theft" OR impersonation OR fraud OR scam OR phishing OR '
     'authentication OR password OR biometric OR deepfake OR "account takeover" OR '
@@ -76,7 +81,8 @@ TOPIC_RE = re.compile(
     r"robo de cuenta|verificaci[oó]n|deepfake|criptograf|agentes? de ia|\bIA\b|\bmuse\b|"
     r"reconocimiento facial|passkey|"
     r"identity|impersonat|fraud|scam|authenticat|password|biometric|account takeover|"
-    r"data broker|personal data|privacy|artificial intelligence|\bAI\b|cyber",
+    r"data broker|personal data|privacy|artificial intelligence|\bAI\b|cyber|"
+    r"agentic|\bai agents?\b|verifiable credential|digital wallet|identity wallet|\beudi\b",
     re.I,
 )
 
@@ -168,6 +174,19 @@ def load_empresas(config_dir: str) -> List[RegulatorSpec]:
     return parse_empresas(path.read_text(encoding="utf-8").splitlines())
 
 
+# Agencias de comunicados de prensa: son comunicados de empresas tal cual (política
+# agnóstica), no cobertura independiente. Google News las pone tras " - ".
+PRESS_WIRE_RE = re.compile(
+    r"\s-\s(?:GlobeNewswire|PR Newswire|PRNewswire|Business Wire|BusinessWire|Accesswire|"
+    r"ACCESS Newswire|EIN Presswire|Newsfile|PRWeb|Cision|Morningstar)\b[^-]*$",
+    re.I,
+)
+
+
+def is_press_wire(title: str) -> bool:
+    return bool(PRESS_WIRE_RE.search(title or ""))
+
+
 def clean_title(title: str) -> str:
     """Drop the ' - Source name' suffix Google News appends."""
     return re.sub(r"\s+-\s+[^-]{2,80}$", "", title or "").strip()
@@ -187,15 +206,15 @@ def is_evergreen(title: str, spec: RegulatorSpec) -> bool:
 
 
 def search_url(spec: RegulatorSpec, days: int) -> str:
+    english = spec.country in ENGLISH_COUNTRIES
     if spec.query:
         # Sin palabras clave: con ellas Google ordena por relevancia y devuelve notas
         # de hace meses. Solo el nombre y la ventana; el tema lo filtra TOPIC_RE.
         query = f"({spec.query}) when:{max(days, 1)}d"
     else:
-        keywords = QUERY_KEYWORDS_EN if spec.country == "US" else QUERY_KEYWORDS
+        keywords = QUERY_KEYWORDS_EN if english else QUERY_KEYWORDS
         query = f"site:{spec.site} {keywords} when:{max(days, 1)}d"
-    locale = ("&hl=en-US&gl=US&ceid=US:en" if spec.country == "US" and not spec.query
-              else "&hl=es-419&gl=MX&ceid=MX:es-419")
+    locale = "&hl=en-US&gl=US&ceid=US:en" if english else "&hl=es-419&gl=MX&ceid=MX:es-419"
     return f"{GOOGLE_NEWS_SEARCH}?q={urllib.parse.quote(query)}{locale}"
 
 
@@ -386,7 +405,7 @@ def collect(
             if not (start <= published <= end):
                 continue
             title = entry.get("title", "")
-            if is_evergreen(title, spec) or not TOPIC_RE.search(clean_title(title)):
+            if is_evergreen(title, spec) or is_press_wire(title) or not TOPIC_RE.search(clean_title(title)):
                 continue
             url = decode_google_news_url(entry.get("link", ""), session)
             time.sleep(pause)

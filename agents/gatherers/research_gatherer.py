@@ -24,6 +24,7 @@ from typing import List, Optional
 import feedparser
 import requests
 
+from . import identity_filter
 from ..base import BaseGatherer, CollectedItem, step_label_for_url
 from ..html_text import html_to_text
 from .arxiv_oai import ArxivOAIHarvester
@@ -512,6 +513,7 @@ class ResearchGatherer(BaseGatherer):
         # Accept either a FeedSpec or a plain URL for backward compatibility.
         feed_url = getattr(feed, 'url', feed)
         use_proxy = getattr(feed, 'use_proxy', None)
+        filtro = getattr(feed, 'filtro', None)
 
         try:
             logger.debug(
@@ -586,6 +588,13 @@ class ResearchGatherer(BaseGatherer):
 
                     if is_trend_feed and not self._is_trend_ai_relevant(title, content_text, tags):
                         trend_filtered += 1
+                        continue
+
+                    # Fuentes que publican de todo (fundaciones, organismos): solo
+                    # entradas con tema de identidad (directiva filtro=identidad).
+                    if filtro == 'identidad' and not identity_filter.matches(
+                        f"{title} {' '.join(tags)} {content_text[:1500]}"
+                    ):
                         continue
 
                     # Handle author as list (some feeds)

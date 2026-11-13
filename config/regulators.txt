@@ -57,3 +57,7 @@ CR | SUGEF | sugef.fi.cr
 US | FTC | ftc.gov
 US | CFPB | consumerfinance.gov
 US | FinCEN | fincen.gov
+
+# ===== Unión Europea (agregado 2026-11-12) =====
+# ENISA, agencia de ciberseguridad de la UE; no tiene RSS. Se consulta en inglés.
+EU | ENISA | enisa.europa.eu
