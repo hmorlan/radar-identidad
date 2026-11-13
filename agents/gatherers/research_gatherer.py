@@ -592,8 +592,8 @@ class ResearchGatherer(BaseGatherer):
 
                     # Fuentes que publican de todo (fundaciones, organismos): solo
                     # entradas con tema de identidad (directiva filtro=identidad).
-                    if filtro == 'identidad' and not identity_filter.matches(
-                        f"{title} {' '.join(tags)} {content_text[:1500]}"
+                    if filtro and not identity_filter.matches_feed_entry(
+                        filtro, f"{title} {' '.join(tags)}", content_text
                     ):
                         continue
 

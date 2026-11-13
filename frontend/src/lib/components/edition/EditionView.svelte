@@ -44,7 +44,7 @@
 	$: meta = [
 		notes.length ? `${notes.length} notas` : '',
 		notes.length ? `${readingMinutes} min` : '',
-		`${summary.total_items_analyzed} fuentes revisadas`
+		`${summary.total_items_analyzed} notas analizadas`
 	]
 		.filter(Boolean)
 		.join(' · ');

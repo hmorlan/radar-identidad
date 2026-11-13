@@ -281,7 +281,7 @@
 			<a href={overviewHref} class="t-meta text-electric hover:underline">&larr; Volver a la edición</a>
 			<h1 class="t-display-hero text-ink mt-3">{config.title}</h1>
 			{#if categoryData}
-				<p class="t-meta text-ink-muted mt-2">{categoryData.total_items} fuentes revisadas · {effectiveDate}</p>
+				<p class="t-meta text-ink-muted mt-2">{categoryData.total_items} notas analizadas · {effectiveDate}</p>
 			{/if}
 		</div>
 	{/if}
@@ -398,7 +398,7 @@
 						Resumen de la edición
 					</h2>
 					<span class="text-sm text-radar-gray-500 dark:text-radar-gray-400">
-						{summary.total_items_analyzed} fuentes revisadas
+						{summary.total_items_analyzed} notas analizadas
 					</span>
 				</div>
 				<div class="prose-summary max-w-none">

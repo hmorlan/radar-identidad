@@ -32,23 +32,51 @@ _TERMS = [
     r"phishing", r"smishing", r"vishing", r"hame[cç]onnage", r"suplant", r"usurpa", r"impersonat",
     r"spoof", r"deepfake", r"ultrafalso", r"voz clonada", r"clonaci[oó]n de voz", r"voice clon",
     r"fraud", r"estafa", r"arnaque", r"\bscams?\b", r"robo de datos", r"filtraci[oó]n de datos",
-    r"data breach", r"fuite de donn",
+    r"data breach", r"\bbreach", r"fuite de donn", r"brecha de (?:datos|seguridad)",
+    r"(?:datos|información) (?:filtrad|expuest|robad)", r"se filtraron", r"ciberataque", r"hackeo",
     # Verificación, regulación e identidad digital
     r"verifiable credential", r"credenciales? verificables?", r"decentrali[sz]ed identi",
     r"identificador(?:es)? descentralizado", r"\bkyc\b", r"biometr", r"reconocimiento facial", r"facial recogn", r"reconnaissance faciale",
     r"verificaci[oó]n de (?:identidad|edad)", r"identity verification", r"age verification",
-    r"v[ée]rification d.(?:identit|[aâ]ge)", r"eidas", r"digital wallet", r"identity wallet",
+    r"v[ée]rification d.(?:identit|[aâ]ge)", r"eidas", r"\beudi\b", r"digital id\b", r"\bid digital", r"digital driver.?s licen[cs]e",
+    r"licencia (?:de conducir )?digital", r"digital wallet", r"identity wallet",
     r"cartera digital", r"\bcurp\b", r"firma electr", r"signature [ée]lectronique",
     r"protecci[oó]n de datos", r"datos personales", r"privacy", r"\bgdpr\b", r"\brgpd\b",
     # Agentes de IA que actúan en nuestro nombre
     r"agentes? de (?:ia|inteligencia artificial)", r"\bagentes?\b.{0,60}\b(?:ia|inteligencia artificial)\b", r"\bai agents?\b", r"\bagentic", r"\bmcp\b",
-    r"agent d.ia", r"agents? ia\b",
+    r"agent d.ia", r"agents? ia\b", r"agent name service", r"agent identity", r"identidad de (?:los )?agentes",
 ]
 _RE = re.compile("|".join(_TERMS), re.IGNORECASE)
 
-FILTERS = {"identidad"}
+FILTERS = {"identidad", "titulo"}
 
 
 def matches(text: str) -> bool:
     """True si el texto toca algo de identidad (criterio amplio)."""
     return bool(text) and bool(_RE.search(text))
+
+
+def matches_feed_entry(filtro: str, title: str, content: str = "") -> bool:
+    """Aplica la directiva de un feed.
+
+    - ``identidad``: título y resumen (primeros 1500 caracteres).
+    - ``titulo``: solo el título. Para boletines como los de CERT-FR, cuya
+      descripción siempre lista impactos genéricos ("usurpation", "élévation de
+      privilèges") aunque el aviso no tenga nada de identidad.
+    """
+    if filtro == "titulo":
+        return matches(title)
+    return matches(f"{title} {(content or '')[:1500]}")
+
+
+# Contenido patrocinado que algunos medios (The Hacker News, SC Media) publican en su
+# feed de noticias: webinars, "expert insights" y notas pagadas. No es cobertura.
+_SPONSORED_RE = re.compile(
+    r"^\s*(?:\[?(?:webinar|sponsored|patrocinado|expert insights?|partner content)\]?\s*[:|\-–]|"
+    r"\[?(?:webinar|sponsored)\])",
+    re.IGNORECASE,
+)
+
+
+def is_sponsored(title: str) -> bool:
+    return bool(_SPONSORED_RE.search(title or ""))

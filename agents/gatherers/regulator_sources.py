@@ -187,6 +187,16 @@ def is_press_wire(title: str) -> bool:
     return bool(PRESS_WIRE_RE.search(title or ""))
 
 
+def _on_topic(title: str, spec: "RegulatorSpec") -> bool:
+    """Reguladores: TOPIC_RE (amplio, sus notas ya son del tema). Empresas e
+    iniciativas observadas: el filtro de identidad estricto, porque con TOPIC_RE
+    bastaba "IA" para que entrara una oferta de bocinas en Mercado Libre."""
+    if spec.query:
+        from .identity_filter import matches
+        return matches(clean_title(title))
+    return bool(TOPIC_RE.search(clean_title(title)))
+
+
 def clean_title(title: str) -> str:
     """Drop the ' - Source name' suffix Google News appends."""
     return re.sub(r"\s+-\s+[^-]{2,80}$", "", title or "").strip()
@@ -405,7 +415,7 @@ def collect(
             if not (start <= published <= end):
                 continue
             title = entry.get("title", "")
-            if is_evergreen(title, spec) or is_press_wire(title) or not TOPIC_RE.search(clean_title(title)):
+            if is_evergreen(title, spec) or is_press_wire(title) or not _on_topic(title, spec):
                 continue
             url = decode_google_news_url(entry.get("link", ""), session)
             time.sleep(pause)

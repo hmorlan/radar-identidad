@@ -16,6 +16,7 @@ la respuesta y se aplica el resultado.
 from __future__ import annotations
 
 import json
+import re
 import logging
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -74,11 +75,33 @@ class Edition:
         return cls(titular=data.get("titular", ""), notas=notes)
 
 
+# Candidatos extra de noticias fuera del top 10: Latinoamérica y España, y lo que
+# llega de reguladores y empresas o iniciativas observadas. Sin esto, en la corrida
+# del 13 nov la Ley de Economía Digital (México) y Agent Name Service no llegaron al
+# editor aunque sí se recolectaron.
+EXTRA_REGIONAL = 4
+EXTRA_MIN_SCORE = 45
+_REGIONAL_COUNTRIES = {"MX", "ES", "CO", "AR", "CL", "PE", "CR", "GT", "LATAM"}
+_ES_WORDS = re.compile(r"\b(?:el|la|los|las|del|para|por|con|una|que|en)\b", re.I)
+
+
+def _is_regional_or_watched(a: AnalyzedItem) -> bool:
+    item = a.item
+    meta = item.metadata or {}
+    if item.source_type in ("regulator", "empresa"):
+        return True
+    if str(meta.get("country", "")).upper() in _REGIONAL_COUNTRIES:
+        return True
+    return len(_ES_WORDS.findall(item.title or "")) >= 2  # título original en español
+
+
 def collect_candidates(
     category_reports: Dict[str, CategoryReport],
     limits: Optional[Dict[str, int]] = None,
+    extra_regional: int = EXTRA_REGIONAL,
 ) -> List[Tuple[str, AnalyzedItem]]:
-    """Top items from every category, best first, without duplicates."""
+    """Top items from every category, best first, without duplicates; plus a few
+    regional or watched news items with a decent score from outside the top."""
     limits = {**DEFAULT_LIMITS, **(limits or {})}
     seen, out = set(), []
     for category, report in category_reports.items():
@@ -87,6 +110,17 @@ def collect_candidates(
                 continue
             seen.add(analyzed.item.id)
             out.append((category, analyzed))
+    news = category_reports.get("news")
+    if news and extra_regional > 0:
+        extras = sorted(
+            (a for a in (news.all_items or [])
+             if a.item.id not in seen and (a.importance_score or 0) >= EXTRA_MIN_SCORE
+             and _is_regional_or_watched(a)),
+            key=lambda a: -(a.importance_score or 0),
+        )[:extra_regional]
+        for a in extras:
+            seen.add(a.item.id)
+            out.append(("news", a))
     return out
 
 

@@ -101,7 +101,7 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | arXiv | `agents/gatherers/research_gatherer.py` (`CATEGORIES`, hoy solo `cs.CR`) |
 | Reguladores sin RSS (MX, ES, CO, AR, CL, PE, CR, EE. UU., UE) | `config/regulators.txt` → `agents/gatherers/regulator_sources.py` (página de prensa directa o Google News; vista previa: `python3 -m agents.gatherers.regulator_sources --hours 72`) |
 | Empresas e iniciativas observadas (bancos, retail, aerolíneas, plataformas, protocolos de agentes, cartera europea) | `config/empresas.txt`, mismo recolector por Google News (vista previa: `python3 -m agents.gatherers.regulator_sources --empresas --hours 168`) |
-| Filtro previo de identidad para fuentes ruidosas | Directiva `filtro=identidad` en `config/rss_feeds.txt` → `agents/gatherers/identity_filter.py` |
+| Filtro previo de identidad para fuentes ruidosas | Directiva `filtro=identidad` (título y resumen) o `filtro=titulo` (solo título, para boletines como CERT-FR) en `config/rss_feeds.txt` y `config/research_feeds.txt` → `agents/gatherers/identity_filter.py`; ahí también se descartan webinars y contenido patrocinado |
 | Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
 | X y Reddit | Desactivados (APIs de pago) |
 | Prompts editoriales | `config/prompts.yaml` (en español) |

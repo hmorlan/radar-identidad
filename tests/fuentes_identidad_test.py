@@ -206,5 +206,71 @@ class TituloEnEspanolTest(unittest.TestCase):
         self.assertEqual(AnalyzedItem.from_dict(a.to_dict()).titulo, "Título")
 
 
+class ArreglosCorrida13Test(unittest.TestCase):
+    """Arreglos tras la corrida del 13 nov 2026."""
+
+    def test_titulo_filter_ignores_generic_bulletin_text(self):
+        f = identity_filter
+        self.assertFalse(f.matches_feed_entry(
+            "titulo", "Multiples vulnérabilités dans Microsoft Azure", "usurpation, élévation de privilèges"))
+        self.assertTrue(f.matches_feed_entry(
+            "identidad", "Multiples vulnérabilités dans Microsoft Azure", "usurpation, élévation de privilèges"))
+        self.assertTrue(f.matches_feed_entry("titulo", "Contournement de l'authentification dans Keycloak", ""))
+
+    def test_sponsored_titles(self):
+        self.assertTrue(identity_filter.is_sponsored("Webinar: See How Identity Blind Spots Put Your SOC at Risk"))
+        self.assertTrue(identity_filter.is_sponsored("[Sponsored] Passkeys for everyone"))
+        self.assertFalse(identity_filter.is_sponsored("New webinar series from NIST on agent identity"))
+
+    def test_filtro_titulo_directive(self):
+        tmp = Path(tempfile.mkdtemp())
+        (tmp / "rss_feeds.txt").write_text("https://c.example/feed  filtro=titulo\n", encoding="utf-8")
+        g = NewsGatherer(config_dir=str(tmp), data_dir=str(tmp))
+        self.assertEqual(g.feed_specs[0].filtro, "titulo")
+
+    def test_untitled_feed_uses_domain(self):
+        tmp = Path(tempfile.mkdtemp())
+        (tmp / "rss_feeds.txt").write_text("https://www.infosec.example/rss/news/\n", encoding="utf-8")
+        g = NewsGatherer(config_dir=str(tmp), data_dir=str(tmp), lookback_hours=24 * 3650)
+        rss = b"""<?xml version="1.0"?><rss version="2.0"><channel>
+        <item><title>Phishing roba credenciales</title><link>https://www.infosec.example/n/1</link>
+          <pubDate>Mon, 09 Nov 2026 10:00:00 GMT</pubDate><description>x</description></item>
+        </channel></rss>"""
+        resp = mock.Mock(content=rss, headers={"content-type": "application/rss+xml"})
+        resp.raise_for_status = lambda: None
+        with mock.patch.object(g.feed_session, "get", return_value=resp):
+            arts = g._fetch_feed(g.feed_specs[0])
+        self.assertEqual(arts[0].source, "infosec.example")
+
+    def test_watched_companies_need_identity_terms(self):
+        from agents.gatherers import regulator_sources as rs
+        [spec] = rs.parse_empresas(["MX | Mercado Libre | Mercado Libre"])
+        self.assertFalse(rs._on_topic("Mercado Libre remata una bocina con IA - Xataka", spec))
+        self.assertTrue(rs._on_topic("Alertan por estafa que suplanta a Mercado Libre - Semana", spec))
+        [reg] = rs.parse_regulators(["MX | CNBV | gob.mx/cnbv"])
+        self.assertTrue(rs._on_topic("CNBV publica lineamientos de IA - Gobierno", reg))
+
+    def test_regional_extra_candidates(self):
+        from agents import edition_notes as en
+        from agents.base import AnalyzedItem, CategoryReport, CollectedItem
+
+        def a(i, title, score, st="news", meta=None):
+            it = CollectedItem(id=i, title=title, content="c", url=f"https://x.example/{i}", author="",
+                               published="2026-11-12T00:00:00", source="s", source_type=st, metadata=meta or {})
+            return AnalyzedItem(item=it, summary="s", importance_score=score, reasoning="r", themes=[])
+        top = [a(f"t{i}", f"Global story {i}", 90) for i in range(10)]
+        rest = [a("mx", "Suplantación y robo de información: el reto de la nueva ley", 60),
+                a("ans", "Linux Foundation launches Agent Name Service", 55, st="empresa", meta={"country": "GLOBAL"}),
+                a("low", "Fraude en la feria de la ciudad", 30),
+                a("en", "Another global story", 80)]
+        rep = CategoryReport(category="news", top_items=top, all_items=top + rest, category_summary="",
+                             themes=[], cross_signals=[], total_collected=14)
+        ids = [x.item.id for _, x in en.collect_candidates({"news": rep})]
+        self.assertIn("mx", ids)
+        self.assertIn("ans", ids)
+        self.assertNotIn("low", ids)   # puntaje bajo
+        self.assertNotIn("en", ids)    # ni regional ni observada
+
+
 if __name__ == "__main__":
     unittest.main()

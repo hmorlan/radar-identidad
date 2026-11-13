@@ -16,6 +16,13 @@ MX | DOF | dof.gob.mx
 MX | CNBV | gob.mx/cnbv | https://www.gob.mx/cnbv/archivo/prensa
 MX | Banxico | banxico.org.mx
 MX | CONDUSEF | gob.mx/condusef | https://www.gob.mx/condusef/archivo/prensa
+# Agregados 2026-11-13 (huecos del Daily Brief): autoridades de fraude y estadística.
+# Guardia Nacional: su CERT-MX y campañas antifraude.
+MX | Guardia Nacional (CERT-MX) | gob.mx/guardianacional
+# SSC CDMX: Policía Cibernética (reportes de fraude, alertas del Buen Fin).
+MX | SSC CDMX (Policía Cibernética) | ssc.cdmx.gob.mx
+# INEGI: ENVIPE y otras encuestas con robo de identidad y fraude.
+MX | INEGI | inegi.org.mx
 
 # ===== España =====
 ES | AEPD | aepd.es
@@ -38,6 +45,9 @@ AR | AAIP (protección de datos) | argentina.gob.ar/aaip | https://www.argentina
 # ===== Chile =====
 CL | CMF | cmfchile.cl
 CL | ANCI (Agencia Nacional de Ciberseguridad) | anci.gob.cl
+# Congreso de Chile (2026-11-13): proyectos de ley sobre agentes de IA, datos y ciberseguridad.
+CL | Cámara de Diputados de Chile | camara.cl
+CL | Senado de Chile | senado.cl
 CL | Banco Central de Chile | bcentral.cl
 CL | CSIRT de Gobierno | csirt.gob.cl
 

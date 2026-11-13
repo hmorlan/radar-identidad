@@ -7,6 +7,7 @@ Combines RSS collection with smart link following from social media posts.
 import asyncio
 import logging
 import os
+from urllib.parse import urlparse
 import time
 from datetime import datetime
 from pathlib import Path
@@ -233,7 +234,11 @@ class NewsGatherer(BaseGatherer):
                 else:
                     logger.warning(f"Feed warning for {feed_url}: {exc}")
 
-            feed_title = feed.feed.get('title', 'Unknown Source')
+            # Sin título en el feed (p. ej. Infosecurity Magazine): el dominio, no
+            # "Unknown Source".
+            feed_title = (feed.feed.get('title') or '').strip() or (
+                urlparse(feed_url).netloc.removeprefix('www.') or 'Fuente sin nombre'
+            )
 
             for entry in feed.entries:
                 try:
@@ -262,9 +267,13 @@ class NewsGatherer(BaseGatherer):
                     title = entry.get('title', 'No Title')
                     url = entry.get('link', '')
 
+                    if identity_filter.is_sponsored(title):
+                        filtered_out += 1
+                        continue
+
                     # Fuentes ruidosas: solo entradas con tema de identidad.
-                    if filtro == 'identidad' and not identity_filter.matches(
-                        f"{title} {content_text[:1500]}"
+                    if filtro and not identity_filter.matches_feed_entry(
+                        filtro, title, content_text
                     ):
                         filtered_out += 1
                         continue

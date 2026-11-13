@@ -22,6 +22,10 @@
 GLOBAL | Protocolos e identidad de agentes | "Agent Name Service" OR "Agentic AI Foundation" OR "Agent2Agent" OR "A2A protocol" OR AGNTCY OR "Model Context Protocol"
 EU | Cartera europea de identidad digital | "EUDI Wallet" OR "European Digital Identity Wallet" OR eIDAS
 
+# ===== Autoridades mexicanas contra el fraude, en prensa (agregado 2026-11-13) =====
+# Sus sitios casi no aparecen en Google News; sus alertas sí, citadas por la prensa.
+MX | Autoridades contra el fraude digital | "Policía Cibernética" OR "CERT-MX" OR "Jornada Nacional Antifraude"
+
 # ===== Plataformas de agentes =====
 MX | Meta (Muse) | "Muse" Meta agente
 LATAM | Mercado Libre y Mercado Pago | "Mercado Pago" OR "Mercado Libre"

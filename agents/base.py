@@ -849,6 +849,7 @@ class BaseGatherer(ABC):
             https://example.com/feed   proxy=on        # force proxy
             https://example.com/feed   direct          # shorthand for proxy=off
             https://example.com/feed   filtro=identidad  # solo entradas con tema de identidad
+            https://example.com/feed   filtro=titulo     # igual, pero mirando solo el título
 
         - Full-line `#` comments and blank lines are ignored.
         - The first whitespace-separated token is the URL.
@@ -891,7 +892,7 @@ class BaseGatherer(ABC):
                     elif not sep and key in ('direct', 'no-proxy', 'noproxy'):
                         use_proxy = False
                     elif key == 'filtro' and sep:
-                        if val == 'identidad':
+                        if val in ('identidad', 'titulo'):
                             filtro = val
                         else:
                             logger.warning(

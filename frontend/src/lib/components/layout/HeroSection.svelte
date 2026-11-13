@@ -56,7 +56,7 @@
 						Cobertura: {formattedCoverage}
 						{#if totalItems > 0}
 							<span class="mx-2">•</span>
-							{totalItems.toLocaleString('es-MX')} fuentes revisadas
+							{totalItems.toLocaleString('es-MX')} notas analizadas
 						{/if}
 						{#if modelDisplayName}
 							<span class="mx-2">•</span>

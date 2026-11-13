@@ -5,7 +5,7 @@
 # con mucho volumen y poca identidad.
 # Verificado 2026-11-04 con scripts/check_feeds.py (respuesta 200 y publicación reciente);
 # las fuentes del 2026-11-11 se midieron con 7 días de publicaciones.
-# Volumen estimado total de este archivo: ~100 notas/día antes del triage.
+# Volumen estimado total de este archivo: ~120 notas/día antes del filtro y el triage.
 
 # ===== Prensa de seguridad (relevancia de identidad media: el triage filtra) =====
 # The Record (Recorded Future News), ~4/día
@@ -33,13 +33,24 @@ https://www.wired.com/feed/category/security/latest/rss
 # CSO Online, ~3/día; relevancia alta (IAM, credenciales, agentes)
 https://www.csoonline.com/feed/
 # Infosecurity Magazine, ~4/día
-https://www.infosecurity-magazine.com/rss/news/
+https://www.infosecurity-magazine.com/rss/news/  filtro=identidad
 # Cybersecurity Dive, ~1-2/día
 https://www.cybersecuritydive.com/feeds/news/
 
+# ===== Prensa de seguridad, agregadas 2026-11-13 (huecos del Daily Brief) =====
+# Help Net Security, ~10/día; el mayor hueco del 13 nov (credenciales de agentes, Entra,
+# puertas traseras en agentes). Publica notas de producto: filtrada.
+https://www.helpnetsecurity.com/feed/  filtro=identidad
+# The Hacker News, ~7/día; incluye contenido patrocinado: filtrada
+https://feeds.feedburner.com/TheHackersNews  filtro=identidad
+# SC Media, ~5/día: filtrada
+https://www.scworld.com/rss  filtro=identidad
+
 # ===== CERTs nacionales =====
-# CERT-FR (ANSSI, Francia), ~4/día, casi todo avisos de vulnerabilidades: filtrado
-https://cert.cyber.gouv.fr/feed/  filtro=identidad
+# CERT-FR (ANSSI, Francia), ~4/día, casi todo avisos de vulnerabilidades. Filtro solo por
+# título: su descripción siempre lista impactos genéricos ("usurpation", "élévation de
+# privilèges") y con el filtro normal pasaban 14 boletines al día (corrida del 13 nov).
+https://cert.cyber.gouv.fr/feed/  filtro=titulo
 # PENDIENTE: INCIBE (España), avisos para la ciudadanía (fraudes que suplantan a bancos o
 # paquetería, ~2-4/mes). El feed existe, pero el 2026-11-11 alternó 200, 302 y 404 en
 # revisiones seguidas (protección anti-bots): mientras, INCIBE sigue por Google News
@@ -47,7 +58,7 @@ https://cert.cyber.gouv.fr/feed/  filtro=identidad
 # https://www.incibe.es/ciudadania/avisos/feed
 # INCIBE-CERT (España), avisos técnicos, ~1-2/día: filtrado. Sitio lento y con protección
 # anti-bots (a veces responde 302): el recolector reintenta 3 veces. Vigilar en la alerta.
-https://www.incibe.es/incibe-cert/alerta-temprana/avisos/feed  filtro=identidad
+https://www.incibe.es/incibe-cert/alerta-temprana/avisos/feed  filtro=titulo
 
 # ===== Gobierno de EE. UU. (agregado 2026-11-11) =====
 # CISA, avisos y alertas (incluye guías conjuntas con NSA y FBI), ~1/día; casi todo
@@ -108,6 +119,11 @@ https://www.bloomberglinea.com/arc/outboundfeeds/rss/?outputType=xml  filtro=ide
 # retailers y aerolíneas sobre biometría, fraude o agentes sale aquí con contexto. Filtradas.
 # Expansión, Empresas (México), ~5/día
 https://expansion.mx/rss/empresas  filtro=identidad
+# Expansión, Economía (México), ~3/día: cifras de fraude bancario (agregada 2026-11-13)
+https://expansion.mx/rss/economia  filtro=identidad
+# El Financiero (México), todas las secciones, ~40/día: filtrado. Ahí salió el +70% de
+# ataques a bancos en México (13 nov); no confundir con El Financiero de Costa Rica.
+https://www.elfinanciero.com.mx/arc/outboundfeeds/rss/?outputType=xml  filtro=identidad
 # El Economista, últimas noticias (México), ~14/día (las secciones dan 403)
 https://www.eleconomista.com.mx/rss/ultimas-noticias  filtro=identidad
 # Portafolio, Tecnología (Colombia), ~1-2/día

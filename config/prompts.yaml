@@ -43,8 +43,8 @@ analysis:
       Eres analista de un radar de inteligencia en español sobre identidad digital y confianza. Analiza estas notas (lote ${batch_index} de ${total_batches}).
 
       REGLA DE ENTRADA: ¿la nota cambia cómo decidimos en quién o en qué confiar?
-      - Puntaje alto (70-100): account takeover, robo o abuso de credenciales y sesiones, fatiga o evasión de MFA, phishing que roba credenciales, deepfakes que pasan la verificación de identidad, agentes de IA que actúan con accesos delegados, cambios en estándares (passkeys/FIDO, OAuth, OpenID, WebAuthn, credenciales verificables), regulación o sanciones de identidad, datos personales y fraude financiero con suplantación.
-      - Puntaje medio (40-69): incidentes de seguridad con un ángulo claro de identidad o confianza; fraude digital en Latinoamérica o España.
+      - Puntaje alto (70-100): account takeover, robo o abuso de credenciales y sesiones, fatiga o evasión de MFA, phishing que roba credenciales, deepfakes que pasan la verificación de identidad, agentes de IA que actúan con accesos delegados, cambios en estándares (passkeys/FIDO, OAuth, OpenID, WebAuthn, credenciales verificables) y estándares o protocolos de identidad de agentes (p. ej. Agent Name Service, MCP, A2A), regulación o sanciones de identidad, datos personales y fraude financiero con suplantación. También: brechas en proveedores de IA o SaaS que exponen datos, sesiones o credenciales de sus clientes, y herramientas o agentes de IA usados para atacar.
+      - Puntaje medio (40-69): incidentes de seguridad con un ángulo claro de identidad o confianza; fraude digital, alertas de autoridades y regulación de datos en Latinoamérica o España (aunque sean de alcance local).
       - Puntaje bajo (0-39): malware genérico, vulnerabilidades sin ángulo de identidad, noticias de IA sin relación con la confianza, rondas de inversión, adquisiciones y lanzamientos de producto (salvo que cambien cómo decidimos en quién confiar), notas de marketing.
 
       Para cada nota entrega:
@@ -77,7 +77,7 @@ analysis:
     filter: |
       Filtras notas para un radar de inteligencia sobre identidad digital y confianza.
 
-      Entra lo que cambia cómo decidimos en quién o en qué confiar: autenticación y passkeys, OAuth/OpenID, MFA, robo de credenciales y sesiones, account takeover, phishing que roba accesos, fraude y suplantación de identidad, verificación de identidad y KYC, deepfakes, agentes de IA con accesos delegados, identidad de máquinas y workloads, regulación de identidad y datos personales.
+      Entra lo que cambia cómo decidimos en quién o en qué confiar: autenticación y passkeys, OAuth/OpenID, MFA, robo de credenciales y sesiones, account takeover, phishing que roba accesos, fraude y suplantación de identidad, verificación de identidad y KYC, deepfakes, agentes de IA con accesos delegados, estándares de identidad de agentes, identidad de máquinas y workloads, brechas en proveedores de IA o SaaS que exponen datos o credenciales de clientes, herramientas de IA usadas para atacar, regulación de identidad y datos personales, y fraude digital en Latinoamérica y España (incluidas las alertas de autoridades).
 
       No entra: malware genérico, vulnerabilidades sin ángulo de identidad, noticias de IA sin relación con la confianza, rondas de inversión, adquisiciones, lanzamientos de producto y marketing, salvo que cambien cómo decidimos en quién confiar.
 
@@ -136,6 +136,8 @@ analysis:
       3. NOVEDAD: ¿es un hecho nuevo y no un recuento?
       4. FUENTE: ¿viene de prensa independiente, un organismo de estándares o un regulador? Las fuentes comerciales pesan menos.
       5. REGIÓN: a igual relevancia, prioriza Latinoamérica y España.
+
+      UN HECHO, UNA ENTRADA: si dos notas cuentan el mismo hecho (aunque vengan de medios distintos), elige solo la de mejor fuente para el top 10.
 
       Fuera: rondas de inversión, adquisiciones y lanzamientos de producto, salvo que cambien cómo decidimos en quién confiar.
 
@@ -377,7 +379,14 @@ orchestration:
 
     "titular": un titular para toda la edición, basado en la nota principal (máximo 90 caracteres).
 
-    Ordena las notas de mayor a menor relevancia. Prioriza Latinoamérica y España a igual relevancia. No uses blogs o comunicados de proveedores como fuente única de un hecho; si el candidato es de un proveedor, atribúyelo y baja la señal.
+    Ordena las notas de mayor a menor relevancia. La nota principal (la primera, de la que sale el titular) debe ser una noticia: un hecho nuevo en el mundo (un incidente, una decisión, un estándar, una regulación). Un paper de investigación solo puede abrir la edición si es excepcional y no hay ninguna noticia de señal alta.
+
+    EQUILIBRIO:
+    - Máximo 2 notas de investigación académica (arXiv) por edición.
+    - Si entre los candidatos hay al menos una noticia de Latinoamérica o España que pase la regla de entrada, incluye al menos una.
+    - Los estándares y protocolos de identidad de agentes (p. ej. Agent Name Service, OAuth para agentes, MCP, A2A) y las brechas en proveedores de IA que exponen datos o credenciales de sus clientes tienen prioridad alta.
+
+    No uses blogs o comunicados de proveedores como fuente única de un hecho; si el candidato es de un proveedor, atribúyelo y baja la señal.
 
     ESTILO: español claro y sobrio; sin signos de exclamación, sin emoji, sin exageración. Conserva en inglés passkey, token, OAuth, OpenID Connect, MFA, SSO, CIAM, IAM, phishing, deepfake, ransomware, account takeover y KYC. No inventes cifras, fechas, nombres ni citas.
 
