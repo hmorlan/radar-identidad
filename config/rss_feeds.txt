@@ -73,6 +73,13 @@ https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
 # Axios, ~14/día de todos los temas: filtrado
 https://www.axios.com/feeds/feed.rss  filtro=identidad
 
+# ===== Fundaciones de código abierto (agregado 2026-11-12) =====
+# Linux Foundation, comunicados (~4/semana): donde se anuncian estándares abiertos de
+# agentes como Agent Name Service (ANS, 10 nov 2026), AGNTCY o A2A. Se trata como
+# organismo de estándares; las citas de empresas en sus comunicados van atribuidas.
+# Publica de todo (Kubernetes, energía, cine): filtrado.
+https://www.linuxfoundation.org/press/rss.xml  filtro=identidad
+
 # ===== Prensa especializada en identidad =====
 # Biometric Update, ~9/día; relevancia alta (verificación de identidad, KYC, ID digital, agentes)
 https://feeds.feedburner.com/biometricupdate

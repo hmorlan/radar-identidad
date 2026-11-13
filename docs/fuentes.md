@@ -13,12 +13,13 @@ Verificado con `scripts/check_feeds.py`: cada fuente respondió 200 y publicó e
 | Banca, pagos y agentes en EE. UU. (2026-11-11) | American Banker, Banking Dive, Payments Dive, The Verge (IA); PYMNTS y Axios filtradas | ~25 |
 | Gobierno de EE. UU. (2026-11-11) | CISA avisos y noticias (filtradas), FBI IC3 (avisos al público) | ~1 |
 | Negocios LatAm (2026-11-11, filtradas) | Expansión Empresas, El Economista, Portafolio, Gestión, Diario Financiero, El Financiero (Costa Rica), Just Retail Latam | ~1 tras el filtro |
+| Fundaciones de código abierto (2026-11-12) | Linux Foundation, comunicados (filtrado): estándares abiertos de agentes como Agent Name Service, AGNTCY o A2A | ~1/semana tras el filtro |
 | Estándares y gobierno | NIST Cybersecurity Insights, NIST CSRC (borradores), IETF OAuth WG, IETF WIMSE WG, OpenID Foundation, W3C, UK NCSC | ~1.5 |
 | Redes | Brian Krebs (Mastodon); **Bluesky desde 2026-11-11:** Zack Whittaker, Lorenzo Franceschi-Bicchierai, 404 Media, EFF, Access Now, noyb, Derechos Digitales, R3D, Heather Flanagan | ~10 |
 | Análisis de autor | Juan Pablo Castro (Cybersecurity Compass), Heather Flanagan (Spherical Cow), Mike Jones (self-issued.info) | ~0.3 |
 | Investigación | arXiv cs.CR | ~35 |
 
-**Total: 53 feeds + 9 cuentas de Bluesky + arXiv cs.CR + 23 reguladores + 11 empresas observadas.** En noticias, ~100 entradas/día antes del triage (el 4 nov eran ~45). Medido con 7 días, los 15 feeds del 11 nov (segunda ronda) aportan ~35 entradas por semana después del filtro.
+**Total: 54 feeds + 9 cuentas de Bluesky + arXiv cs.CR + 23 reguladores + 11 empresas observadas.** En noticias, ~100 entradas/día antes del triage (el 4 nov eran ~45). Medido con 7 días, los 15 feeds del 11 nov (segunda ronda) aportan ~35 entradas por semana después del filtro.
 
 **Política agnóstica (2026-11-04):** no se usan blogs de proveedores (Okta, Auth0, Ping, Jumio y similares). Las empresas solo entran a través de fuentes independientes. El 2026-11-12 se retiraron WeLiveSecurity (blog de ESET) y Una al Día (Hispasec): son empresas de seguridad y la política excluye a proveedores de identidad, seguridad, fraude o verificación como fuente.
 
