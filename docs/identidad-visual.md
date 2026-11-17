@@ -35,13 +35,13 @@ Autoalojada con `@fontsource` (la CSP del sitio solo permite fuentes propias):
 ## Layout y componentes
 
 - Cabecera clara, sin barra negra: nombre centrado, menú centrado bajo un filete, accesos discretos (RSS, Buscar, Modo). El menú es sticky y siempre opaco.
-- **Friso** del diario: imagen 21:9 a todo el ancho, 300px (210px en móvil), entre doble filete. Un solo paneo al cargar que termina en el punto focal; sin animación con `prefers-reduced-motion`.
+- **Friso** del diario: imagen 21:9 a todo el ancho, con alto proporcional al ancho (`clamp(210px, 36vw, 58vh)`: unos 550px en 1080p, 210px en móvil), entre doble filete. La composición deja cabezas y objetos clave en el 60 % central de la altura, y el recorte vertical sigue la cabeza del sujeto (`foco_y` de la revisión visual). Un solo paneo al cargar que termina en el punto focal; sin animación con `prefers-reduced-motion`.
 - Crédito tipo museo bajo cada imagen: motivo, técnica, modelo y fecha.
 - "En 60 segundos" con rombos dorados.
 - Notas en una columna de ~680px, numeral romano en oro en su columna lateral, también en las notas colapsadas. Sin tarjetas ni barra lateral.
 - "La pregunta de fondo" enmarcada con filete de 1px en oro.
 - Señal con 1–3 puntos; solo la alta va en oro.
-- Al pie de la edición: franja humana (foto o video de la semana), caja "Cada domingo", temas, suscripción (Seguir en LinkedIn + RSS).
+- Al pie de la edición: franja humana (foto o video de la semana; no se muestra mientras sea `placeholder`), caja "Cada domingo", temas, suscripción ("Suscribirse por RSS" + "Hiram Morlán en LinkedIn", para no sugerir que las ediciones llegan por LinkedIn).
 - Domingo: sello armilar pequeño que gira lento (se detiene con `prefers-reduced-motion`) y grabado dentro de la columna.
 
 ## Imagen de cada edición

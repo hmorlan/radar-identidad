@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
-	import { currentDate, navigation, goToPreviousDate, goToNextDate, goToLatestDate } from '$lib/stores/dateStore';
+	import { currentDate, availableDates, navigation, goToPreviousDate, goToNextDate, goToLatestDate } from '$lib/stores/dateStore';
 	import { formatDate } from '$lib/services/dateUtils';
 
 	// Optional coverage date prop from parent
@@ -9,7 +9,8 @@
 
 	$: dateDisplay = $currentDate ? formatDate($currentDate, "EEEE d 'de' MMMM 'de' yyyy") : '';
 	$: coverageDisplay = coverageDate ? formatDate(coverageDate, "EEEE d 'de' MMMM 'de' yyyy") : '';
-	$: isLatest = !$navigation.hasNext;
+	// Solo la edición más nueva lleva la marca (una fecha sin edición no es "la más reciente").
+	$: isLatest = !!$currentDate && $availableDates[0] === $currentDate;
 
 	// Read current category from URL to preserve it during navigation
 	$: currentCategory = browser ? $page.url.searchParams.get('category') : null;

@@ -2,7 +2,7 @@
  * Datos del sitio que no salen del pipeline: perfil de LinkedIn y la franja humana
  * (foto o video de la semana). Se editan aquí a mano.
  *
- * Mientras un campo esté vacío, el sitio muestra su espacio reservado.
+ * Mientras la franja sea `placeholder`, no se muestra (no hay botón de play sin video).
  */
 
 /** URL del perfil de LinkedIn de Hiram. Vacío = el botón no se muestra. */

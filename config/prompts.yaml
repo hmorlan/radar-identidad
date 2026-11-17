@@ -377,7 +377,9 @@ orchestration:
     - "pregunta_de_fondo": SOLO cuando la nota lo amerita, una sola pregunta abierta sobre juicio, delegación o responsabilidad (p. ej. "¿Quién responde cuando el agente decide con tus accesos?"). Si no aplica, null. No más de la mitad de las notas deben llevarla.
     - "senal": "alta" (obliga a revisar un control o una decisión de confianza ya), "media" (conviene seguirla) o "baja" (contexto útil).
 
-    "titular": un titular para toda la edición, basado en la nota principal (máximo 90 caracteres).
+    "titular": un titular para toda la edición, basado en la nota principal (máximo 90 caracteres). No puede afirmar más que la nota principal: si el ataque fracasó o la cifra es "según la empresa", el titular también lo refleja.
+
+    TEXTO DE LA FUENTE: "contenido" es el artículo completo cuando se pudo bajar y, si no, solo el adelanto del RSS. No escribas que la fuente "no detalla" o "no indica" algo a menos que el contenido sea claramente el artículo completo; con un adelanto, limita la nota a lo que sí dice.
 
     Ordena las notas de mayor a menor relevancia. La nota principal (la primera, de la que sale el titular) debe ser una noticia: un hecho nuevo en el mundo (un incidente, una decisión, un estándar, una regulación). Un paper de investigación solo puede abrir la edición si es excepcional y no hay ninguna noticia de señal alta.
 
@@ -427,6 +429,29 @@ orchestration:
     }
     ```
     Escribe "motivo" en español. Escapa comillas dobles y saltos de línea.
+
+  edition_coherence: |
+    Eres el editor de cierre del Radar de Identidad. La verificación ya corrigió o descartó algunas notas contra su fuente. El titular, el resumen ejecutivo, los resúmenes por categoría y los temas se escribieron ANTES, a partir de análisis sin verificar, y pueden repetir el error que la verificación corrigió.
+
+    Recibes "correcciones" (cada una con su motivo, el texto corregido y el texto de la fuente) y "textos" (campo → texto en markdown con enlaces internos). Los campos "tema_nombre:N" son títulos cortos de tema que también se publican: corrígelos igual si afirman lo que la corrección desmiente.
+
+    Tu tarea: encontrar en "textos" cada frase que contradiga una corrección o que afirme lo que una nota descartada no sostiene, y proponer el reemplazo mínimo.
+    - Cambia solo lo necesario para que el texto diga lo mismo que la nota corregida y su fuente. No reescribas por estilo, no resumas, no agregues hechos nuevos.
+    - Conserva intactos todos los enlaces markdown [texto](/?date=…) del fragmento: el texto del enlace puede cambiar, la URL no.
+    - Si una frase no tiene arreglo mínimo, reemplázala por una versión más corta que solo afirme lo que la fuente respalda.
+    - Si ningún texto contradice las correcciones, devuelve una lista vacía.
+
+    "antes" debe copiarse EXACTO del texto (mismas mayúsculas, signos, espacios y enlaces) y aparecer una sola vez en ese campo; usa la frase o el fragmento más corto que lo haga único.
+
+    Devuelve solo JSON válido:
+    ```json
+    {
+      "ajustes": [
+        {"campo": "nombre del campo en textos", "antes": "fragmento exacto", "despues": "fragmento corregido", "motivo": "una frase en español"}
+      ]
+    }
+    ```
+    Escapa comillas dobles y saltos de línea.
 
 # -----------------------------------------------------------------------------
 # POST-PROCESO (internos; los enlaces deben conservar el idioma del texto)

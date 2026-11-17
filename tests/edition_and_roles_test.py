@@ -81,6 +81,15 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(again.to_dict(), edition.to_dict())
 
 
+class NoNetwork(unittest.TestCase):
+    """build_edition baja páginas de fuentes con RSS corto: en tests, nunca a la red."""
+
+    def setUp(self):
+        patcher = mock.patch.object(en, "_fetch_text", side_effect=RuntimeError("sin red en tests"))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+
 class FakeClient:
     def __init__(self, replies):
         self.replies = list(replies)
@@ -99,7 +108,7 @@ class FakePrompts:
         return f"Instrucciones {name} para {context['date']}"
 
 
-class BuildEditionTest(unittest.TestCase):
+class BuildEditionTest(NoNetwork):
     def test_writes_then_verifies_with_main_model_profile(self):
         client = FakeClient([NOTES_JSON, CHECK_JSON])
         edition = asyncio.run(en.build_edition(client, FakePrompts(), _reports(), "2026-11-06"))
@@ -115,6 +124,101 @@ class BuildEditionTest(unittest.TestCase):
         self.assertEqual(len(edition.notas), 3)
         self.assertTrue(all(n.verificacion == "sin_verificar" for n in edition.notas))
         self.assertTrue(edition.degradations)
+
+
+class CoherenceTest(NoNetwork):
+    DERIVED = {
+        "executive_summary": "El FBI [alerta de fraude](/?date=x#item-1) y deepfakes que superan la verificación.",
+        "tema:0": "Deepfakes que superan verificaciones de identidad en dos exchanges.",
+    }
+
+    def _edition(self):
+        by_id = {a.item.id: (c, a) for c, a in en.collect_candidates(_reports())}
+        return en.apply_fact_check(en.parse_notes(NOTES_JSON, by_id, 8), CHECK_JSON), by_id
+
+    def test_check_records_discarded_notes(self):
+        edition, _ = self._edition()
+        self.assertEqual([d["id"] for d in edition.descartadas], ["id2"])
+        self.assertTrue(en.needs_coherence(edition))
+
+    def test_parse_keeps_only_exact_link_safe_edits(self):
+        texts = {"titular": "Deepfakes burlan el KYC", **self.DERIVED}
+        reply = json.dumps({"ajustes": [
+            {"campo": "executive_summary", "antes": "y deepfakes que superan la verificación",
+             "despues": "y deepfakes que el servidor rechazó en todos los intentos", "motivo": "fuente"},
+            {"campo": "executive_summary", "antes": "[alerta de fraude](/?date=x#item-1)",
+             "despues": "alerta de fraude", "motivo": "pierde el enlace"},
+            {"campo": "tema:0", "antes": "no está en el texto", "despues": "x", "motivo": ""},
+            {"campo": "titular", "antes": "burlan el KYC", "despues": "intentan burlar el KYC", "motivo": ""},
+        ]})
+        edits = en.parse_coherence(reply, texts)
+        self.assertEqual([(e["campo"], e["antes"]) for e in edits],
+                         [("executive_summary", "y deepfakes que superan la verificación"),
+                          ("titular", "burlan el KYC")])
+        out = en.apply_edits(texts, edits)
+        self.assertIn("[alerta de fraude](/?date=x#item-1)", out["executive_summary"])
+        self.assertIn("rechazó en todos los intentos", out["executive_summary"])
+        self.assertEqual(out["titular"], "Deepfakes intentan burlar el KYC")
+
+    def test_build_reconciles_derived_texts_after_corrections(self):
+        reply = json.dumps({"ajustes": [
+            {"campo": "tema:0", "antes": "Deepfakes que superan verificaciones",
+             "despues": "Deepfakes que intentaron superar verificaciones", "motivo": "fuente"}]})
+        client = FakeClient([NOTES_JSON, CHECK_JSON, reply])
+        edition = asyncio.run(en.build_edition(client, FakePrompts(), _reports(), "2026-11-06",
+                                               derived=dict(self.DERIVED)))
+        self.assertEqual(client.calls[-1]["caller"], "orchestrator.edition_coherence")
+        self.assertEqual(client.calls[-1]["profile"], ThinkingLevel.QUICK)
+        self.assertEqual(len(edition.ajustes), 1)
+        self.assertEqual(edition.degradations, [])
+        again = en.Edition.from_dict(edition.to_dict())
+        self.assertEqual(again.ajustes, edition.ajustes)
+
+    def test_no_corrections_no_coherence_call(self):
+        all_ok = json.dumps({"revisiones": [{"id": i, "veredicto": "verificada"} for i in ("id0", "id1", "id2")]})
+        client = FakeClient([NOTES_JSON, all_ok])
+        edition = asyncio.run(en.build_edition(client, FakePrompts(), _reports(), "2026-11-06",
+                                               derived=dict(self.DERIVED)))
+        self.assertEqual(len(client.calls), 2)
+        self.assertEqual(edition.ajustes, [])
+
+    def test_failed_coherence_degrades_without_losing_notes(self):
+        client = FakeClient([NOTES_JSON, CHECK_JSON, RuntimeError("caído")])
+        edition = asyncio.run(en.build_edition(client, FakePrompts(), _reports(), "2026-11-06",
+                                               derived=dict(self.DERIVED)))
+        self.assertEqual(len(edition.notas), 2)
+        self.assertTrue(any(d.startswith("coherencia") for d in edition.degradations))
+
+
+class FullTextTest(unittest.TestCase):
+    def _cands(self):
+        return en.collect_candidates(_reports())
+
+    def test_short_rss_gets_full_page_and_feeds_editor_and_checker(self):
+        cands = self._cands()
+        long_text = "Controles por compra y tokenización. " * 80
+        with mock.patch.object(en, "_fetch_text", return_value=long_text) as fetch:
+            got = asyncio.run(en.enrich_full_text(cands))
+        self.assertGreater(got, 0)
+        self.assertTrue(fetch.called)
+        ctx = json.loads(en.candidates_context(cands))
+        enriched = [r for r in ctx if "tokenización" in r["contenido"]]
+        self.assertTrue(enriched)
+        self.assertGreater(len(enriched[0]["contenido"]), en.CONTENT_CLIP)
+
+    def test_failures_and_soft_404_keep_rss_text(self):
+        cands = self._cands()
+        with mock.patch.object(en, "_fetch_text", side_effect=RuntimeError("403")):
+            self.assertEqual(asyncio.run(en.enrich_full_text(cands)), 0)
+        with mock.patch.object(en, "_fetch_text", return_value="Página no encontrada " + "x" * 3000):
+            self.assertEqual(asyncio.run(en.enrich_full_text(cands)), 0)
+        self.assertFalse(any("texto_completo" in (a.item.metadata or {}) for _, a in cands))
+
+    def test_can_be_disabled(self):
+        with mock.patch.dict(os.environ, {"EDITION_FULLTEXT": "0"}), \
+                mock.patch.object(en, "_fetch_text") as fetch:
+            self.assertEqual(asyncio.run(en.enrich_full_text(self._cands())), 0)
+        fetch.assert_not_called()
 
 
 class RoleRoutingTest(unittest.TestCase):

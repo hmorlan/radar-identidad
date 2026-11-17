@@ -31,6 +31,12 @@ export const navigation = derived(
 	[currentDate, availableDates],
 	([$currentDate, $availableDates]) => {
 		const idx = $availableDates.indexOf($currentDate);
+		if (idx === -1 && $currentDate) {
+			// Fecha sin edición: las vecinas son la más cercana antes y después.
+			const previousDate = $availableDates.find((d) => d < $currentDate) ?? null;
+			const nextDate = [...$availableDates].reverse().find((d) => d > $currentDate) ?? null;
+			return { hasPrevious: !!previousDate, hasNext: !!nextDate, previousDate, nextDate };
+		}
 		return {
 			hasPrevious: idx < $availableDates.length - 1,
 			hasNext: idx > 0,
@@ -118,12 +124,9 @@ export function navigateToDate(date: string, category?: string): void {
  */
 export function goToPreviousDate(category?: string): void {
 	if (!browser) return;
-	const current = get(currentDate);
-	const dates = get(availableDates);
-
-	const idx = dates.indexOf(current);
-	if (idx < dates.length - 1) {
-		const previousDate = dates[idx + 1];
+	// Usa las vecinas calculadas (también sirve en una fecha sin edición).
+	const { previousDate } = get(navigation);
+	if (previousDate) {
 		currentDate.set(previousDate);
 		goto(buildUrl(previousDate, category));
 	}
@@ -134,12 +137,8 @@ export function goToPreviousDate(category?: string): void {
  */
 export function goToNextDate(category?: string): void {
 	if (!browser) return;
-	const current = get(currentDate);
-	const dates = get(availableDates);
-
-	const idx = dates.indexOf(current);
-	if (idx > 0) {
-		const nextDate = dates[idx - 1];
+	const { nextDate } = get(navigation);
+	if (nextDate) {
 		currentDate.set(nextDate);
 		goto(buildUrl(nextDate, category));
 	}

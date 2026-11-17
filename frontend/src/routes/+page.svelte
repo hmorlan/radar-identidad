@@ -3,8 +3,9 @@
 	import { browser } from '$app/environment';
 	import { goto, afterNavigate } from '$app/navigation';
 	import { tick } from 'svelte';
+	import { get } from 'svelte/store';
 	import { currentDate, availableDates, isLoading as storeLoading, resolveLatestDate } from '$lib/stores/dateStore';
-	import { loadDaySummary, loadCategoryData, preloadAdjacentDates } from '$lib/services/dataLoader';
+	import { loadDaySummary, loadCategoryData, preloadAdjacentDates, getAvailableDates } from '$lib/services/dataLoader';
 	import { parseDate } from '$lib/services/dateUtils';
 	import type { DaySummary, CategoryData, Category } from '$lib/types';
 	import { CATEGORY_CONFIG } from '$lib/types';
@@ -28,6 +29,8 @@
 	let categoryData: CategoryData | null = null;
 	let dataLoading = false;
 	let error: string | null = null;
+	// Fecha pedida que no tiene edición (no es error: las ediciones salen L-M-V).
+	let missingDate: string | null = null;
 	let activeLoadId = 0;
 	let lastHandledRouteKey = '';
 
@@ -72,6 +75,13 @@
 			});
 		}
 	}
+
+	// Ediciones vecinas de una fecha sin edición (las fechas vienen de la más nueva a la más vieja).
+	$: previousEdition = missingDate ? ($availableDates.find((d) => d < (missingDate ?? '')) ?? null) : null;
+	$: nextEdition = missingDate
+		? ([...$availableDates].reverse().find((d) => d > (missingDate ?? '')) ?? null)
+		: null;
+	$: editionHref = (d: string) => (categoryParam ? `/?date=${d}&category=${categoryParam}` : `/?date=${d}`);
 
 	// Show loading when store is initializing OR when data is loading
 	$: loading = $storeLoading || dataLoading;
@@ -172,6 +182,20 @@
 		}
 
 		currentDate.set(resolvedDate);
+		// El índice puede no haber llegado aún al store (la página corre antes que
+		// el onMount del layout); loadIndex está en caché, así que no cuesta otra petición.
+		let dates = get(availableDates);
+		if (rawDate && !dates.length) dates = await getAvailableDates();
+		if (loadId !== activeLoadId) return;
+		if (rawDate && dates.length && !dates.includes(rawDate)) {
+			// Sin edición ese día: aviso y enlaces, sin pedir archivos que no existen.
+			missingDate = rawDate;
+			summary = null;
+			categoryData = null;
+			error = null;
+			return;
+		}
+		missingDate = null;
 		await loadRouteData(resolvedDate, resolvedCategory, loadId);
 	}
 
@@ -220,7 +244,9 @@
 				return;
 			}
 
-			error = e instanceof Error ? e.message : 'No se pudieron cargar los datos';
+			// El mensaje técnico (p. ej. "Failed to fetch") va a la consola, no al lector.
+			console.error('Carga de la edición', e);
+			error = 'Revisa tu conexión e inténtalo de nuevo. Si el problema sigue, vuelve a la edición más reciente.';
 			summary = null;
 			categoryData = null;
 		} finally {
@@ -294,6 +320,21 @@
 	{#if loading}
 		<div class="py-20">
 			<LoadingSpinner size="lg" />
+		</div>
+	{:else if missingDate}
+		<div class="sin-edicion text-center py-12">
+			<p class="t-kicker text-oro">Sin edición</p>
+			<p class="t-display-hero text-tinta mt-3">No hay edición para esta fecha</p>
+			<p class="text-tinta-suave mt-3">El radar se publica lunes, miércoles y viernes.</p>
+			<p class="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 t-ui">
+				{#if previousEdition}
+					<a class="text-oro hover:underline" href={editionHref(previousEdition)}>&larr; Edición anterior</a>
+				{/if}
+				{#if nextEdition}
+					<a class="text-oro hover:underline" href={editionHref(nextEdition)}>Edición siguiente &rarr;</a>
+				{/if}
+				<a class="text-oro hover:underline" href="/archive">Archivo</a>
+			</p>
 		</div>
 	{:else if error}
 		<ErrorMessage title="No se pudo cargar la edición" message={error} onRetry={retry} />

@@ -91,6 +91,15 @@ class AxesAndMemoryTest(unittest.TestCase):
                "estado": "laguna", "alt": "Eco."}
         self.assertEqual(hv.validate_axes(raw, self.bank, c).foco, "28% 45%")
 
+    def test_focus_follows_head_height(self):
+        axes = hv.Axes("mito", "Eco", "Echo...", "diagonal", "grietas", "Eco.", "50% 45%")
+        self.assertEqual(hv._focus_from(axes, 40.0), "40% 45%")           # formato anterior: solo X
+        self.assertEqual(hv._focus_from(axes, (40.0, 22.0)), "40% 22%")
+        self.assertEqual(hv._focus_from(axes, (40.0, 3.0)), "40% 15%")    # no encuadra solo el borde
+        self.assertEqual(hv._focus_from(axes, (None, 30.0)), "50% 30%")
+        lateral = hv.Axes("mito", "Eco", "Echo...", "sujeto a la derecha", "grietas", "Eco.", "72% 45%")
+        self.assertEqual(hv._focus_from(lateral, (40.0, 30.0)), "72% 30%")
+
     def test_prompt_has_fixed_block_and_three_axes(self):
         blocks = hv.load_prompt_blocks()
         axes = hv.Axes("mito", "Eco", "Echo's voice multiplies as gold waves.", "diagonal", "laguna", "Eco.")

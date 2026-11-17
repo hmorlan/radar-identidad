@@ -292,13 +292,15 @@ REVIEW_PROMPT = {
     "mosaico": (
         "You review a generated image that must look like an ancient Roman floor mosaic. "
         "Answer with JSON only: {\"ok\": true|false, \"motivo\": \"short reason in Spanish\", "
-        "\"foco_x\": number 0-100}. Set ok=false if ANY of these is visible: a frame, border or "
+        "\"foco_x\": number 0-100, \"foco_y\": number 0-100}. Set ok=false if ANY of these is visible: a frame, border or "
         "stone edge around the image; any text, letters or numerals; a mobile phone, keypad or "
         "screen; a cut-out halo around figures (background tesserae not touching the contours); "
         "figures painted smoothly instead of built from tesserae. Reject only clear, obvious "
         "violations: chip grids, circuit traces, sensor rings and other abstract geometric "
         "patterns made of tesserae are intended and are NOT text, keypads or screens. "
-        "foco_x is the horizontal position (percent from the left) of the main subject."
+        "foco_x is the horizontal position (percent from the left) of the main subject; "
+        "foco_y is the vertical position (percent from the top) of the main subject's head or face, "
+        "or of its most important detail if it has no head."
     ),
     "grabado": (
         "You review a generated image that must look like a sepia copperplate engraving. "
@@ -323,7 +325,7 @@ def _parse_review(text: str) -> Optional[Dict[str, Any]]:
     return data if isinstance(data, dict) and "ok" in data else None
 
 
-async def review_image(image_jpeg: bytes, tecnica: str) -> Tuple[bool, str, Optional[float]]:
+async def review_image(image_jpeg: bytes, tecnica: str) -> Tuple[bool, str, Any]:
     """Revisión sí/no con el modelo ligero.
 
     Solo una respuesta legible con ok=false bloquea una candidata. Sin key, con
@@ -365,8 +367,9 @@ async def review_image(image_jpeg: bytes, tecnica: str) -> Tuple[bool, str, Opti
                             if getattr(b, "type", "") == "text")
         data = _parse_review(last_text)
         if data is not None:
-            foco = data.get("foco_x")
-            foco = float(foco) if isinstance(foco, (int, float)) and 0 <= foco <= 100 else None
+            fx, fy = (_pct(data.get(k)) for k in ("foco_x", "foco_y"))
+            # Solo X (formato anterior) sigue siendo un número; con Y es una pareja.
+            foco = fx if fy is None else (fx, fy)
             ok = data.get("ok")
             ok = ok if isinstance(ok, bool) else str(ok).strip().lower() in ("true", "sí", "si", "yes")
             reason = str(data.get("motivo") or ("sin observaciones" if ok else "rechazada sin motivo"))[:200]
@@ -428,7 +431,7 @@ def _cost(response: Any) -> Optional[float]:
     return round(cost.total_cost * factor, 6)
 
 
-async def _evaluate(response: Any, tecnica: str) -> Tuple[bool, str, Optional[float]]:
+async def _evaluate(response: Any, tecnica: str) -> Tuple[bool, str, Any]:
     a = hp.load_rgb(response.image_data)
     if tecnica == "mosaico":
         check = hp.color_check(a)
@@ -438,10 +441,26 @@ async def _evaluate(response: Any, tecnica: str) -> Tuple[bool, str, Optional[fl
     return ok, reason or ("ok" if ok else "revisión visual"), foco
 
 
-def _focus_from(axes: Axes, foco_x: Optional[float]) -> str:
-    if foco_x is not None and axes.composicion not in ("sujeto a la izquierda", "sujeto a la derecha"):
-        return f"{round(foco_x)}% 45%"
-    return axes.foco
+def _pct(v: Any) -> Optional[float]:
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) and 0 <= v <= 100 else None
+
+
+# El friso recorta arriba y abajo: el foco vertical sigue la cabeza del sujeto,
+# pero dentro de este margen para no encuadrar solo el borde de la imagen.
+FOCO_Y_MIN, FOCO_Y_MAX = 15.0, 75.0
+
+
+def _focus_from(axes: Axes, foco: Any) -> str:
+    """object-position del friso: X de la revisión (salvo composición lateral) e Y de la cabeza."""
+    fx, fy = foco if isinstance(foco, tuple) else (foco, None)
+    base_x, _, base_y = axes.foco.partition(" ")
+    x = base_x
+    if fx is not None and axes.composicion not in ("sujeto a la izquierda", "sujeto a la derecha"):
+        x = f"{round(fx)}%"
+    y = base_y or "45%"
+    if fy is not None:
+        y = f"{round(min(max(fy, FOCO_Y_MIN), FOCO_Y_MAX))}%"
+    return f"{x} {y}"
 
 
 async def produce(client: Any, axes: Axes, sunday: bool,

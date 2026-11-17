@@ -424,6 +424,10 @@ class OrchestrationPrompts(BaseModel):
         default=None,
         description="Radar de Identidad: verificación de las notas contra su fuente"
     )
+    edition_coherence: Optional[str] = Field(
+        default=None,
+        description="Radar de Identidad: lleva las correcciones de la verificación a resúmenes y temas"
+    )
 
     model_config = {"extra": "ignore"}
 

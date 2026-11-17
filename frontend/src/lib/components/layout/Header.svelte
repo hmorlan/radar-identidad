@@ -46,7 +46,7 @@
 
 	{#if showSearch}
 		<div class="max-w-[760px] mx-auto px-4 sm:px-6 pb-4">
-			<SearchBar on:select={() => (showSearch = false)} />
+			<SearchBar autofocus on:select={() => (showSearch = false)} />
 		</div>
 	{/if}
 </header>

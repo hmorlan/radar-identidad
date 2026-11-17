@@ -1,6 +1,6 @@
 <!--
 	Imagen de la edición (v3.2 §3.2, §4.1, §6.3, §6.6).
-	- Diario: friso a todo el ancho (300px; 210px en móvil) entre doble filete, con un
+	- Diario: friso a todo el ancho, alto proporcional (36vw, entre 210px y 58vh) entre doble filete, con un
 	  solo paneo al cargar que termina en el punto focal.
 	- Domingo / grabado: dentro de la columna de 760px, ~330px, con multiply en claro.
 	Las dos variantes (clara y oscura derivada) se intercambian con el modo.
@@ -71,8 +71,11 @@
 		border-bottom: 1px solid rgb(var(--tinta));
 		padding: 8px 0;
 	}
+	/* La imagen es 21:9: con altura fija, en 1080p solo se veía un tercio de la obra.
+	   La altura crece con el ancho y se topa en una fracción de la pantalla, para que
+	   el titular siga cerca del primer pliegue. */
 	.friso img {
-		height: 300px;
+		height: clamp(210px, 36vw, 58vh);
 		animation: paneo 4s ease-out 1 both;
 	}
 	@keyframes paneo {

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
 from .llm_client import AnthropicClient, AsyncAnthropicClient, AsyncLLMRouter, ThinkingLevel, LLMResponse
-from .edition_notes import Edition, build_edition
+from .edition_notes import Edition, apply_edits, build_edition
 from .base import (
     BaseGatherer, BaseAnalyzer, CollectedItem, AnalyzedItem,
     CategoryReport, CategoryTheme, deduplicate_items, extract_json_str,
@@ -1083,10 +1083,11 @@ class MainOrchestrator:
             phases.skip_phase("Phase 4.2: Edition Notes", "no checkpoint to resume from")
         else:
             phases.start_phase("Phase 4.2: Edition Notes")
-            logger.info("Phase 4.2-4.3: Writing and fact-checking the edition notes...")
+            logger.info("Phase 4.2-4.4: Writing, fact-checking and reconciling the edition notes...")
             edition = await build_edition(
                 self.async_client, self.prompt_accessor, category_reports,
                 self.target_date, grounding=None,
+                derived=self._derived_texts(executive_summary, category_reports, top_topics),
             )
             for note in edition.degradations:
                 self.degradations.append(note)
@@ -1096,6 +1097,12 @@ class MainOrchestrator:
                 error="; ".join(edition.degradations) or None,
             )
             self._save_checkpoint('edition', {'edition': edition.to_dict()})
+
+        # Fase 4.4: las correcciones de la verificación llegan también a los
+        # resúmenes y temas (se reaplican al reanudar desde el checkpoint).
+        if edition.ajustes:
+            executive_summary = self._apply_edition_adjustments(
+                edition.ajustes, executive_summary, category_reports, top_topics)
 
         # Phase 4.6: Ecosystem Enrichment (detect new model releases from news)
         if self.replay_context is not None:
@@ -2009,6 +2016,34 @@ class MainOrchestrator:
         merged = dict(reused_reports)
         merged.update(dict(results))
         return merged
+
+    @staticmethod
+    def _derived_texts(executive_summary: str, category_reports: Dict[str, CategoryReport],
+                       top_topics: List["TopTopic"]) -> Dict[str, str]:
+        """Textos escritos antes de las notas que la fase de coherencia puede ajustar."""
+        texts = {"executive_summary": executive_summary or ""}
+        for cat, report in (category_reports or {}).items():
+            texts[f"resumen:{cat}"] = report.category_summary or ""
+        for i, topic in enumerate(top_topics or []):
+            # El nombre también se publica (al pie: "Deepfakes que burlan verificaciones").
+            texts[f"tema_nombre:{i}"] = topic.name or ""
+            texts[f"tema:{i}"] = topic.description or ""
+        return {k: v for k, v in texts.items() if v}
+
+    def _apply_edition_adjustments(self, ajustes: List[Dict[str, str]], executive_summary: str,
+                                   category_reports: Dict[str, CategoryReport],
+                                   top_topics: List["TopTopic"]) -> str:
+        texts = apply_edits(self._derived_texts(executive_summary, category_reports, top_topics), ajustes)
+        for cat, report in (category_reports or {}).items():
+            report.category_summary = texts.get(f"resumen:{cat}", report.category_summary)
+        for i, topic in enumerate(top_topics or []):
+            topic.name = texts.get(f"tema_nombre:{i}", topic.name)
+            new = texts.get(f"tema:{i}")
+            if new and new != topic.description:
+                topic.description = new
+                topic.description_html = self._markdown_links_to_html(new)
+        logger.info(f"  Coherencia: {len(ajustes)} ajuste(s) aplicados a resúmenes y temas")
+        return texts.get("executive_summary", executive_summary)
 
     def _markdown_links_to_html(self, text: str) -> str:
         """Convert markdown links [text](url) to HTML <a> tags."""

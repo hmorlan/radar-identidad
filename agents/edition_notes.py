@@ -9,15 +9,24 @@ su fuente. Cada nota sale ``verificada``, ``corregida`` (con el texto corregido)
 o se descarta. Si la verificación falla por completo, las notas se publican
 marcadas ``sin_verificar`` y la corrida queda degradada.
 
-Las instrucciones viven en ``config/prompts.yaml`` (``orchestration.edition_notes``
-y ``orchestration.edition_fact_check``); aquí solo se arma el contexto, se valida
-la respuesta y se aplica el resultado.
+Fase 4.4 — Coherencia: si la verificación corrigió o descartó alguna nota, una
+pasada corta revisa el titular, el resumen ejecutivo, los resúmenes por categoría
+y los temas (que se escribieron antes, a partir de los análisis sin verificar) y
+devuelve reemplazos mínimos para las frases que contradicen la corrección. Así una
+corrección no se queda solo en la nota (corrida del 17 nov: la nota decía que los
+deepfakes fueron rechazados y el resumen, que superaban la verificación).
+
+Las instrucciones viven en ``config/prompts.yaml`` (``orchestration.edition_notes``,
+``orchestration.edition_fact_check`` y ``orchestration.edition_coherence``); aquí
+solo se arma el contexto, se valida la respuesta y se aplica el resultado.
 """
 from __future__ import annotations
 
+import asyncio
 import json
-import re
 import logging
+import os
+import re
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -59,9 +68,15 @@ class Edition:
     titular: str = ""
     notas: List[EditionNote] = field(default_factory=list)
     degradations: List[str] = field(default_factory=list)
+    # Notas que la verificación descartó: {"id", "titulo", "motivo"}.
+    descartadas: List[Dict[str, str]] = field(default_factory=list)
+    # Reemplazos de coherencia ya validados: {"campo", "antes", "despues", "motivo"}.
+    # Viajan en el checkpoint para reaplicarse al reanudar.
+    ajustes: List[Dict[str, str]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"titular": self.titular, "notas": [n.to_dict() for n in self.notas]}
+        return {"titular": self.titular, "notas": [n.to_dict() for n in self.notas],
+                "descartadas": self.descartadas, "ajustes": self.ajustes}
 
     @classmethod
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> "Edition":
@@ -72,7 +87,11 @@ class Edition:
                 notes.append(EditionNote(**{k: raw.get(k) for k in EditionNote.__dataclass_fields__ if k in raw}))
             except TypeError:
                 continue
-        return cls(titular=data.get("titular", ""), notas=notes)
+        ajustes = [a for a in data.get("ajustes") or []
+                   if isinstance(a, dict) and all(isinstance(a.get(k), str) for k in ("campo", "antes", "despues"))]
+        descartadas = [d for d in data.get("descartadas") or [] if isinstance(d, dict)]
+        return cls(titular=data.get("titular", ""), notas=notes,
+                   descartadas=descartadas, ajustes=ajustes)
 
 
 # Candidatos extra de noticias fuera del top 10: Latinoamérica y España, y lo que
@@ -124,6 +143,85 @@ def collect_candidates(
     return out
 
 
+# --------------------------------------------------------------------------
+# Texto completo de la fuente para el redactor y el verificador
+# --------------------------------------------------------------------------
+# Muchos RSS solo traen un adelanto (mediana de 305 caracteres en la corrida del
+# 17 nov; Payments Dive dio 143 para la billetera de ChatGPT y la nota tuvo que
+# decir "el texto disponible no detalla…" cuando el artículo sí lo detallaba).
+# Antes de redactar se baja la página de las noticias con texto corto. Sin costo
+# de API; si la página falla o tiene muro de pago, se queda el texto del RSS.
+FULLTEXT_MIN = 1200           # por debajo de esto se intenta bajar la página
+FULLTEXT_CLIP = 4500          # lo que recibe el redactor de un texto completo
+FULLTEXT_TIMEOUT = 15.0
+FULLTEXT_CONCURRENCY = 6
+# Páginas que responden 200 pero dicen "no encontrada" (INCIBE lo hizo el 17 nov).
+_SOFT_404 = re.compile(r"p[aá]gina no encontrada|page not found|404 not found|no se ha encontrado la p[aá]gina", re.I)
+_FULLTEXT_SKIP_HOSTS = ("news.google.com", "arxiv.org", "bsky.app", "mastodon")
+
+
+def _fetch_text(url: str) -> str:
+    """Texto principal de una página (bloqueante; se llama en un hilo)."""
+    import requests
+    from bs4 import BeautifulSoup
+    from .gatherers.link_follower import LinkFollower
+
+    resp = requests.get(url, timeout=FULLTEXT_TIMEOUT, allow_redirects=True, headers={
+        "User-Agent": "Mozilla/5.0 (compatible; RadarDeIdentidad/1.0; +https://radar.hirammorlan.com)"})
+    resp.raise_for_status()
+    if "html" not in resp.headers.get("content-type", "html"):
+        return ""
+    return LinkFollower()._extract_content(BeautifulSoup(resp.content, "html.parser"))
+
+
+def _wants_full_text(category: str, a: AnalyzedItem) -> bool:
+    it = a.item
+    url = (it.url or "").lower()
+    return (category in ("news", "social") and url.startswith(("http://", "https://"))
+            and len(it.content or "") < FULLTEXT_MIN
+            and not any(h in url for h in _FULLTEXT_SKIP_HOSTS))
+
+
+async def enrich_full_text(candidates: List[Tuple[str, AnalyzedItem]]) -> int:
+    """Guarda en ``metadata['texto_completo']`` el texto de la página cuando el RSS es corto."""
+    if os.getenv("EDITION_FULLTEXT", "1") == "0":
+        return 0
+    todo = [a for cat, a in candidates if _wants_full_text(cat, a)]
+    sem = asyncio.Semaphore(FULLTEXT_CONCURRENCY)
+
+    async def one(a: AnalyzedItem) -> bool:
+        async with sem:
+            try:
+                text = await asyncio.wait_for(asyncio.to_thread(_fetch_text, a.item.url),
+                                              FULLTEXT_TIMEOUT + 5)
+            except Exception as e:  # noqa: BLE001
+                logger.info("Texto completo no disponible (%s): %s", type(e).__name__, a.item.url)
+                return False
+        text = " ".join((text or "").split())
+        if _SOFT_404.search(text[:300]):
+            logger.info("Texto completo descartado (página no encontrada): %s", a.item.url)
+            return False
+        if len(text) <= len(a.item.content or "") + 200:
+            return False
+        if not isinstance(a.item.metadata, dict):
+            a.item.metadata = {}
+        a.item.metadata["texto_completo"] = text
+        return True
+
+    got = sum(await asyncio.gather(*(one(a) for a in todo))) if todo else 0
+    logger.info("Texto completo: %d de %d candidatos con RSS corto", got, len(todo))
+    return got
+
+
+def source_text(it: Any, limit: int) -> str:
+    """Texto de la fuente: el completo si se bajó, si no el del RSS."""
+    meta = it.metadata if isinstance(getattr(it, "metadata", None), dict) else {}
+    full = meta.get("texto_completo")
+    if full:
+        return _clip(full, max(limit, FULLTEXT_CLIP))
+    return _clip(it.content, limit)
+
+
 def _clip(text: Optional[str], limit: int) -> str:
     text = " ".join((text or "").split())
     return text if len(text) <= limit else text[: limit - 1] + "…"
@@ -143,7 +241,7 @@ def candidates_context(candidates: Iterable[Tuple[str, AnalyzedItem]]) -> str:
             "publicado": it.published,
             "resumen_triage": _clip(a.summary, 600),
             "puntaje_triage": a.importance_score,
-            "contenido": _clip(it.content, CONTENT_CLIP),
+            "contenido": source_text(it, CONTENT_CLIP),
         })
     return json.dumps(records, ensure_ascii=False, indent=1)
 
@@ -199,6 +297,8 @@ def apply_fact_check(edition: Edition, content: str) -> Edition:
         note.nota_verificacion = _clip(review.get("motivo"), 400)
         if verdict == "descartar":
             logger.info("Verificación: nota descartada %s (%s)", note.item_id, note.nota_verificacion)
+            edition.descartadas.append({"id": note.item_id, "titulo": note.title,
+                                        "motivo": note.nota_verificacion})
             continue
         if verdict == "corregida":
             for field_name in ("que_paso", "por_que_importa", "pregunta_de_fondo", "titulo"):
@@ -230,10 +330,128 @@ def fact_check_context(edition: Edition, by_id: Dict[str, Tuple[str, AnalyzedIte
             },
             "fuente": {
                 "nombre": it.source, "titulo": it.title, "url": it.url,
-                "publicado": it.published, "texto": _clip(it.content, CONTENT_CLIP * 2),
+                "publicado": it.published, "texto": source_text(it, CONTENT_CLIP * 2),
             },
         })
     return json.dumps(records, ensure_ascii=False, indent=1)
+
+
+# --------------------------------------------------------------------------
+# Fase 4.4: coherencia de los textos derivados con las correcciones
+# --------------------------------------------------------------------------
+
+TITULAR_FIELD = "titular"
+_MD_LINK = re.compile(r"\]\(([^)\s]+)\)")
+
+
+def needs_coherence(edition: Edition) -> bool:
+    return bool(edition.descartadas) or any(n.verificacion == "corregida" for n in edition.notas)
+
+
+def coherence_context(edition: Edition, by_id: Dict[str, Tuple[str, AnalyzedItem]],
+                      derived: Dict[str, str]) -> str:
+    corrections = []
+    for note in edition.notas:
+        if note.verificacion != "corregida":
+            continue
+        it = by_id[note.item_id][1].item if note.item_id in by_id else None
+        corrections.append({
+            "id": note.item_id, "veredicto": "corregida", "motivo": note.nota_verificacion,
+            "nota_corregida": {"titulo": note.title, "que_paso": note.que_paso,
+                               "por_que_importa": note.por_que_importa},
+            "fuente": source_text(it, CONTENT_CLIP * 2) if it else "",
+        })
+    for d in edition.descartadas:
+        it = by_id[d.get("id", "")][1].item if d.get("id") in by_id else None
+        corrections.append({
+            "id": d.get("id"), "veredicto": "descartada", "motivo": d.get("motivo", ""),
+            "titulo_descartado": d.get("titulo", ""),
+            "fuente": source_text(it, CONTENT_CLIP * 2) if it else "",
+        })
+    textos = {TITULAR_FIELD: edition.titular, **derived}
+    return json.dumps({"correcciones": corrections,
+                       "textos": {k: v for k, v in textos.items() if v}},
+                      ensure_ascii=False, indent=1)
+
+
+def parse_coherence(content: str, texts: Dict[str, str]) -> List[Dict[str, str]]:
+    """Keep only edits that are safe to apply verbatim.
+
+    ``antes`` must appear exactly once in its field, and ``despues`` must keep
+    every internal link that ``antes`` had (the summaries are full of links).
+    """
+    data = _parse(content, ("ajustes",))
+    edits: List[Dict[str, str]] = []
+    for raw in data.get("ajustes") or []:
+        if not isinstance(raw, dict):
+            continue
+        campo, antes, despues = (str(raw.get(k) or "") for k in ("campo", "antes", "despues"))
+        text = texts.get(campo, "")
+        if not antes.strip() or not despues.strip() or antes == despues:
+            continue
+        if text.count(antes) != 1:
+            logger.warning("Coherencia: ajuste ignorado en %s (el texto original no aparece una vez)", campo)
+            continue
+        if not set(_MD_LINK.findall(antes)) <= set(_MD_LINK.findall(despues)):
+            logger.warning("Coherencia: ajuste ignorado en %s (perdía enlaces)", campo)
+            continue
+        if len(despues) > max(2 * len(antes), len(antes) + 300):
+            logger.warning("Coherencia: ajuste ignorado en %s (reescribía de más)", campo)
+            continue
+        edits.append({"campo": campo, "antes": antes, "despues": despues,
+                      "motivo": _clip(raw.get("motivo"), 200)})
+    return edits
+
+
+def apply_edits(texts: Dict[str, str], edits: Iterable[Dict[str, str]]) -> Dict[str, str]:
+    """Return a copy of ``texts`` with each edit applied once (if it still matches)."""
+    out = dict(texts)
+    for e in edits:
+        text = out.get(e.get("campo", ""))
+        if text is not None and text.count(e["antes"]) == 1:
+            out[e["campo"]] = text.replace(e["antes"], e["despues"], 1)
+    return out
+
+
+async def reconcile_derived(
+    async_client: Any,
+    prompt_accessor: Any,
+    edition: Edition,
+    by_id: Dict[str, Tuple[str, AnalyzedItem]],
+    derived: Dict[str, str],
+    target_date: str,
+    max_notes: int = 8,
+) -> Edition:
+    """Fase 4.4. Never raises: on failure the derived texts stay as they were."""
+    if not derived or not needs_coherence(edition):
+        return edition
+    prompt = _prompt(prompt_accessor, "edition_coherence", target_date, max_notes)
+    if not prompt:
+        edition.degradations.append("coherencia: falta orchestration.edition_coherence")
+        return edition
+    nonce = new_fence_nonce()
+    try:
+        response = await async_client.call_with_thinking(
+            messages=[{"role": "user", "content": build_fenced_user_message(
+                coherence_context(edition, by_id, derived), nonce,
+                task_line="Revisa los textos cercados contra las correcciones, según tus "
+                          "instrucciones de sistema.")}],
+            system=build_hardened_system(prompt, nonce),
+            profile=ThinkingLevel.QUICK,
+            caller="orchestrator.edition_coherence",
+        )
+        texts = {TITULAR_FIELD: edition.titular, **derived}
+        edits = parse_coherence(response.content, texts)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Coherencia de la edición falló: %s", e)
+        edition.degradations.append(f"coherencia: falló ({type(e).__name__}); resúmenes sin ajustar")
+        return edition
+    for e in edits:
+        logger.info("Coherencia: %s · %s", e["campo"], e.get("motivo") or "ajuste")
+    edition.titular = apply_edits({TITULAR_FIELD: edition.titular},
+                                  [e for e in edits if e["campo"] == TITULAR_FIELD])[TITULAR_FIELD]
+    edition.ajustes = [e for e in edits if e["campo"] != TITULAR_FIELD]
+    return edition
 
 
 async def build_edition(
@@ -243,12 +461,19 @@ async def build_edition(
     target_date: str,
     grounding: Optional[str] = None,
     max_notes: int = 8,
+    derived: Optional[Dict[str, str]] = None,
 ) -> Edition:
-    """Write the edition's notes, then verify them. Never raises; degrades instead."""
+    """Write the edition's notes, verify them and reconcile the derived texts.
+
+    ``derived`` maps field names (``executive_summary``, ``resumen:news``,
+    ``tema:0``…) to the texts written before the notes; the edits for them come
+    back in ``edition.ajustes``. Never raises; degrades instead.
+    """
     candidates = collect_candidates(category_reports)
     if not candidates:
         return Edition(degradations=["notas: no hubo candidatos"])
     by_id = {a.item.id: (cat, a) for cat, a in candidates}
+    await enrich_full_text(candidates)
 
     notes_prompt = _prompt(prompt_accessor, "edition_notes", target_date, max_notes)
     if not notes_prompt:
@@ -295,7 +520,9 @@ async def build_edition(
     except Exception as e:  # noqa: BLE001
         logger.error("Verificación de notas falló: %s", e)
         edition.degradations.append(f"verificación: falló ({type(e).__name__}); notas sin verificar")
-    return edition
+        return edition
+    return await reconcile_derived(async_client, prompt_accessor, edition, by_id,
+                                   derived or {}, target_date, max_notes)
 
 
 def _prompt(prompt_accessor: Any, name: str, target_date: str, max_notes: int) -> Optional[str]:

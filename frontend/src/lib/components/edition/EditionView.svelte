@@ -113,24 +113,24 @@
 	<DateNavigator coverageDate={summary.coverage_date} />
 </div>
 
-<!-- Franja humana (§4.9) -->
-<section class="columna franja">
-	<div class="franja-media">
-		{#if HUMAN_STRIP.kind !== 'placeholder' && HUMAN_STRIP.src}
+<!-- Franja humana (§4.9). Solo aparece cuando hay foto o video: el espacio
+     reservado (botón ▶ sin video y "Aquí va tu foto…") se veía en producción. -->
+{#if HUMAN_STRIP.kind !== 'placeholder' && HUMAN_STRIP.src}
+	<section class="columna franja">
+		<div class="franja-media">
 			<img src={HUMAN_STRIP.src} alt={HUMAN_STRIP.alt ?? ''} />
-		{:else}
-			<span class="play" aria-hidden="true">▶</span>
-			<span class="t-label text-tinta-suave aqui">Aquí va tu foto o el video de la semana</span>
-		{/if}
-	</div>
-	<div class="franja-texto">
-		<span class="t-kicker text-oro">En cámara esta semana</span>
-		<span class="frase">{HUMAN_STRIP.frase}</span>
-		{#if HUMAN_STRIP.enlace && isSafeUrl(HUMAN_STRIP.enlace)}
-			<a class="t-ui text-oro no-underline hover:underline" href={HUMAN_STRIP.enlace} target="_blank" rel="noopener noreferrer">Ver en LinkedIn →</a>
-		{/if}
-	</div>
-</section>
+		</div>
+		<div class="franja-texto">
+			<span class="t-kicker text-oro">En cámara esta semana</span>
+			<span class="frase">{HUMAN_STRIP.frase}</span>
+			{#if HUMAN_STRIP.enlace && isSafeUrl(HUMAN_STRIP.enlace)}
+				<a class="t-ui text-oro no-underline hover:underline" href={HUMAN_STRIP.enlace} target="_blank" rel="noopener noreferrer">
+					{HUMAN_STRIP.kind === 'video' ? 'Ver el video en LinkedIn →' : 'Ver la publicación en LinkedIn →'}
+				</a>
+			{/if}
+		</div>
+	</section>
+{/if}
 
 <!-- Caja "Cada domingo" (§4.7) -->
 {#if !domingo}
@@ -169,12 +169,16 @@
 
 <!-- Suscripción (§4.10) -->
 <section class="columna suscripcion">
+	<!-- "Seguir en LinkedIn" junto a "Recibe el radar" sugería que las ediciones
+	     llegan por LinkedIn; el enlace es al perfil del autor. -->
 	<span class="frase">Recibe el radar lunes, miércoles y viernes</span>
-	<span class="flex gap-3">
+	<span class="flex flex-wrap gap-3">
+		<a class="boton-solido" href="/feeds">Suscribirse por RSS</a>
 		{#if LINKEDIN_URL && isSafeUrl(LINKEDIN_URL)}
-			<a class="boton-solido" href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer">Seguir en LinkedIn</a>
+			<a class="boton-contorno" href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer"
+				>Hiram Morlán en LinkedIn</a
+			>
 		{/if}
-		<a class="boton-contorno" href="/feeds">RSS</a>
 	</span>
 </section>
 
@@ -263,23 +267,6 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-	}
-	.play {
-		width: 58px;
-		height: 58px;
-		border-radius: 50%;
-		border: 1px solid rgb(var(--oro));
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: rgb(var(--oro));
-		font-size: 20px;
-		padding-left: 4px;
-	}
-	.aqui {
-		position: absolute;
-		left: 12px;
-		bottom: 10px;
 	}
 	.franja-texto {
 		display: flex;

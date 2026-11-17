@@ -19,7 +19,8 @@
 	let selectedIndex = -1;
 	let inputElement: HTMLInputElement;
 
-	const categories: (Category | '')[] = ['', 'news', 'research', 'social', 'reddit'];
+	// Reddit está desactivado (API de pago): no se ofrece como filtro.
+	const categories: (Category | '')[] = ['', 'news', 'research', 'social'];
 
 	// Initialize search on mount
 	onMount(async () => {
@@ -111,22 +112,15 @@
 	}
 </script>
 
+<!--
+	El campo va primero y ocupa el ancho: en móvil el selector (231px con
+	"Todas las categorías") dejaba al campo en ~120px y en pantallas angostas
+	desaparecía. El filtro va debajo en móvil y a la derecha, angosto, desde sm.
+-->
 <div class="search-container relative">
-	<div class="flex gap-2">
-		<!-- Category filter -->
-		<select
-			bind:value={category}
-			on:change={handleCategoryChange}
-			class="input w-auto min-w-[120px] text-sm"
-		>
-			<option value="">Todas las categorías</option>
-			{#each categories.filter(c => c !== '') as cat}
-				<option value={cat}>{CATEGORY_CONFIG[cat].title}</option>
-			{/each}
-		</select>
-
+	<div class="flex flex-col sm:flex-row gap-2">
 		<!-- Search input -->
-		<div class="relative flex-1">
+		<div class="relative flex-1 min-w-0">
 			<input
 				bind:this={inputElement}
 				bind:value={query}
@@ -174,6 +168,19 @@
 				</span>
 			{/if}
 		</div>
+
+		<!-- Category filter -->
+		<select
+			bind:value={category}
+			on:change={handleCategoryChange}
+			class="input text-sm sm:w-44 sm:flex-none"
+			aria-label="Filtrar por sección"
+		>
+			<option value="">Todas las secciones</option>
+			{#each categories.filter((c) => c !== '') as cat}
+				<option value={cat}>{CATEGORY_CONFIG[cat].title}</option>
+			{/each}
+		</select>
 	</div>
 
 	<!-- Results dropdown -->
