@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-17",
+  "motivo": "La nota de FBI y AWS decía, como su fuente, que el servidor del proveedor rechazó los deepfakes en todos los intentos; el resumen, la sección de Noticias y un tema decían que superaban la verificación. La nota de la billetera de ChatGPT decía que la fuente no detallaba la autorización, pero el artículo completo de Payments Dive sí describe la verificación por compra y la tokenización.",
+  "fuentes": [
+    "https://www.theregister.com/cyber-crime/2026/11/16/attackers-are-using-ai-agents-to-automate-cybercrime-at-industrial-scale-fbi-and-aws-warn/5310223",
+    "https://www.paymentsdive.com/news/openai-wallet-taps-card-networks/874769/"
+  ],
+  "reemplazos": [
+    {
+      "antes": "y deepfakes capaces de superar verificaciones de identidad.",
+      "despues": "e intentos con deepfakes contra verificaciones de identidad que, según AWS, el servidor del proveedor rechazó en todos los casos."
+    },
+    {
+      "antes": "y deepfakes que superan verificaciones de identidad.",
+      "despues": "e intentos con deepfakes contra verificaciones de identidad que, según AWS, el servidor del proveedor rechazó en todos los casos."
+    },
+    {
+      "antes": "y deepfakes que superan verificaciones de identidad, ambos riesgos",
+      "despues": "e intentos con deepfakes contra verificaciones de identidad, ambos riesgos"
+    },
+    {
+      "antes": "que incluye deepfakes capaces de superar verificaciones de identidad dentro del ciberdelito automatizado.",
+      "despues": "que incluye intentos con deepfakes contra verificaciones de identidad dentro del ciberdelito automatizado; según AWS, el servidor del proveedor los rechazó en todos los casos."
+    },
+    {
+      "antes": "Ambos casos debilitan el rostro en pantalla como prueba de identidad en canales remotos.",
+      "despues": "Ambos casos apuntan al rostro en pantalla como prueba de identidad en canales remotos."
+    },
+    {
+      "antes": "Deepfakes que burlan verificaciones",
+      "despues": "Deepfakes contra la verificación remota"
+    }
+  ],
+  "notas": {
+    "4c3eb36abb9a": {
+      "que_paso": "Según Payments Dive, OpenAI creó una billetera digital con la que el agente de ChatGPT puede pagar con Visa, Mastercard y American Express. Según OpenAI, cada compra exige una verificación de seguridad y el agente no accede a los datos reales de la tarjeta; Payments Dive informa que la primera transacción usó credenciales tokenizadas. Por ahora solo está disponible para algunos usuarios de ChatGPT Pro.",
+      "por_que_importa": "Emisores, adquirentes y comercios pueden empezar a ver compras iniciadas por un agente en nombre del titular, mientras buena parte de sus reglas de fraude y de disputa parte de que quien compra es la persona. La verificación en cada compra y la tokenización protegen los datos de la tarjeta, pero la decisión de confianza sigue en la prueba del mandato: qué autorizó el titular, para qué montos y comercios, y cómo se revoca.",
+      "verificacion": "corregida"
+    }
+  }
+}

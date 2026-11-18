@@ -81,6 +81,7 @@ python3 run_pipeline.py --resume-from 4.7 ...              # regenerar solo la i
 
 ```bash
 python3 -m unittest discover -s tests -p '*_test.py'   # tests de Python (sin red)
+python3 scripts/repair_edition.py config/reparaciones/AAAA-MM-DD.json --web-dir ./web --dry-run   # simula una reparación
 python3 scripts/check_feeds.py            # estado de cada fuente, sin costo
 python3 scripts/check_feeds.py --pending  # incluye candidatas comentadas
 python3 scripts/source_health_alert.py --dry-run   # simula la alerta de fuentes caídas
@@ -104,7 +105,8 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | Filtro previo de identidad para fuentes ruidosas | Directiva `filtro=identidad` (título y resumen) o `filtro=titulo` (solo título, para boletines como CERT-FR) en `config/rss_feeds.txt` y `config/research_feeds.txt` → `agents/gatherers/identity_filter.py`; ahí también se descartan webinars y contenido patrocinado |
 | Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
 | X y Reddit | Desactivados (APIs de pago) |
-| Prompts editoriales | `config/prompts.yaml` (en español) |
+| Prompts editoriales | `config/prompts.yaml` (en español): notas, verificación y coherencia (fase 4.4: lleva las correcciones a resúmenes y temas) |
+| Reparaciones de ediciones publicadas | `config/reparaciones/<fecha>.json` → `scripts/repair_edition.py` (workflow **Reparar edición**) |
 | Modelos, keys y URL base | `config/providers.yaml` (copia de `providers.yaml.example`) |
 | Imagen de cada edición (v3.2) | `config/hero_prompt.yaml` (bloque fijo, referencias, grabado y umbrales de control), `config/hero_motivos.yaml` (banco de motivos), `assets/hero-ref/` (2 referencias), `config/hero_archivo.yaml` + `assets/hero-archivo/` (respaldo: nunca una edición sin imagen), `generators/hero_v32.py` y `generators/hero_postprocess.py`; memoria en `data/hero_historial.json` (viaja en R2) |
 | Identidad visual del sitio | `docs/identidad-visual.md` |
@@ -159,7 +161,7 @@ Los perfiles internos se traducen al `effort` del pensamiento adaptativo de Clau
 
 ## Despliegue
 
-GitHub Actions como motor y Cloudflare Pages (proyecto `radar-identidad`, Direct Upload) para el sitio estático en `radar.hirammorlan.com`. Durante la beta las ediciones no se guardan en el repo público (`commit_outputs=false`): el pipeline compila el sitio y lo sube con `scripts/deploy_site.sh` (wrangler). Para redesplegar solo el diseño: workflow manual **Publicar sitio** (incluye la última edición del pipeline). Secretos: `CLOUDFLARE_API_TOKEN` (Cloudflare Pages: Edit) y `CLOUDFLARE_ACCOUNT_ID`. El sitio va detrás de Cloudflare Access hasta el lanzamiento.
+GitHub Actions como motor y Cloudflare Pages (proyecto `radar-identidad`, Direct Upload) para el sitio estático en `radar.hirammorlan.com`. Durante la beta las ediciones no se guardan en el repo público (`commit_outputs=false`): el pipeline compila el sitio y lo sube con `scripts/deploy_site.sh` (wrangler). Para redesplegar solo el diseño: workflow manual **Publicar sitio** (incluye la última edición del pipeline). Para corregir el texto de una edición ya publicada sin volver a correr el pipeline: parche en `config/reparaciones/<fecha>.json` y workflow manual **Reparar edición** (baja R2, aplica `scripts/repair_edition.py`, valida, regenera feeds y búsqueda, sube a R2 y publica; sin costo de API). Secretos: `CLOUDFLARE_API_TOKEN` (Cloudflare Pages: Edit) y `CLOUDFLARE_ACCOUNT_ID`. El sitio va detrás de Cloudflare Access hasta el lanzamiento.
 
 ## Infraestructura heredada que no aplica
 
