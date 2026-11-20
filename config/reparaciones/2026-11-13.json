@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-13",
+  "motivo": "Pulido de ediciones anteriores (20 nov) antes de compartir el sitio: nombres de fuente legibles, enlaces de arXiv por https y la fecha de envío de cada preprint en lugar de la del anuncio (API de arXiv).",
+  "fuentes": [
+    "https://export.arxiv.org/api/query (fecha <published> de la versión 1)"
+  ],
+  "reemplazos": [
+    {
+      "antes": "http://arxiv.org/",
+      "despues": "https://arxiv.org/"
+    }
+  ],
+  "notas": {
+    "04e64771c16a": {
+      "published": "2026-11-11"
+    },
+    "865153ca60c9": {
+      "published": "2026-11-12"
+    }
+  },
+  "limpiar_fuentes": true
+}

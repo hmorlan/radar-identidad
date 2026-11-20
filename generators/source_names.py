@@ -25,6 +25,8 @@ EXACT = {
     "expansión - tecnología": "Expansión",
     "linux foundation - press releases": "Linux Foundation",
     "the record from recorded future news": "The Record",
+    "payments dive - latest news": "Payments Dive",
+    "arxiv (cryptography and security)": "arXiv (criptografía y seguridad)",
 }
 _IETF = re.compile(r"^I-D list for (.+?)(?: RSS Feed)?$", re.I)
 _IETF_GROUPS = {"web authorization protocol": "OAuth"}

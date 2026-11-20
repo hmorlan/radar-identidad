@@ -10,7 +10,12 @@ Aplica un parche JSON (``config/reparaciones/AAAA-MM-DD.json``) sobre
   parche ya esté registrado en ``reparaciones`` (el script es idempotente).
 - ``notas``: campos de una nota de la edición, por ``item_id``, que se reemplazan
   completos (``titulo``, ``que_paso``, ``por_que_importa``, ``pregunta_de_fondo``,
-  ``senal``, ``verificacion``).
+  ``senal``, ``verificacion``, ``url``, ``source``, ``published``, ``via``, ``fecha_tipo``).
+- ``items``: ``url`` de una entrada de las listas por ``id`` (20 nov: un borrador del
+  IETF quedó sin enlace porque el feed lo traía relativo).
+- ``limpiar_fuentes``: ``true`` pasa cada campo ``source`` (notas y listas) por
+  ``generators/source_names.py`` ("www.theregister.com - Articles" → "The Register").
+  Solo toca ese campo, nunca URLs ni texto.
 
 Después vuelve a generar los campos ``*_html`` que cambiaron, los feeds Atom y el
 corpus de búsqueda (si no, el feed y el buscador seguirían con el texto viejo), y
@@ -148,6 +153,39 @@ def apply_patch(patch: Dict[str, Any], day_dir: Path, dry_run: bool = False) -> 
             if note.get(target) != v:
                 note[target] = v
                 report["notas"].append(f"{item_id}.{target}")
+
+    for item_id, fields in (patch.get("items") or {}).items():
+        url = (fields or {}).get("url", "")
+        if not str(url).startswith(("https://", "http://")):
+            raise RepairError(f"url inválida para {item_id}: {url!r}")
+        hits = 0
+        for name, data in files.items():
+            for it in (data.get("items") or []) if isinstance(data, dict) else []:
+                if isinstance(it, dict) and it.get("id") == item_id and it.get("url") != url:
+                    it["url"] = url
+                    hits += 1
+        if hits:
+            report["notas"].append(f"item {item_id}.url")
+        elif not any(isinstance(it, dict) and it.get("id") == item_id and it.get("url") == url
+                     for data in files.values() if isinstance(data, dict)
+                     for it in data.get("items") or []):
+            raise RepairError(f"no existe la entrada {item_id}")
+
+    if patch.get("limpiar_fuentes"):
+        from generators.source_names import clean_source
+        fuentes = 0
+        for data in files.values():
+            if not isinstance(data, dict):
+                continue
+            rows = list(data.get("items") or []) + list((data.get("edition") or {}).get("notas") or [])
+            for it in rows:
+                if isinstance(it, dict) and isinstance(it.get("source"), str):
+                    limpio = clean_source(it["source"])
+                    if limpio != it["source"]:
+                        it["source"] = limpio
+                        fuentes += 1
+        if fuentes:
+            report["notas"].append(f"limpiar_fuentes: {fuentes}")
 
     report["html"] = _rerender(changed)
 

@@ -1,9 +1,11 @@
 {
   "date": "2026-11-17",
-  "motivo": "La nota de FBI y AWS decía, como su fuente, que el servidor del proveedor rechazó los deepfakes en todos los intentos; el resumen, la sección de Noticias y un tema decían que superaban la verificación. La nota de la billetera de ChatGPT decía que la fuente no detallaba la autorización, pero el artículo completo de Payments Dive sí describe la verificación por compra y la tokenización.",
+  "motivo": "La nota de FBI y AWS decía, como su fuente, que el servidor del proveedor rechazó los deepfakes en todos los intentos; el resumen, la sección de Noticias y un tema decían que superaban la verificación. La nota de la billetera de ChatGPT decía que la fuente no detallaba la autorización, pero el artículo completo de Payments Dive sí describe la verificación por compra y la tokenización. Pulido de ediciones anteriores (20 nov) antes de compartir el sitio: nombres de fuente legibles, enlaces de arXiv por https y la fecha de envío de cada preprint en lugar de la del anuncio (API de arXiv).",
   "fuentes": [
     "https://www.theregister.com/cyber-crime/2026/11/16/attackers-are-using-ai-agents-to-automate-cybercrime-at-industrial-scale-fbi-and-aws-warn/5310223",
-    "https://www.paymentsdive.com/news/openai-wallet-taps-card-networks/874769/"
+    "https://www.paymentsdive.com/news/openai-wallet-taps-card-networks/874769/",
+    "https://export.arxiv.org/api/query (fecha <published> de la versión 1)",
+    "https://datatracker.ietf.org/doc/draft-mckenna-webbotauth-collection-attestation/"
   ],
   "reemplazos": [
     {
@@ -29,6 +31,10 @@
     {
       "antes": "Deepfakes que burlan verificaciones",
       "despues": "Deepfakes contra la verificación remota"
+    },
+    {
+      "antes": "http://arxiv.org/",
+      "despues": "https://arxiv.org/"
     }
   ],
   "notas": {
@@ -36,6 +42,18 @@
       "que_paso": "Según Payments Dive, OpenAI creó una billetera digital con la que el agente de ChatGPT puede pagar con Visa, Mastercard y American Express. Según OpenAI, cada compra exige una verificación de seguridad y el agente no accede a los datos reales de la tarjeta; Payments Dive informa que la primera transacción usó credenciales tokenizadas. Por ahora solo está disponible para algunos usuarios de ChatGPT Pro.",
       "por_que_importa": "Emisores, adquirentes y comercios pueden empezar a ver compras iniciadas por un agente en nombre del titular, mientras buena parte de sus reglas de fraude y de disputa parte de que quien compra es la persona. La verificación en cada compra y la tokenización protegen los datos de la tarjeta, pero la decisión de confianza sigue en la prueba del mandato: qué autorizó el titular, para qué montos y comercios, y cómo se revoca.",
       "verificacion": "corregida"
+    },
+    "fee0f8148414": {
+      "published": "2026-11-14"
+    },
+    "b4adbba8e645": {
+      "published": "2026-11-16"
+    }
+  },
+  "limpiar_fuentes": true,
+  "items": {
+    "49d1fd50401c": {
+      "url": "https://datatracker.ietf.org/doc/draft-mckenna-webbotauth-collection-attestation/"
     }
   }
 }
