@@ -105,7 +105,7 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | Filtro previo de identidad para fuentes ruidosas | Directiva `filtro=identidad` (título y resumen) o `filtro=titulo` (solo título, para boletines como CERT-FR) en `config/rss_feeds.txt` y `config/research_feeds.txt` → `agents/gatherers/identity_filter.py`; ahí también se descartan webinars y contenido patrocinado |
 | Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` (directiva `filtro=identidad` por cuenta para las generalistas) |
 | Hacker News | `config/hackernews.txt` (búsquedas en la API pública de Algolia; mínimo `HACKERNEWS_MIN_POINTS`, 20) |
-| X y Reddit | Desactivados (APIs de pago) |
+| X y Reddit | Desactivados. X: API de pago por uso, se evalúa tras la corrida del 23 nov. Reddit: descartado (apagó sus RSS el 13 nov 2026 y retira su API pública; no se usan scrapers de terceros) |
 | Prompts editoriales | `config/prompts.yaml` (en español): notas, verificación y coherencia (fase 4.4: lleva las correcciones a resúmenes y temas) |
 | Reparaciones de ediciones publicadas | `config/reparaciones/<fecha>.json` → `scripts/repair_edition.py` (workflow **Reparar edición**) |
 | Modelos, keys y URL base | `config/providers.yaml` (copia de `providers.yaml.example`) |
