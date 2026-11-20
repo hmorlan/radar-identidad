@@ -8,7 +8,7 @@ import asyncio
 import logging
 import os
 import re
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 import time
 from datetime import datetime
 from pathlib import Path
@@ -251,7 +251,7 @@ class NewsGatherer(BaseGatherer):
                     else:
                         content = ''
                     rows.append({
-                        'link': entry.get('link', ''),
+                        'link': urljoin(feed_url, entry.get('link', '') or ''),
                         'title': entry.get('title', 'No Title'),
                         'content': content,
                         'author': entry.get('author', 'Unknown'),

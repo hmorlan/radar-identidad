@@ -14,9 +14,12 @@
 	export let collapsed = false;
 
 	const SIGNAL_LABEL: Record<string, string> = { alta: 'Señal alta', media: 'Señal media', baja: 'Señal baja' };
+	// "Corregida" es un paso interno (la verificación ajustó el borrador antes de
+	// publicar): el lector ve lo mismo que en una verificada. Las correcciones después
+	// de publicar se registran aparte (summary.json → reparaciones).
 	const VERIFICACION: Record<string, string> = {
 		verificada: 'verificada contra la fuente',
-		corregida: 'corregida tras verificar la fuente',
+		corregida: 'verificada contra la fuente',
 		sin_verificar: 'sin verificación automática'
 	};
 
@@ -60,7 +63,10 @@
 				{:else}
 					{fuenteTexto}
 				{/if}
-				<span class:corregida={note.verificacion === 'corregida'}>
+				{#if note.via && isSafeUrl(note.via.url)}
+					· vía <a class="enlace" href={note.via.url} target="_blank" rel="noopener noreferrer">{note.via.source}</a>
+				{/if}
+				<span class:sin-verificar={note.verificacion === 'sin_verificar'}>
 					· {VERIFICACION[note.verificacion] ?? VERIFICACION.sin_verificar}
 				</span>
 			</p>
@@ -165,7 +171,7 @@
 		font: italic 14px/1.5 'Newsreader', Georgia, serif;
 		color: rgb(var(--tinta-suave));
 	}
-	.corregida {
+	.sin-verificar {
 		color: rgb(var(--terracota));
 	}
 	.leer {

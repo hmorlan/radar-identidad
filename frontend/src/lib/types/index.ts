@@ -86,6 +86,8 @@ export interface EditionNote {
 	pregunta_de_fondo: string | null;
 	senal: 'baja' | 'media' | 'alta';
 	verificacion: 'verificada' | 'corregida' | 'sin_verificar' | string;
+	/** Post que llevó a la nota cuando url/source apuntan al original. */
+	via?: { source: string; url: string } | null;
 }
 
 export interface Edition {

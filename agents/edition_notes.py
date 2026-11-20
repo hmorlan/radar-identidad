@@ -32,6 +32,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from .base import AnalyzedItem, CategoryReport, extract_json_str
 from .llm_client import ThinkingLevel, attempt_timeout
+from .source_names import clean_source
 from .prompt_security import build_fenced_user_message, build_hardened_system, new_fence_nonce
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,9 @@ class EditionNote:
     pregunta_de_fondo: Optional[str] = None
     verificacion: str = "sin_verificar"
     nota_verificacion: str = ""
+    # Cuando la nota viene de un post que difunde otro texto: el post (vía de
+    # descubrimiento) mientras url/source apuntan al original. {"source", "url"}.
+    via: Optional[Dict[str, str]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -282,14 +286,40 @@ def parse_notes(content: str, by_id: Dict[str, Tuple[str, AnalyzedItem]], max_no
         pregunta = _clip(raw.get("pregunta_de_fondo"), 300) or None
         category, analyzed = by_id[item_id]
         it = analyzed.item
+        url, source, published, via = note_origin(it)
         edition.notas.append(EditionNote(
-            item_id=item_id, category=category, title=titulo, url=it.url, source=it.source,
-            published=it.published, que_paso=que_paso, por_que_importa=por_que,
-            senal=senal, pregunta_de_fondo=pregunta,
+            item_id=item_id, category=category, title=titulo, url=url, source=source,
+            published=published, que_paso=que_paso, por_que_importa=por_que,
+            senal=senal, pregunta_de_fondo=pregunta, via=via,
         ))
         if len(edition.notas) >= max_notes:
             break
     return edition
+
+
+def note_origin(it: Any) -> Tuple[str, str, str, Optional[Dict[str, str]]]:
+    """URL, fuente, fecha y vía de una nota.
+
+    - Un post de redes que difunde un artículo enlaza al artículo; el post queda como vía.
+    - Un preprint de arXiv lleva su fecha de envío, no la del anuncio.
+    - La fuente va con nombre legible (agents/source_names.py).
+    """
+    meta = it.metadata if isinstance(getattr(it, "metadata", None), dict) else {}
+    url, source, published, via = it.url, clean_source(it.source), it.published, None
+    original = meta.get("enlace_original") or ""
+    if it.source_type in ("bluesky", "mastodon") and original.startswith(("http://", "https://")):
+        quien = meta.get("author_display_name") or (it.author or "").lstrip("@")
+        via = {"source": f"{it.source} ({quien})" if quien else it.source, "url": it.url}
+        url, source = original, clean_source(_host_name(original))
+    if meta.get("enviado"):
+        published = meta["enviado"]
+    return url, source, published, via
+
+
+def _host_name(url: str) -> str:
+    from urllib.parse import urlparse
+    host = urlparse(url).netloc.lower().removeprefix("www.")
+    return clean_source(host) if host else url
 
 
 def apply_fact_check(edition: Edition, content: str) -> Edition:

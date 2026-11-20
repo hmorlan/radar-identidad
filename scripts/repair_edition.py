@@ -38,7 +38,10 @@ sys.path.insert(0, str(ROOT))
 
 NOTE_FIELDS = {"titulo": "title", "title": "title", "que_paso": "que_paso",
                "por_que_importa": "por_que_importa", "pregunta_de_fondo": "pregunta_de_fondo",
-               "senal": "senal", "verificacion": "verificacion"}
+               "senal": "senal", "verificacion": "verificacion",
+               # 20 nov: enlace faltante (IETF), original en vez del post (Bluesky) y
+               # fecha de envío del preprint (arXiv).
+               "url": "url", "source": "source", "published": "published", "via": "via"}
 SIGNALS = {"baja", "media", "alta"}
 _MD_LINK = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 
@@ -135,6 +138,11 @@ def apply_patch(patch: Dict[str, Any], day_dir: Path, dry_run: bool = False) -> 
                 raise RepairError(f"campo de nota no permitido: {k}")
             if target == "senal" and v not in SIGNALS:
                 raise RepairError(f"señal inválida: {v}")
+            if target == "url" and not str(v).startswith(("https://", "http://")):
+                raise RepairError(f"url inválida: {v}")
+            if target == "via" and v is not None and not (
+                    isinstance(v, dict) and str(v.get("url", "")).startswith(("https://", "http://"))):
+                raise RepairError(f"vía inválida: {v}")
             if note.get(target) != v:
                 note[target] = v
                 report["notas"].append(f"{item_id}.{target}")

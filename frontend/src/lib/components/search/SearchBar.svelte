@@ -92,7 +92,8 @@
 
 	function selectResult(result: SearchResult) {
 		if (result.doc) {
-			goto(`/${result.doc.date}/${result.doc.category}`);
+			// A la nota exacta (ancla item-<id>), no solo a la categoría (20 nov).
+			goto(`/?date=${result.doc.date}&category=${result.doc.category}#item-${result.doc.id}`);
 			isOpen = false;
 			query = '';
 			dispatch('select', result);

@@ -480,6 +480,9 @@ class SocialGatherer(BaseGatherer):
                         tags=[],
                         metadata={
                             'platform_id': uri,
+                            # El artículo que difunde el post: la nota enlaza al original
+                            # y deja el post como vía de descubrimiento (20 nov).
+                            'enlace_original': next((l for l in links if 'bsky.app' not in l), ''),
                             'author_display_name': author.get('displayName', author_handle),
                             'engagement': {
                                 'likes': post_data.get('likeCount', 0),

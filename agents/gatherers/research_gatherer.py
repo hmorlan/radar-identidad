@@ -13,13 +13,14 @@ arXiv publishing schedule:
 """
 
 import asyncio
+from urllib.parse import urljoin
 import logging
 import os
 import re
 import time
 from datetime import datetime
 from email.utils import parsedate_to_datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import feedparser
 import requests
@@ -170,6 +171,13 @@ class ResearchGatherer(BaseGatherer):
                 return await self._collect_research_blogs()
 
         arxiv_papers, blog_posts = await asyncio.gather(_timed_arxiv(), _timed_blogs())
+
+        # Fecha de envío del preprint (el RSS de arXiv trae la del anuncio: el 20 nov
+        # una nota decía "20 de noviembre" para un preprint enviado el 18).
+        try:
+            await asyncio.to_thread(self._add_submission_dates, arxiv_papers)
+        except Exception as e:  # noqa: BLE001 - es un dato extra, no detiene la recolección
+            logger.warning(f"arXiv: no se obtuvieron las fechas de envío ({type(e).__name__}: {e})")
 
         # Per-stream counts, so the replay's two bars carry their own item totals
         # rather than both reporting the combined research figure.
@@ -410,7 +418,7 @@ class ResearchGatherer(BaseGatherer):
                     id=self.generate_id(paper['arxiv_id']),
                     title=title,
                     content=abstract,
-                    url=f"http://arxiv.org/abs/{paper['arxiv_id']}",
+                    url=f"https://arxiv.org/abs/{paper['arxiv_id']}",
                     author=paper.get('authors', ''),
                     published=paper['datestamp'],  # Use announcement date
                     source=f'arXiv ({category_name})',
@@ -418,7 +426,7 @@ class ResearchGatherer(BaseGatherer):
                     tags=[primary_cat],
                     metadata={
                         'arxiv_id': paper['arxiv_id'],
-                        'pdf_url': f"http://arxiv.org/pdf/{paper['arxiv_id']}.pdf",
+                        'pdf_url': f"https://arxiv.org/pdf/{paper['arxiv_id']}.pdf",
                         'category': primary_cat,
                         'category_name': category_name,
                         'versions': paper.get('versions', []),
@@ -582,7 +590,8 @@ class ResearchGatherer(BaseGatherer):
                     content_text = html_to_text(content)
 
                     title = entry.get('title', 'No Title')
-                    url = entry.get('link', '')
+                    # Enlaces relativos (datatracker del IETF: "/doc/draft-…/"; 20 nov).
+                    url = urljoin(feed_url, entry.get('link', '') or '')
                     author = entry.get('author', entry.get('dc_creator', 'Unknown'))
                     tags = [tag.term for tag in entry.get('tags', []) if getattr(tag, 'term', None)]
 
@@ -883,7 +892,7 @@ class ResearchGatherer(BaseGatherer):
                         primary_category = entry.tags[0].get('term', category)
 
                     # Build arXiv URL
-                    arxiv_url = f"http://arxiv.org/abs/{arxiv_id}"
+                    arxiv_url = f"https://arxiv.org/abs/{arxiv_id}"
 
                     paper = CollectedItem(
                         id=self.generate_id(arxiv_id),
@@ -897,7 +906,7 @@ class ResearchGatherer(BaseGatherer):
                         tags=[primary_category],
                         metadata={
                             'arxiv_id': arxiv_id,
-                            'pdf_url': f"http://arxiv.org/pdf/{arxiv_id}.pdf",
+                            'pdf_url': f"https://arxiv.org/pdf/{arxiv_id}.pdf",
                             'category': primary_category,
                             'category_name': category_name,
                             'authors': authors,
@@ -1016,6 +1025,31 @@ class ResearchGatherer(BaseGatherer):
             logger.error(f"Error parsing arXiv response for {category}: {e}")
 
         return papers
+
+    def _add_submission_dates(self, papers: List[CollectedItem]) -> None:
+        """Guarda en ``metadata['enviado']`` la fecha de envío (v1) de cada preprint."""
+        import xml.etree.ElementTree as ET
+        ids = [p.metadata.get('arxiv_id') for p in papers
+               if isinstance(p.metadata, dict) and p.metadata.get('arxiv_id')]
+        if not ids:
+            return
+        ns = {'a': 'http://www.w3.org/2005/Atom'}
+        found: Dict[str, str] = {}
+        for i in range(0, len(ids), 100):
+            chunk = ids[i:i + 100]
+            resp = requests.get(self.API_BASE, params={'id_list': ','.join(chunk),
+                                                       'max_results': len(chunk)}, timeout=30)
+            resp.raise_for_status()
+            for entry in ET.fromstring(resp.content).findall('a:entry', ns):
+                eid = self._parse_arxiv_id(entry.findtext('a:id', '', ns))
+                published = entry.findtext('a:published', '', ns)
+                if eid and published:
+                    found[eid] = published[:10]
+        for p in papers:
+            sent = found.get((p.metadata or {}).get('arxiv_id'))
+            if sent:
+                p.metadata['enviado'] = sent
+        logger.info(f"arXiv: fecha de envío de {len(found)} de {len(ids)} preprints")
 
     def _parse_arxiv_id(self, link: str) -> str:
         """Extract arXiv ID from link or OAI identifier.

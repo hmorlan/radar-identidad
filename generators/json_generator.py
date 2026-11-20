@@ -19,6 +19,8 @@ from pathlib import Path
 
 import nh3
 
+from agents.source_names import clean_source
+
 logger = logging.getLogger(__name__)
 
 # HTML sanitization allowlist for XSS prevention
@@ -480,6 +482,7 @@ class JSONGenerator:
 
             if not simplified_item.get('freshness'):
                 simplified_item.pop('freshness', None)
+            simplified_item['source'] = clean_source(simplified_item.get('source', ''))
 
             # Un hecho, una entrada: otros medios que contaron lo mismo (agents/same_story.py).
             meta = (item['item'] if isinstance(item.get('item'), dict) else item).get('metadata') or {}
