@@ -818,6 +818,29 @@ jobs:
         shell: bash
         run: bash scripts/deploy_site.sh
 
+      # Radar: capturas del mismo build que se publicó, para el revisor editorial
+      # (el sitio está detrás de Cloudflare Access). Sin costo; nunca bloquea.
+      - name: Capturas para la revisión editorial
+        id: capturas
+        if: success() && steps.schedule_gate.outputs.should_run == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --no-input playwright
+          python3 -m playwright install --with-deps chromium
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
+          python3 scripts/capturas.py --web-dir web --date "$report_date" --out capturas
+
+      - name: Subir las capturas
+        if: steps.capturas.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas
+          path: capturas/
+          retention-days: 14
+          if-no-files-found: ignore
+
       # orchestrator_result is here so a lost replay stays rebuildable. All of
       # data/ is gitignored and dies with the runner, and the replay blobs are
       # assembled in memory and never touch disk if the publish gate rejects
