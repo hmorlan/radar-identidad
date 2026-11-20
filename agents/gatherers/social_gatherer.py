@@ -10,12 +10,15 @@ import logging
 import os
 import re
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
+
+from . import identity_filter
 
 from ..base import BaseGatherer, CollectedItem
 
@@ -42,12 +45,29 @@ class SocialGatherer(BaseGatherer):
         self.twitter_users = self.load_config_list('twitter_accounts.txt')
         self.bluesky_handles = self.load_config_list('bluesky_accounts.txt')
         self.mastodon_accounts = self.load_config_list('mastodon_accounts.txt')
+        # Directiva filtro=identidad por cuenta (20 nov): las cuentas generalistas
+        # (reporteros de seguridad, organizaciones de privacidad) solo aportan sus
+        # posts con tema de identidad.
+        self.account_filters: Dict[str, str] = {
+            spec.url: spec.filtro
+            for name in ('bluesky_accounts.txt', 'mastodon_accounts.txt')
+            for spec in self.load_config_feeds(name) if getattr(spec, 'filtro', None)
+        }
+        # Hacker News (20 nov): búsquedas de identidad en la API pública de Algolia.
+        # Línea completa (las búsquedas llevan espacios; load_config_list toma solo
+        # la primera palabra).
+        hn_path = Path(config_dir) / 'hackernews.txt'
+        self.hackernews_queries = [
+            line.strip() for line in hn_path.read_text(encoding='utf-8').splitlines()
+            if line.strip() and not line.strip().startswith('#')
+        ] if hn_path.exists() else []
 
         # Track collection status per platform
         self.collection_status: Dict[str, Dict[str, Any]] = {
             'twitter': {'status': 'pending', 'count': 0, 'error': None},
             'bluesky': {'status': 'pending', 'count': 0, 'error': None},
             'mastodon': {'status': 'pending', 'count': 0, 'error': None},
+            'hackernews': {'status': 'pending', 'count': 0, 'error': None},
         }
 
         # TwitterAPI.io usage accounting (surfaced in the end-of-run cost summary)
@@ -77,6 +97,9 @@ class SocialGatherer(BaseGatherer):
         if not self.mastodon_accounts:
             self.collection_status['mastodon']['status'] = 'skipped'
             self.collection_status['mastodon']['error'] = 'No accounts configured'
+        if not self.hackernews_queries:
+            self.collection_status['hackernews']['status'] = 'skipped'
+            self.collection_status['hackernews']['error'] = 'No queries configured'
 
         # Collect from all platforms in parallel
         with ThreadPoolExecutor(max_workers=6) as executor:
@@ -109,6 +132,10 @@ class SocialGatherer(BaseGatherer):
             # Mastodon collection
             if self.mastodon_accounts:
                 tasks.append(loop.run_in_executor(executor, timed('mastodon', self._collect_mastodon)))
+
+            # Hacker News
+            if self.hackernews_queries:
+                tasks.append(loop.run_in_executor(executor, timed('hackernews', self._collect_hackernews)))
 
             if tasks:
                 results = await asyncio.gather(*tasks)
@@ -467,6 +494,9 @@ class SocialGatherer(BaseGatherer):
                         content += f"\n\n{card.get('title')}: {card.get('description', '')}".rstrip(': ')
                     if links:
                         content += "\n\n" + "\n".join(links)
+                    filtro = getattr(self, "account_filters", {}).get(handle)
+                    if filtro and not identity_filter.matches_feed_entry(filtro, text, content):
+                        continue
 
                     post = CollectedItem(
                         id=self.generate_id('bluesky', uri),
@@ -516,6 +546,83 @@ class SocialGatherer(BaseGatherer):
             raise
 
         return posts
+
+    # ========== HACKER NEWS COLLECTION ==========
+
+    HN_SEARCH = "https://hn.algolia.com/api/v1/search_by_date"
+
+    def _collect_hackernews(self) -> List[CollectedItem]:
+        """Historias de Hacker News con tema de identidad (gratis, sin llave).
+
+        Una búsqueda por línea de config/hackernews.txt en la API pública de
+        Algolia, dentro de la ventana de la edición y con un mínimo de puntos (la
+        comunidad ya filtró). El título tiene que pasar el filtro de identidad.
+        El post es la vía; ``enlace_original`` es el artículo que se comenta.
+        """
+        min_points = int(os.environ.get('HACKERNEWS_MIN_POINTS', '20'))
+        start = int(self.start_time.replace(tzinfo=timezone.utc).timestamp())
+        end = int(self.end_time.replace(tzinfo=timezone.utc).timestamp())
+        seen: Dict[str, CollectedItem] = {}
+        errors = 0
+        for query in self.hackernews_queries:
+            try:
+                resp = requests.get(self.HN_SEARCH, params={
+                    'query': query, 'tags': 'story', 'hitsPerPage': 50,
+                    'numericFilters': f'created_at_i>={start},created_at_i<={end},points>={min_points}',
+                }, timeout=20)
+                resp.raise_for_status()
+                hits = resp.json().get('hits', [])
+            except Exception as e:  # noqa: BLE001 - una búsqueda caída no tumba las demás
+                errors += 1
+                logger.warning(f"Hacker News '{query}': {type(e).__name__}: {e}")
+                continue
+            for hit in hits:
+                oid = str(hit.get('objectID') or '')
+                title = (hit.get('title') or '').strip()
+                if not oid or oid in seen or not identity_filter.matches(title):
+                    continue
+                # Lanzamientos de producto ("Launch HN", "Show HN"): notas de
+                # mercado, fuera del criterio editorial.
+                if identity_filter.is_sponsored(title) or re.match(r'(?i)(launch|show) hn\b', title):
+                    continue
+                try:
+                    pub = datetime.fromtimestamp(int(hit.get('created_at_i')), tz=timezone.utc).replace(tzinfo=None)
+                except (TypeError, ValueError):
+                    continue
+                thread = f"https://news.ycombinator.com/item?id={oid}"
+                original = (hit.get('url') or '').strip()
+                points, comments = hit.get('points') or 0, hit.get('num_comments') or 0
+                content = title
+                if original:
+                    content += f"\n\n{original}"
+                content += f"\n\n{points} puntos y {comments} comentarios en Hacker News."
+                seen[oid] = CollectedItem(
+                    id=self.generate_id('hackernews', oid),
+                    title=title,
+                    content=content,
+                    url=thread,
+                    author=hit.get('author') or 'Unknown',
+                    published=pub.isoformat(),
+                    source='Hacker News',
+                    source_type='hackernews',
+                    tags=[],
+                    metadata={
+                        'platform_id': oid,
+                        'enlace_original': original if original.startswith(('http://', 'https://')) else '',
+                        'author_display_name': 'Hacker News',
+                        'engagement': {'points': points, 'comments': comments},
+                    },
+                    keywords=self.extract_keywords(title),
+                )
+        items = sorted(seen.values(), key=lambda i: -(i.metadata['engagement']['points']))
+        status = self.collection_status['hackernews']
+        status['count'] = len(items)
+        status['status'] = 'failed' if errors and errors == len(self.hackernews_queries) else (
+            'partial' if errors else 'success')
+        if errors:
+            status['error'] = f'{errors} búsqueda(s) fallaron'
+        logger.info(f"Hacker News: {len(items)} historias de identidad")
+        return items
 
     # ========== MASTODON COLLECTION ==========
 
@@ -620,6 +727,11 @@ class SocialGatherer(BaseGatherer):
                     content_text = content_text.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"')
 
                     account = status.get('account', {})
+                    card_url = ((status.get('card') or {}).get('url') or '').strip()
+                    filtro = getattr(self, "account_filters", {}).get(account_spec)
+                    if filtro and not identity_filter.matches_feed_entry(
+                            filtro, content_text, f"{content_text} {(status.get('card') or {}).get('title', '')}"):
+                        continue
 
                     post = CollectedItem(
                         id=self.generate_id('mastodon', status.get('id', '')),
@@ -634,6 +746,7 @@ class SocialGatherer(BaseGatherer):
                         metadata={
                             'platform_id': status.get('id', ''),
                             'instance': instance,
+                            'enlace_original': card_url if card_url.startswith(('http://', 'https://')) else '',
                             'author_display_name': account.get('display_name', account.get('username', '')),
                             'engagement': {
                                 'favourites': status.get('favourites_count', 0),

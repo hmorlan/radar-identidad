@@ -103,7 +103,8 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | Reguladores sin RSS (MX, ES, CO, AR, CL, PE, CR, EE. UU., UE) | `config/regulators.txt` → `agents/gatherers/regulator_sources.py` (página de prensa directa o Google News; vista previa: `python3 -m agents.gatherers.regulator_sources --hours 72`) |
 | Empresas e iniciativas observadas (bancos, retail, aerolíneas, plataformas, protocolos de agentes, cartera europea) | `config/empresas.txt`, mismo recolector por Google News (vista previa: `python3 -m agents.gatherers.regulator_sources --empresas --hours 168`) |
 | Filtro previo de identidad para fuentes ruidosas | Directiva `filtro=identidad` (título y resumen) o `filtro=titulo` (solo título, para boletines como CERT-FR) en `config/rss_feeds.txt` y `config/research_feeds.txt` → `agents/gatherers/identity_filter.py`; ahí también se descartan webinars y contenido patrocinado |
-| Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` |
+| Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` (directiva `filtro=identidad` por cuenta para las generalistas) |
+| Hacker News | `config/hackernews.txt` (búsquedas en la API pública de Algolia; mínimo `HACKERNEWS_MIN_POINTS`, 20) |
 | X y Reddit | Desactivados (APIs de pago) |
 | Prompts editoriales | `config/prompts.yaml` (en español): notas, verificación y coherencia (fase 4.4: lleva las correcciones a resúmenes y temas) |
 | Reparaciones de ediciones publicadas | `config/reparaciones/<fecha>.json` → `scripts/repair_edition.py` (workflow **Reparar edición**) |
@@ -119,6 +120,8 @@ Para agregar una fuente: añadirla al `.txt` correspondiente, correr `scripts/ch
 **Un hecho, una entrada:** el ranking de Noticias devuelve `mismo_hecho` (grupos de notas que cuentan lo mismo); `agents/same_story.py` deja una entrada y las demás aparecen en el sitio como "También lo cubren".
 
 **Ediciones retiradas:** las fechas de `config/ediciones_retiradas.txt` (hoy, la prueba del 10 nov) no se restauran de R2 ni se publican; el workflow manual **Retirar ediciones** (`scripts/retirar_ediciones.py`) las quita del índice, los feeds y la búsqueda. El objeto en R2 se conserva como respaldo.
+
+**Pistas de ransomware (no se publican):** tras publicar, `scripts/pistas_ransomware.py` baja de ransomware.live los reclamos de México, LatAm y España del periodo de la edición y los sube como artefacto `pistas`. Son reclamos de grupos criminales sin verificar: el revisor editorial solo busca si la prensa independiente los confirmó. Nunca se guarda la dirección .onion.
 
 **Capturas para la revisión:** tras publicar, el pipeline toma capturas del mismo build (`scripts/capturas.py`: portada con las notas abiertas, categorías y archivo; escritorio y móvil; claro y oscuro) y las sube como artefacto `capturas`. Las usa el revisor editorial, porque el sitio está detrás de Cloudflare Access.
 

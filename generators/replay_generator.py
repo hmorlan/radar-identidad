@@ -96,6 +96,7 @@ _SOURCE_LABELS = {
     "social_twitter": ("social_gatherer", "Twitter"),
     "social_bluesky": ("social_gatherer", "Bluesky"),
     "social_mastodon": ("social_gatherer", "Mastodon"),
+    "social_hackernews": ("social_gatherer", "Hacker News"),
     # Timed separately from each other since 2026-07-29; on older days neither key
     # exists and the combined "research" row above is what renders.
     "research_arxiv": ("research_gatherer", "arXiv"),

@@ -1,0 +1,24 @@
+# Hacker News (búsqueda pública de Algolia, gratis, sin llave): una búsqueda por línea
+# (todas las palabras deben aparecer).
+# Solo historias con al menos HACKERNEWS_MIN_POINTS puntos (20 por defecto) y que pasan
+# el filtro de identidad en el título (agents/gatherers/identity_filter.py).
+# La nota enlaza al artículo original; el hilo de HN queda como "vía".
+passkey
+passkeys
+OAuth
+OpenID
+SSO
+MFA
+2FA
+phishing
+deepfake
+credentials
+account takeover
+identity verification
+age verification
+digital identity
+AI agent security
+AI agents permissions
+KYC
+session token
+stolen credentials

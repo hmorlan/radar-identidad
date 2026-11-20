@@ -356,7 +356,7 @@ def note_origin(it: Any) -> Dict[str, Any]:
     out: Dict[str, Any] = {"url": it.url, "source": clean_source(it.source),
                            "published": it.published, "via": None, "fecha_tipo": "publicacion"}
     original = meta.get("enlace_original") or ""
-    if it.source_type in ("bluesky", "mastodon") and original.startswith(("http://", "https://")):
+    if it.source_type in ("bluesky", "mastodon", "hackernews") and original.startswith(("http://", "https://")):
         quien = meta.get("author_display_name") or (it.author or "").lstrip("@")
         out["via"] = {"source": f"{it.source} ({quien})" if quien else it.source,
                       "url": it.url, "published": it.published or ""}

@@ -841,6 +841,29 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
+      # Radar: reclamos de ransomware en México, LatAm y España del periodo de la
+      # edición (ransomware.live). NO se publican: son pistas sin verificar para el
+      # revisor editorial, que busca si la prensa independiente las confirmó.
+      - name: Pistas de ransomware para la revisión
+        id: pistas
+        if: success() && steps.schedule_gate.outputs.should_run == 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
+          read -r desde hasta < <(python3 -c "import json,sys;s=json.load(open(f'web/data/{sys.argv[1]}/summary.json'));print(s['coverage_start'][:10], s['coverage_end'][:10])" "$report_date")
+          python3 scripts/pistas_ransomware.py --desde "$desde" --hasta "$hasta" --out pistas/ransomware.json
+
+      - name: Subir las pistas
+        if: steps.pistas.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pistas
+          path: pistas/
+          retention-days: 14
+          if-no-files-found: ignore
+
       # orchestrator_result is here so a lost replay stays rebuildable. All of
       # data/ is gitignored and dies with the runner, and the replay blobs are
       # assembled in memory and never touch disk if the publish gate rejects

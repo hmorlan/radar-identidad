@@ -217,3 +217,11 @@ Help Net Security y Biometric Update solo muestran sus 10 notas más recientes y
 - Recolección continua cada 6 horas (`.github/workflows/recoleccion.yml`), para todos los feeds de noticias.
 - Biometric Update también con `?paged=2` (Help Net ignora la paginación).
 - Prensa que cita a Banxico, Condusef o CNBV en `config/empresas.txt` (sus páginas de prensa siguen en `config/regulators.txt`).
+
+## 2026-11-20: Redes
+
+- **Hacker News** (`config/hackernews.txt`): búsquedas de identidad en la API pública de Algolia (gratis), solo historias con 20 puntos o más (`HACKERNEWS_MIN_POINTS`) y con tema de identidad en el título; sin "Launch HN" ni "Show HN". La nota enlaza al artículo original y el hilo queda como vía.
+- **Bluesky:** Catalin Cimpanu (Risky Business News), Citizen Lab, John Scott-Railton (Citizen Lab) y EPIC, con `filtro=identidad`.
+- **Mastodon:** Dan Goodin (Ars Technica) y Matt Blaze (Georgetown), con `filtro=identidad`.
+- **Evaluadas y fuera:** Kevin Beaumont (tiene empleador sin nombrar; la política excluye autores de proveedores); Kim Zetter (poca actividad en Bluesky); organizaciones de derechos digitales de LatAm (Karisma, TEDIC, Hiperderecho, ADC, SocialTIC) no tienen cuenta activa en Bluesky; Carlos del Castillo (elDiario.es) sin posts desde el 8 oct.
+- **Reddit:** el nivel gratis es para uso no comercial aprobado, con OAuth y aprobación previa desde nov 2025; sin cuenta aprobada, los RSS de subreddits responden 404/429 desde la nube. Pendiente de que Hiram solicite acceso.

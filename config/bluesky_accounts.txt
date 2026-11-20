@@ -30,3 +30,13 @@ r3d.mx
 # ===== Análisis de autor (opinión, se cita por nombre) =====
 # Heather Flanagan, Spherical Cow Consulting (estándares de identidad), ~2/semana
 sphericalcowconsulting.com
+
+# Agregadas 2026-11-20, independientes y activas (verificado con la API pública).
+# Son generalistas: filtro=identidad deja solo sus posts con tema de identidad.
+# Catalin Cimpanu (Risky Business News), reportero de ciberseguridad, publica a diario
+campuscodi.risky.biz  filtro=identidad
+# Citizen Lab (Universidad de Toronto) y su investigador John Scott-Railton: spyware y vigilancia
+citizenlab.ca  filtro=identidad
+jsrailton.bsky.social  filtro=identidad
+# EPIC (Electronic Privacy Information Center): privacidad y regulación en EE. UU.
+epic.org  filtro=identidad

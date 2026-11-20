@@ -3,3 +3,13 @@
 
 # ===== Prensa de seguridad =====
 briankrebs@infosec.exchange
+
+# Agregadas 2026-11-20 (activas; verificado con la API de cada instancia).
+# Generalistas: filtro=identidad deja solo sus posts con tema de identidad.
+# Dan Goodin, reportero de seguridad de Ars Technica
+dangoodin@infosec.exchange  filtro=identidad
+# Kevin Beaumont (GossiTheDog@cyberplace.social) se evaluó y quedó fuera: su perfil
+# dice que tiene un empleador que no nombra, y la política excluye a autores de
+# proveedores de seguridad o identidad.
+# Matt Blaze, criptógrafo y profesor (Georgetown)
+mattblaze@federate.social  filtro=identidad
