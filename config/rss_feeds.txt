@@ -134,8 +134,9 @@ https://gestion.pe/arcio/rss/  filtro=identidad
 https://www.df.cl/noticias/site/list/port/rss.xml  filtro=identidad
 # El Financiero (Costa Rica), ~4/día; banca estatal, SINPE, regulación
 https://www.elfinancierocr.com/arc/outboundfeeds/rss/?outputType=xml  filtro=identidad
-# Just Retail Latam, ~1-2/día; retail y comercio con agentes
-https://justretail.news/latam/feed/  filtro=identidad
+# Just Retail Latam, ~1-2/día; retail y comercio con agentes.
+# En pausa 2026-11-19: su CDN responde 307 con cookie anti-bot y los lectores RSS entran en bucle.
+# https://justretail.news/latam/feed/  filtro=identidad
 # Retirada 2026-11-12 (política agnóstica: blog de ESET, empresa de seguridad):
 # https://www.welivesecurity.com/es/rss/feed/
 # Ciberseguridad LATAM, ~5/día; enfoque frecuente en identidad y agentes de IA (vigilar calidad)

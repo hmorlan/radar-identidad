@@ -8,14 +8,14 @@
 https://www.nist.gov/blogs/cybersecurity-insights/rss.xml
 # NIST CSRC: borradores abiertos a comentarios (aquí aparecerían revisiones de SP 800-63)
 https://csrc.nist.gov/CSRC/media/feeds/pubs/drafts-open-for-comment.xml
-# IETF OAuth WG: cambios significativos en sus documentos
-https://datatracker.ietf.org/group/oauth/documents/feed/?significant=1
+# IETF OAuth WG: cambios en sus documentos (el feed ?significant=1 llega vacío y check_feeds lo marca FALLA)
+https://datatracker.ietf.org/group/oauth/documents/feed/
 # OpenID Foundation, ~3/semana; relevancia alta (p. ej. modelo de amenazas para agentes de IA)
 https://openid.net/feed/
 # W3C News, ~2/semana; fuente primaria de WebAuthn y Verifiable Credentials
 https://www.w3.org/news/feed/
-# IETF WIMSE WG: identidad de workloads y agentes (cambios significativos)
-https://datatracker.ietf.org/group/wimse/documents/feed/?significant=1
+# IETF WIMSE WG: identidad de workloads y agentes (feed completo; ?significant=1 llega vacío)
+https://datatracker.ietf.org/group/wimse/documents/feed/
 # UK NCSC (gobierno del Reino Unido), ~1.5/semana; guías e incidentes
 https://www.ncsc.gov.uk/api/1/services/v1/all-rss-feed.xml
 
