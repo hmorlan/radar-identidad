@@ -15,7 +15,8 @@ import logging
 import random
 import time
 import asyncio
-from contextlib import suppress
+import contextvars
+from contextlib import contextmanager, suppress
 from types import SimpleNamespace
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -224,6 +225,24 @@ def _transient_retry_reason(error: Exception) -> Optional[str]:
         return f"http_{status_code}"
 
     return None
+
+
+# Límite por intento para llamadas puntuales que piensan mucho (Radar de Identidad,
+# 2026-11-20: las notas de la edición, con el texto completo de las fuentes,
+# necesitaron más de 600 s en esfuerzo max y se perdieron los tres intentos).
+# Solo cambia el tope de `_guard_stream`; el de silencio (stall) sigue igual.
+_ATTEMPT_TIMEOUT_OVERRIDE: "contextvars.ContextVar[Optional[float]]" = contextvars.ContextVar(
+    "llm_attempt_timeout_override", default=None)
+
+
+@contextmanager
+def attempt_timeout(seconds: Optional[float]):
+    """Sube (o baja) el tope por intento de las llamadas hechas dentro del bloque."""
+    token = _ATTEMPT_TIMEOUT_OVERRIDE.set(seconds if seconds and seconds > 0 else None)
+    try:
+        yield
+    finally:
+        _ATTEMPT_TIMEOUT_OVERRIDE.reset(token)
 
 
 class _RateLimiter:
@@ -1540,7 +1559,7 @@ class AsyncAnthropicClient:
         set only on real output, and falls back to the attempt start so a
         stream that never produces a first token is caught too.
         """
-        total = getattr(self, "timeout", None) or 0.0
+        total = _ATTEMPT_TIMEOUT_OVERRIDE.get() or getattr(self, "timeout", None) or 0.0
         stall = getattr(self, "stream_stall_seconds", None)
         if stall is None:
             stall = _env_float("LLM_STREAM_STALL_SECONDS", 120.0, minimum=5.0)

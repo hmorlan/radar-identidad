@@ -132,6 +132,18 @@ def validate(summary: dict, date_str: str) -> dict:
     if not isinstance(top_topics, list) or len(top_topics) == 0:
         failures.append("top_topics is empty (topic detection failed)")
 
+    # 3b) Radar de Identidad: la edición son sus notas. El 2026-11-20 la redacción
+    #     agotó sus tres intentos y se publicó una edición con titular vacío y sin
+    #     notas, con todo en verde. Un reporte anterior a las notas no trae la clave
+    #     `edition` y no se revisa.
+    edition = summary.get("edition")
+    if isinstance(edition, dict):
+        notas = edition.get("notas")
+        if not isinstance(notas, list) or not notas:
+            failures.append("edition.notas is empty (la redacción de las notas falló)")
+        elif not (edition.get("titular") or "").strip():
+            failures.append("edition.titular is empty")
+
     # 4) Analysis must have produced items (catches a gather/analysis wipeout).
     if analyzed <= 0:
         failures.append(f"total_items_analyzed is {analyzed} (no analyzed items)")

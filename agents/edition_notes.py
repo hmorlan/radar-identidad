@@ -31,7 +31,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from .base import AnalyzedItem, CategoryReport, extract_json_str
-from .llm_client import ThinkingLevel
+from .llm_client import ThinkingLevel, attempt_timeout
 from .prompt_security import build_fenced_user_message, build_hardened_system, new_fence_nonce
 
 logger = logging.getLogger(__name__)
@@ -152,12 +152,24 @@ def collect_candidates(
 # Antes de redactar se baja la página de las noticias con texto corto. Sin costo
 # de API; si la página falla o tiene muro de pago, se queda el texto del RSS.
 FULLTEXT_MIN = 1200           # por debajo de esto se intenta bajar la página
-FULLTEXT_CLIP = 4500          # lo que recibe el redactor de un texto completo
+FULLTEXT_CLIP = 2000          # lo que recibe el redactor de un texto completo
+# 2026-11-20: con 4500 el prompt del redactor pasó de 37 mil a 65 mil caracteres y
+# Opus (esfuerzo max) no terminó en 600 s en ninguno de los tres intentos. Además,
+# el redactor y el verificador tienen su propio tope por intento (EDITION_LLM_TIMEOUT_SECONDS).
+EDITION_TIMEOUT_DEFAULT = 1200.0
 FULLTEXT_TIMEOUT = 15.0
 FULLTEXT_CONCURRENCY = 6
 # Páginas que responden 200 pero dicen "no encontrada" (INCIBE lo hizo el 17 nov).
 _SOFT_404 = re.compile(r"p[aá]gina no encontrada|page not found|404 not found|no se ha encontrado la p[aá]gina", re.I)
 _FULLTEXT_SKIP_HOSTS = ("news.google.com", "arxiv.org", "bsky.app", "mastodon")
+
+
+def _edition_timeout() -> float:
+    """Tope por intento del redactor y el verificador (EDITION_LLM_TIMEOUT_SECONDS)."""
+    try:
+        return max(60.0, float(os.getenv("EDITION_LLM_TIMEOUT_SECONDS") or EDITION_TIMEOUT_DEFAULT))
+    except ValueError:
+        return EDITION_TIMEOUT_DEFAULT
 
 
 def _fetch_text(url: str) -> str:
@@ -481,16 +493,17 @@ async def build_edition(
 
     nonce = new_fence_nonce()
     try:
-        response = await async_client.call_with_thinking(
-            messages=[{"role": "user", "content": build_fenced_user_message(
-                candidates_context(candidates), nonce,
-                task_line="Escribe las notas de la edición a partir de los candidatos cercados, "
-                          "según tus instrucciones de sistema.")}],
-            system=build_hardened_system(notes_prompt, nonce, grounding=grounding),
-            profile=ThinkingLevel.DEEP,
-            caller="orchestrator.edition_notes",
-            full_output_budget=True,
-        )
+        with attempt_timeout(_edition_timeout()):
+            response = await async_client.call_with_thinking(
+                messages=[{"role": "user", "content": build_fenced_user_message(
+                    candidates_context(candidates), nonce,
+                    task_line="Escribe las notas de la edición a partir de los candidatos cercados, "
+                              "según tus instrucciones de sistema.")}],
+                system=build_hardened_system(notes_prompt, nonce, grounding=grounding),
+                profile=ThinkingLevel.DEEP,
+                caller="orchestrator.edition_notes",
+                full_output_budget=True,
+            )
         edition = parse_notes(response.content, by_id, max_notes)
     except Exception as e:  # noqa: BLE001
         logger.error("Notas de la edición fallaron: %s", e)
@@ -506,16 +519,17 @@ async def build_edition(
         return edition
     nonce = new_fence_nonce()
     try:
-        response = await async_client.call_with_thinking(
-            messages=[{"role": "user", "content": build_fenced_user_message(
-                fact_check_context(edition, by_id), nonce,
-                task_line="Verifica cada nota contra el texto de su fuente, según tus "
-                          "instrucciones de sistema.")}],
-            system=build_hardened_system(check_prompt, nonce),
-            profile=ThinkingLevel.DEEP,
-            caller="orchestrator.edition_fact_check",
-            full_output_budget=True,
-        )
+        with attempt_timeout(_edition_timeout()):
+            response = await async_client.call_with_thinking(
+                messages=[{"role": "user", "content": build_fenced_user_message(
+                    fact_check_context(edition, by_id), nonce,
+                    task_line="Verifica cada nota contra el texto de su fuente, según tus "
+                              "instrucciones de sistema.")}],
+                system=build_hardened_system(check_prompt, nonce),
+                profile=ThinkingLevel.DEEP,
+                caller="orchestrator.edition_fact_check",
+                full_output_budget=True,
+            )
         edition = apply_fact_check(edition, response.content)
     except Exception as e:  # noqa: BLE001
         logger.error("Verificación de notas falló: %s", e)
