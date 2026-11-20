@@ -54,34 +54,37 @@
 				verifícala antes de actuar o compartir.
 			</p>
 		</div>
+		<!-- Diagramas (20 nov): siempre visibles y con clic para abrirlos en grande; en
+		     móvil "Cómo funciona" abre su versión vertical. -->
 		<figure class="mt-6">
-			<picture class="block dark:hidden">
-				<source media="(max-width: 640px)" srcset="/img/como-funciona-movil-claro.webp?v=20261120c" width="1080" height="2190" />
-				<img src="/img/como-funciona-claro.webp?v=20261120c" width="2400" height="1232" loading="lazy"
-					class="w-full h-auto border border-filete" alt="Cómo funciona en seis pasos: fuentes públicas, filtro de identidad, lectura y clasificación con Claude Haiku, redacción y verificación con Claude Opus, publicación y revisión independiente con Claude Fable." />
-			</picture>
-			<picture class="hidden dark:block">
-				<source media="(max-width: 640px)" srcset="/img/como-funciona-movil-oscuro.webp?v=20261120c" width="1080" height="2190" />
-				<img src="/img/como-funciona-oscuro.webp?v=20261120c" width="2400" height="1232" loading="lazy"
-					class="w-full h-auto border border-filete" alt="Cómo funciona en seis pasos: fuentes públicas, filtro de identidad, lectura y clasificación con Claude Haiku, redacción y verificación con Claude Opus, publicación y revisión independiente con Claude Fable." />
-			</picture>
+				<a href="/img/como-funciona-claro.webp?v=20261120c" class="hidden sm:block dark:!hidden" target="_blank" rel="noopener" title="Abrir en grande">
+					<img src="/img/como-funciona-claro.webp?v=20261120c" width="2400" height="1232" loading="lazy" class="w-full h-auto border border-filete" alt="Cómo funciona en seis pasos: fuentes públicas, filtro de identidad, lectura y clasificación con Claude Haiku, redacción y verificación con Claude Opus, publicación y revisión independiente con Claude Fable." />
+				</a>
+				<a href="/img/como-funciona-oscuro.webp?v=20261120c" class="hidden dark:sm:block" target="_blank" rel="noopener" title="Abrir en grande">
+					<img src="/img/como-funciona-oscuro.webp?v=20261120c" width="2400" height="1232" loading="lazy" class="w-full h-auto border border-filete" alt="Cómo funciona en seis pasos: fuentes públicas, filtro de identidad, lectura y clasificación con Claude Haiku, redacción y verificación con Claude Opus, publicación y revisión independiente con Claude Fable." />
+				</a>
+				<a href="/img/como-funciona-movil-claro.webp?v=20261120c" class="block sm:hidden dark:hidden" target="_blank" rel="noopener" title="Abrir en grande">
+					<img src="/img/como-funciona-movil-claro.webp?v=20261120c" width="1080" height="2190" loading="lazy" class="w-full h-auto border border-filete" alt="Cómo funciona en seis pasos: fuentes públicas, filtro de identidad, lectura y clasificación con Claude Haiku, redacción y verificación con Claude Opus, publicación y revisión independiente con Claude Fable." />
+				</a>
+				<a href="/img/como-funciona-movil-oscuro.webp?v=20261120c" class="hidden dark:block dark:sm:hidden" target="_blank" rel="noopener" title="Abrir en grande">
+					<img src="/img/como-funciona-movil-oscuro.webp?v=20261120c" width="1080" height="2190" loading="lazy" class="w-full h-auto border border-filete" alt="Cómo funciona en seis pasos: fuentes públicas, filtro de identidad, lectura y clasificación con Claude Haiku, redacción y verificación con Claude Opus, publicación y revisión independiente con Claude Fable." />
+				</a>
+			<figcaption class="t-ui !normal-case !tracking-normal !text-[12px] text-tinta-suave mt-2">
+				Toca el diagrama para verlo en grande.
+			</figcaption>
 		</figure>
-		<details class="mt-6 group">
-			<summary class="t-ui !text-[12px] text-oro cursor-pointer">Ver la arquitectura completa</summary>
-			<figure class="mt-4 -mx-2 sm:mx-0">
-				<a href="/img/arquitectura-claro.webp?v=20261120c" class="block dark:hidden" target="_blank" rel="noopener">
-					<img src="/img/arquitectura-claro.webp?v=20261120c" width="2400" height="3011" loading="lazy" class="w-full h-auto border border-filete"
-						alt="Arquitectura del pipeline por fases, con el modelo de cada paso." />
+		<h3 class="t-label text-electric mt-10 mb-3">La arquitectura completa</h3>
+		<figure>
+				<a href="/img/arquitectura-claro.webp?v=20261120c" class="block dark:hidden" target="_blank" rel="noopener" title="Abrir en grande">
+					<img src="/img/arquitectura-claro.webp?v=20261120c" width="2400" height="3011" loading="lazy" class="w-full h-auto border border-filete" alt="Arquitectura del pipeline por fases, con el modelo de cada paso." />
 				</a>
-				<a href="/img/arquitectura-oscuro.webp?v=20261120c" class="hidden dark:block" target="_blank" rel="noopener">
-					<img src="/img/arquitectura-oscuro.webp?v=20261120c" width="2400" height="3011" loading="lazy" class="w-full h-auto border border-filete"
-						alt="Arquitectura del pipeline por fases, con el modelo de cada paso." />
+				<a href="/img/arquitectura-oscuro.webp?v=20261120c" class="hidden dark:block" target="_blank" rel="noopener" title="Abrir en grande">
+					<img src="/img/arquitectura-oscuro.webp?v=20261120c" width="2400" height="3011" loading="lazy" class="w-full h-auto border border-filete" alt="Arquitectura del pipeline por fases, con el modelo de cada paso." />
 				</a>
-				<figcaption class="t-ui !normal-case !tracking-normal !text-[12px] text-tinta-suave mt-2">
-					Toca la imagen para verla en grande.
-				</figcaption>
-			</figure>
-		</details>
+			<figcaption class="t-ui !normal-case !tracking-normal !text-[12px] text-tinta-suave mt-2">
+				Toca el diagrama para verlo en grande.
+			</figcaption>
+		</figure>
 	</section>
 
 	<section class="card">
