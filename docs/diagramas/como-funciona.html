@@ -2,14 +2,15 @@
 <html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="diagramas.css">
 <style>
   .lienzo { width: 1600px; }
-  .pasos { display: grid; grid-template-columns: repeat(5, 1fr); position: relative; }
+  .pasos { display: grid; grid-template-columns: repeat(6, 1fr); position: relative; }
   .pasos::before { content: ''; position: absolute; left: 6%; right: 6%; top: 34px; border-top: 1px solid var(--oro); }
-  .paso { padding: 0 18px; position: relative; }
+  .paso { padding: 0 14px; position: relative; }
   .nodo { width: 68px; height: 68px; border: 1px solid var(--oro); background: var(--papel); display: flex; align-items: center; justify-content: center; margin: 0 auto 22px; transform: rotate(45deg); }
   .nodo span { transform: rotate(-45deg); font-size: 28px; }
   .paso .label { text-align: center; display: block; }
-  .paso .titulo { font-size: 27px; text-align: center; margin: 6px 0 12px; }
-  .paso .texto { text-align: center; }
+  .paso .titulo { font-size: 25px; text-align: center; margin: 6px 0 12px; }
+  .paso .texto { text-align: center; font-size: 15.5px; }
+  .paso.despues .nodo { border-style: dashed; }
   .regla { margin: 40px auto 0; max-width: 980px; border: 1px solid var(--oro); padding: 18px 26px; text-align: center; }
   .regla .q { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 500; font-size: 30px; color: var(--tinta); margin-top: 6px; }
   /* Versión vertical para teléfonos (html.movil). */
@@ -28,7 +29,7 @@
 <body><div class="lienzo">
   <div class="marca">RADAR DE IDENTIDAD</div>
   <h1>Cómo funciona</h1>
-  <p class="bajada">De cientos de fuentes públicas a unas cuantas notas con criterio.</p>
+  <p class="bajada">De cientos de fuentes públicas a unas cuantas notas con criterio, revisadas dos veces.</p>
   <div class="doble"></div>
 
   <div class="pasos">
@@ -36,7 +37,7 @@
       <div class="nodo"><span class="romano">I</span></div>
       <span class="label">Recolección</span>
       <div class="titulo">Fuentes públicas</div>
-      <p class="texto">50 medios de prensa, CERTs y negocios · 19 de estándares e investigación · arXiv · 9 cuentas de Bluesky · 29 reguladores y autoridades de 8 países y la UE · 14 empresas e iniciativas observadas.</p>
+      <p class="texto">50 medios de prensa, CERTs y negocios, leídos cada 6 horas · 19 de estándares e investigación · arXiv · 29 reguladores y autoridades · 15 empresas e iniciativas observadas · 16 cuentas de Bluesky y Mastodon · Hacker News.</p>
     </div>
     <div class="paso">
       <div class="nodo"><span class="romano">II</span></div>
@@ -54,13 +55,19 @@
       <div class="nodo"><span class="romano">IV</span></div>
       <span class="label">Redacción</span>
       <div class="titulo">Escribir y verificar</div>
-      <p class="texto">Claude Opus elige lo importante y redacta cada nota. Una segunda pasada la contrasta con el texto de su fuente.</p>
+      <p class="texto">Claude Opus elige lo importante, junta lo que cuenta el mismo hecho y redacta cada nota. Una segunda pasada la contrasta con el texto completo de su fuente.</p>
     </div>
     <div class="paso">
       <div class="nodo"><span class="romano">V</span></div>
       <span class="label">Edición</span>
       <div class="titulo">Publicar</div>
       <p class="texto">Qué pasó, por qué importa, la pregunta de fondo y su nivel de señal. Con su imagen en mosaico, archivo y RSS.</p>
+    </div>
+    <div class="paso despues">
+      <div class="nodo"><span class="romano">VI</span></div>
+      <span class="label">Revisión</span>
+      <div class="titulo">Otros ojos</div>
+      <p class="texto">Ya publicada, otro modelo que no hizo la edición (Claude Fable) la lee como editor: contrasta cada nota con su fuente, revisa la página y busca lo que faltó. Hiram aprueba cada corrección.</p>
     </div>
   </div>
 
@@ -69,5 +76,5 @@
     <div class="q">¿La noticia cambia cómo decidimos en quién o en qué confiar?</div>
   </div>
 
-  <div class="pie"><span>Cada nota enlaza a su fuente original. Sin blogs ni comunicados de proveedores de identidad.</span><span class="oro">radar.hirammorlan.com</span></div>
+  <div class="pie"><span>Cada nota enlaza a su fuente original. Sin blogs ni comunicados de proveedores de identidad. Las correcciones quedan registradas.</span><span class="oro">radar.hirammorlan.com</span></div>
 </div></body></html>

@@ -30,10 +30,10 @@
     <div>
       <div class="marca">RADAR DE IDENTIDAD</div>
       <h1>Arquitectura del pipeline</h1>
-      <p class="bajada">Agentes por fase, con el modelo de cada paso. Corre en GitHub Actions con un tope de US$6 por corrida.</p>
+      <p class="bajada">Agentes por fase, con el modelo de cada paso. Corre en GitHub Actions con un tope de gasto por corrida.</p>
     </div>
     <div class="leyenda"><span class="label">Modelos</span><br>
-      <span class="modelo">Opus 5.5</span><span class="modelo">Haiku 5.5</span><span class="modelo">Gemini 3 Pro Image</span><span class="modelo sin">Sin modelo</span>
+      <span class="modelo">Opus 5.5</span><span class="modelo">Haiku 5.5</span><span class="modelo">Gemini 3 Pro Image</span><span class="modelo">Fable 5.1</span><span class="modelo sin">Sin modelo</span>
     </div>
   </div>
   <div class="doble"></div>
@@ -43,15 +43,15 @@
 
   <div class="fila"><div class="fase"><span class="romano">1</span><span class="label">Recolección</span></div>
     <div class="riel"><div class="cajas c3">
-      <div class="caja"><div class="titulo">Noticias</div><p class="texto">50 feeds de prensa, CERTs, negocios y fundaciones (los ruidosos con filtro de identidad) · 29 reguladores y autoridades de 8 países y la UE · 14 empresas e iniciativas observadas · seguidor de enlaces.</p><span class="modelo">Haiku 5.5</span> <span class="modelo sin">Filtro sin modelo</span></div>
+      <div class="caja"><div class="titulo">Noticias</div><p class="texto">50 feeds de prensa, CERTs, negocios y fundaciones (los ruidosos con filtro de identidad), guardados cada 6 horas para no perder lo que sale del feed · 29 reguladores y autoridades · 15 empresas e iniciativas observadas · seguidor de enlaces.</p><span class="modelo">Haiku 5.5</span> <span class="modelo sin">Filtro sin modelo</span></div>
       <div class="caja"><div class="titulo">Investigación y estándares</div><p class="texto">arXiv cs.CR · NIST, IETF, OpenID Foundation, W3C, UK NCSC, DIF, MCP, AGNTCY, OWASP Gen AI, CoSAI · análisis de autores independientes.</p><span class="modelo sin">Sin modelo</span></div>
-      <div class="caja"><div class="titulo">Redes</div><p class="texto">9 cuentas de Bluesky (periodistas y organizaciones independientes) y Mastodon. Solo posts propios.</p><span class="modelo sin">Sin modelo</span></div>
+      <div class="caja"><div class="titulo">Redes</div><p class="texto">16 cuentas de Bluesky y Mastodon (periodistas, investigadores y organizaciones independientes; las generalistas con filtro de identidad) · Hacker News. La nota enlaza al artículo y el post queda como vía.</p><span class="modelo sin">Sin modelo</span></div>
     </div></div></div>
 
   <div class="fila"><div class="fase"><span class="romano">2</span><span class="label">Análisis</span></div>
     <div class="riel"><div class="cajas c2">
       <div class="caja"><div class="titulo">Map: leer cada nota</div><p class="texto">Por lotes y por categoría: resumen en español, título traducido, temas y puntaje de relevancia.</p><span class="modelo">Haiku 5.5</span></div>
-      <div class="caja clave"><div class="titulo">Reduce: elegir y resumir</div><p class="texto">Selección de lo que pasa la regla de entrada y resumen de cada categoría.</p><span class="modelo">Opus 5.5</span></div>
+      <div class="caja clave"><div class="titulo">Reduce: elegir y resumir</div><p class="texto">Selección de lo que pasa la regla de entrada, un hecho una entrada (agrupa a los medios que cuentan lo mismo) y resumen de cada categoría.</p><span class="modelo">Opus 5.5</span></div>
     </div>
     <div class="lateral" style="grid-template-columns:1fr 1fr">
       <div class="caja"><div class="titulo">2.5 · Continuidad</div><p class="texto">Detecta seguimientos de historias ya cubiertas y un editor decide cómo enlazarlas.</p><span class="modelo">Haiku 5.5</span> <span class="modelo">Opus 5.5</span></div>
@@ -62,7 +62,7 @@
     <div class="riel"><div class="cajas c3">
       <div class="caja"><div class="titulo">3 · Temas transversales</div><p class="texto">Los hilos que cruzan noticias, investigación y redes.</p><span class="modelo">Opus 5.5</span></div>
       <div class="caja"><div class="titulo">4 · Resumen ejecutivo</div><p class="texto">La lectura del día en pocas líneas.</p><span class="modelo">Opus 5.5</span></div>
-      <div class="caja clave"><div class="titulo">4.2–4.3 · Notas y verificación</div><p class="texto">Redacta cada nota (qué pasó, por qué importa, pregunta de fondo, señal) y una segunda pasada la contrasta con su fuente.</p><span class="modelo">Opus 5.5 × 2</span></div>
+      <div class="caja clave"><div class="titulo">4.2–4.4 · Notas y verificación</div><p class="texto">Redacta cada nota con el texto completo de su fuente, una segunda pasada la contrasta y la coherencia lleva las correcciones al resumen.</p><span class="modelo">Opus 5.5 × 2</span> <span class="modelo">Haiku 5.5</span></div>
     </div>
     <div class="lateral" style="grid-template-columns:1fr 1fr">
       <div class="caja"><div class="titulo">4.5 · Enlaces internos</div><p class="texto">Conecta los resúmenes con las notas que citan.</p><span class="modelo">Haiku 5.5</span></div>
@@ -87,7 +87,7 @@
       <div class="caja"><div class="titulo">Ensamblado y JSON</div><p class="texto">Los datos del sitio, con enlaces filtrados por esquema.</p></div>
       <div class="caja"><div class="titulo">Feeds Atom</div><p class="texto">Edición, resúmenes y categorías.</p></div>
       <div class="caja"><div class="titulo">Búsqueda</div><p class="texto">Corpus para el buscador del sitio.</p></div>
-      <div class="caja clave"><div class="titulo">Candado</div><p class="texto">Sin imagen no se publica: la corrida queda en rojo y avisa.</p></div>
+      <div class="caja clave"><div class="titulo">Candado</div><p class="texto">Sin notas o sin imagen no se publica: se queda la edición anterior y la corrida avisa.</p></div>
     </div></div></div>
 
   <div class="fila"><div class="fase"><span class="romano">→</span><span class="label">Publicación</span></div>
@@ -97,6 +97,17 @@
       <div class="caja clave"><div class="titulo">Cloudflare Pages</div><p class="texto">Sitio estático en SvelteKit: radar.hirammorlan.com.</p></div>
       <span class="flecha">·</span>
       <div class="caja"><div class="titulo">Salud de las fuentes</div><p class="texto">Revisión diaria sin costo; si una fuente cae dos días seguidos, avisa por correo.</p><span class="modelo sin">Sin modelo</span></div>
+    </div></div></div>
+
+  <div class="fila"><div class="fase"><span class="romano">+1 h</span><span class="label">Revisión</span></div>
+    <div class="riel" style="border-left-color:transparent"><div class="cadena">
+      <div class="caja"><div class="titulo">Capturas y pistas</div><p class="texto">Capturas del sitio publicado (escritorio, móvil, claro y oscuro) y reclamos de ransomware de LatAm sin verificar, que nunca se publican.</p><span class="modelo sin">Sin modelo</span></div>
+      <span class="flecha">→</span>
+      <div class="caja clave"><div class="titulo">Revisor independiente</div><p class="texto">Fuera del pipeline, lee la edición como editor: hechos contra la fuente, enlaces, fechas, duplicados, la página y lo que faltó.</p><span class="modelo">Fable 5.1</span></div>
+      <span class="flecha">→</span>
+      <div class="caja"><div class="titulo">Verificar hallazgos</div><p class="texto">Cada hallazgo se comprueba contra la fuente antes de aceptarlo.</p><span class="modelo">Opus 5.5</span></div>
+      <span class="flecha">→</span>
+      <div class="caja"><div class="titulo">Reparar edición</div><p class="texto">Hiram aprueba; el parche se publica sin volver a correr el pipeline y queda registrado. Lo repetido se vuelve regla.</p><span class="modelo sin">Sin modelo</span></div>
     </div></div></div>
 
   <div class="pie"><span>Código: github.com/hmorlan/radar-identidad · Parte de ai-news-aggregator (Apache 2.0).</span><span class="oro">radar.hirammorlan.com</span></div>
