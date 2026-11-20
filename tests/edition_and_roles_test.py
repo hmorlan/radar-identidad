@@ -85,7 +85,7 @@ class NoNetwork(unittest.TestCase):
     """build_edition baja páginas de fuentes con RSS corto: en tests, nunca a la red."""
 
     def setUp(self):
-        patcher = mock.patch.object(en, "_fetch_text", side_effect=RuntimeError("sin red en tests"))
+        patcher = mock.patch.object(en, "_fetch_page", side_effect=RuntimeError("sin red en tests"))
         patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -197,7 +197,7 @@ class FullTextTest(unittest.TestCase):
     def test_short_rss_gets_full_page_and_feeds_editor_and_checker(self):
         cands = self._cands()
         long_text = "Controles por compra y tokenización. " * 80
-        with mock.patch.object(en, "_fetch_text", return_value=long_text) as fetch:
+        with mock.patch.object(en, "_fetch_page", return_value=(long_text, "")) as fetch:
             got = asyncio.run(en.enrich_full_text(cands))
         self.assertGreater(got, 0)
         self.assertTrue(fetch.called)
@@ -208,15 +208,15 @@ class FullTextTest(unittest.TestCase):
 
     def test_failures_and_soft_404_keep_rss_text(self):
         cands = self._cands()
-        with mock.patch.object(en, "_fetch_text", side_effect=RuntimeError("403")):
+        with mock.patch.object(en, "_fetch_page", side_effect=RuntimeError("403")):
             self.assertEqual(asyncio.run(en.enrich_full_text(cands)), 0)
-        with mock.patch.object(en, "_fetch_text", return_value="Página no encontrada " + "x" * 3000):
+        with mock.patch.object(en, "_fetch_page", return_value=("Página no encontrada " + "x" * 3000, "")):
             self.assertEqual(asyncio.run(en.enrich_full_text(cands)), 0)
         self.assertFalse(any("texto_completo" in (a.item.metadata or {}) for _, a in cands))
 
     def test_can_be_disabled(self):
         with mock.patch.dict(os.environ, {"EDITION_FULLTEXT": "0"}), \
-                mock.patch.object(en, "_fetch_text") as fetch:
+                mock.patch.object(en, "_fetch_page") as fetch:
             self.assertEqual(asyncio.run(en.enrich_full_text(self._cands())), 0)
         fetch.assert_not_called()
 

@@ -19,7 +19,7 @@ from pathlib import Path
 
 import nh3
 
-from agents.source_names import clean_source
+from generators.source_names import clean_source
 
 logger = logging.getLogger(__name__)
 

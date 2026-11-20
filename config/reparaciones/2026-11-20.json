@@ -1,10 +1,11 @@
 {
   "date": "2026-11-20",
-  "motivo": "Revisión de Hiram: la nota del borrador del IETF no tenía enlace (el feed lo traía relativo); la nota de Derechos Digitales citaba el post de Bluesky en vez de la entrevista de WIRED en Español que difunde; el preprint de arXiv aparecía con la fecha del anuncio (20 nov) en vez de la de envío (18 nov) y con enlace http; nombres de fuente crudos.",
+  "motivo": "Revisión de Hiram: la nota del borrador del IETF no tenía enlace (el feed lo traía relativo); la nota de Derechos Digitales citaba el post de Bluesky en vez de la entrevista de WIRED en Español que difunde; el preprint de arXiv aparecía con la fecha del anuncio (20 nov) en vez de la de envío (18 nov) y con enlace http; nombres de fuente crudos. Segunda revisión: la nota de WIRED en Español conservaba la fecha del post (19 nov); el artículo es del 17 nov y la del post va con la vía.",
   "fuentes": [
     "https://datatracker.ietf.org/doc/draft-nandakumar-oauth-delegation-revocation/",
     "https://es.wired.com/articulos/america-latina-quiere-proteger-a-los-menores-en-redes-sociales-pero-cual-seria-el-costo-para-la-privacidad-de-todas-las-personas",
-    "https://export.arxiv.org/api/query?id_list=2611.24989"
+    "https://export.arxiv.org/api/query?id_list=2611.24989",
+    "https://es.wired.com/articulos/america-latina-quiere-proteger-a-los-menores-en-redes-sociales-pero-cual-seria-el-costo-para-la-privacidad-de-todas-las-personas (article:published_time 2026-11-17)"
   ],
   "reemplazos": [
     {
@@ -33,8 +34,10 @@
       "source": "WIRED en Español",
       "via": {
         "source": "Bluesky (Derechos Digitales)",
-        "url": "https://bsky.app/profile/derechosdigitales.org/post/3n2oidzwi4s2u"
-      }
+        "url": "https://bsky.app/profile/derechosdigitales.org/post/3n2oidzwi4s2u",
+        "published": "2026-11-19T16:25:39"
+      },
+      "published": "2026-11-17"
     },
     "5ff6242ba59e": {
       "url": "https://arxiv.org/abs/2611.24989",

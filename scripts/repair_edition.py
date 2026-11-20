@@ -41,7 +41,8 @@ NOTE_FIELDS = {"titulo": "title", "title": "title", "que_paso": "que_paso",
                "senal": "senal", "verificacion": "verificacion",
                # 20 nov: enlace faltante (IETF), original en vez del post (Bluesky) y
                # fecha de envío del preprint (arXiv).
-               "url": "url", "source": "source", "published": "published", "via": "via"}
+               "url": "url", "source": "source", "published": "published", "via": "via",
+               "fecha_tipo": "fecha_tipo"}
 SIGNALS = {"baja", "media", "alta"}
 _MD_LINK = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 
@@ -104,9 +105,10 @@ def apply_patch(patch: Dict[str, Any], day_dir: Path, dry_run: bool = False) -> 
         raise RepairError(f"no existe {day_dir / 'summary.json'}")
     report: Dict[str, Any] = {"reemplazos": [], "notas": [], "html": 0}
     changed: List[Tuple[dict, str]] = []
-    # Un parche ya aplicado (mismo motivo registrado) puede volver a correr sin error.
-    already = any(isinstance(r, dict) and r.get("motivo") == patch.get("motivo", "")
-                  for r in files["summary.json"].get("reparaciones") or [])
+    # Un parche ya aplicado puede volver a correr sin error, también cuando se amplía
+    # (20 nov: segunda revisión del mismo día): si la edición ya tiene reparaciones,
+    # un reemplazo cuyo texto nuevo ya está se da por aplicado.
+    already = any(isinstance(r, dict) for r in files["summary.json"].get("reparaciones") or [])
 
     for r in patch.get("reemplazos") or []:
         antes, despues = r.get("antes", ""), r.get("despues", "")

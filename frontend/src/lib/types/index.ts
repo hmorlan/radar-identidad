@@ -87,7 +87,9 @@ export interface EditionNote {
 	senal: 'baja' | 'media' | 'alta';
 	verificacion: 'verificada' | 'corregida' | 'sin_verificar' | string;
 	/** Post que llevó a la nota cuando url/source apuntan al original. */
-	via?: { source: string; url: string } | null;
+	via?: { source: string; url: string; published?: string } | null;
+	/** "anuncio": arXiv sin fecha de envío; la fecha es la del anuncio. */
+	fecha_tipo?: 'publicacion' | 'anuncio' | string;
 }
 
 export interface Edition {

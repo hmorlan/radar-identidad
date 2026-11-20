@@ -26,7 +26,12 @@
 	let open = !collapsed;
 	$: dots = signalDots(note.senal);
 	$: alta = note.senal === 'alta';
-	$: fuenteTexto = [note.source || host(note.url), shortDate(note.published)].filter(Boolean).join(', ');
+	// Publicación y descubrimiento no se mezclan (20 nov): la fecha es la de la fuente;
+	// la del post que la difundió va con la vía. arXiv sin fecha de envío: "anunciado".
+	$: fecha = shortDate(note.published);
+	$: fechaTexto = fecha && note.fecha_tipo === 'anuncio' ? `anunciado el ${fecha}` : fecha;
+	$: fuenteTexto = [note.source || host(note.url), fechaTexto].filter(Boolean).join(', ');
+	$: viaFecha = note.via ? shortDate(note.via.published) : '';
 	$: id = `nota-${note.item_id}`;
 </script>
 
@@ -64,7 +69,8 @@
 					{fuenteTexto}
 				{/if}
 				{#if note.via && isSafeUrl(note.via.url)}
-					· vía <a class="enlace" href={note.via.url} target="_blank" rel="noopener noreferrer">{note.via.source}</a>
+					· vía <a class="enlace" href={note.via.url} target="_blank" rel="noopener noreferrer">{note.via.source}</a
+					>{viaFecha ? `, ${viaFecha}` : ''}
 				{/if}
 				<span class:sin-verificar={note.verificacion === 'sin_verificar'}>
 					· {VERIFICACION[note.verificacion] ?? VERIFICACION.sin_verificar}

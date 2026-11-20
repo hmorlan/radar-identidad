@@ -32,7 +32,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from .base import AnalyzedItem, CategoryReport, extract_json_str
 from .llm_client import ThinkingLevel, attempt_timeout
-from .source_names import clean_source
+from generators.source_names import clean_source
 from .prompt_security import build_fenced_user_message, build_hardened_system, new_fence_nonce
 
 logger = logging.getLogger(__name__)
@@ -62,6 +62,9 @@ class EditionNote:
     # Cuando la nota viene de un post que difunde otro texto: el post (vía de
     # descubrimiento) mientras url/source apuntan al original. {"source", "url"}.
     via: Optional[Dict[str, str]] = None
+    # "publicacion" (la fecha es la de la fuente) o "anuncio" (arXiv sin fecha de
+    # envío: es la del anuncio, y el sitio lo dice así).
+    fecha_tipo: str = "publicacion"
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -176,8 +179,11 @@ def _edition_timeout() -> float:
         return EDITION_TIMEOUT_DEFAULT
 
 
-def _fetch_text(url: str) -> str:
-    """Texto principal de una página (bloqueante; se llama en un hilo)."""
+def _fetch_page(url: str) -> Tuple[str, str]:
+    """Texto principal y fecha de publicación (AAAA-MM-DD o "") de una página.
+
+    Bloqueante; se llama en un hilo.
+    """
     import requests
     from bs4 import BeautifulSoup
     from .gatherers.link_follower import LinkFollower
@@ -186,45 +192,85 @@ def _fetch_text(url: str) -> str:
         "User-Agent": "Mozilla/5.0 (compatible; RadarDeIdentidad/1.0; +https://radar.hirammorlan.com)"})
     resp.raise_for_status()
     if "html" not in resp.headers.get("content-type", "html"):
-        return ""
-    return LinkFollower()._extract_content(BeautifulSoup(resp.content, "html.parser"))
+        return "", ""
+    soup = BeautifulSoup(resp.content, "html.parser")
+    fecha = published_date(soup)
+    return LinkFollower()._extract_content(soup), fecha
+
+
+_DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
+_JSONLD_DATE = re.compile(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})')
+
+
+def published_date(soup: Any) -> str:
+    """Fecha de publicación de un artículo (metadatos estándar), o "" si no la declara."""
+    for attrs in ({"property": "article:published_time"}, {"property": "og:published_time"},
+                  {"name": "article:published_time"}, {"itemprop": "datePublished"},
+                  {"name": "date"}, {"name": "pubdate"}):
+        tag = soup.find("meta", attrs=attrs)
+        m = _DATE_RE.match((tag.get("content") or "").strip()) if tag else None
+        if m:
+            return m.group(1)
+    for script in soup.find_all("script", attrs={"type": "application/ld+json"}):
+        m = _JSONLD_DATE.search(script.string or script.get_text() or "")
+        if m:
+            return m.group(1)
+    tag = soup.find("time", attrs={"datetime": True})
+    m = _DATE_RE.match(tag["datetime"].strip()) if tag else None
+    return m.group(1) if m else ""
+
+
+def _fetch_url(category: str, a: AnalyzedItem) -> str:
+    """Qué página bajar: el artículo que difunde un post, o la nota misma."""
+    meta = a.item.metadata if isinstance(a.item.metadata, dict) else {}
+    original = meta.get("enlace_original") or ""
+    if category == "social" and original.startswith(("http://", "https://")):
+        return original
+    return a.item.url or ""
 
 
 def _wants_full_text(category: str, a: AnalyzedItem) -> bool:
     it = a.item
-    url = (it.url or "").lower()
-    return (category in ("news", "social") and url.startswith(("http://", "https://"))
-            and len(it.content or "") < FULLTEXT_MIN
-            and not any(h in url for h in _FULLTEXT_SKIP_HOSTS))
+    url = _fetch_url(category, a).lower()
+    if not url.startswith(("http://", "https://")) or any(h in url for h in _FULLTEXT_SKIP_HOSTS):
+        return False
+    if url != (it.url or "").lower():
+        return True   # el original de un post: se baja siempre (texto y fecha)
+    return category in ("news", "social") and len(it.content or "") < FULLTEXT_MIN
 
 
 async def enrich_full_text(candidates: List[Tuple[str, AnalyzedItem]]) -> int:
     """Guarda en ``metadata['texto_completo']`` el texto de la página cuando el RSS es corto."""
     if os.getenv("EDITION_FULLTEXT", "1") == "0":
         return 0
-    todo = [a for cat, a in candidates if _wants_full_text(cat, a)]
+    todo = [(cat, a) for cat, a in candidates if _wants_full_text(cat, a)]
     sem = asyncio.Semaphore(FULLTEXT_CONCURRENCY)
 
-    async def one(a: AnalyzedItem) -> bool:
+    async def one(cat: str, a: AnalyzedItem) -> bool:
+        url = _fetch_url(cat, a)
         async with sem:
             try:
-                text = await asyncio.wait_for(asyncio.to_thread(_fetch_text, a.item.url),
-                                              FULLTEXT_TIMEOUT + 5)
+                text, fecha = await asyncio.wait_for(asyncio.to_thread(_fetch_page, url),
+                                                     FULLTEXT_TIMEOUT + 5)
             except Exception as e:  # noqa: BLE001
-                logger.info("Texto completo no disponible (%s): %s", type(e).__name__, a.item.url)
+                logger.info("Texto completo no disponible (%s): %s", type(e).__name__, url)
                 return False
+        if not isinstance(a.item.metadata, dict):
+            a.item.metadata = {}
+        if fecha and url != a.item.url:
+            # Fecha del artículo que difunde el post (20 nov: WIRED era del 17,
+            # el post de Bluesky del 19).
+            a.item.metadata["fecha_original"] = fecha
         text = " ".join((text or "").split())
         if _SOFT_404.search(text[:300]):
-            logger.info("Texto completo descartado (página no encontrada): %s", a.item.url)
+            logger.info("Texto completo descartado (página no encontrada): %s", url)
             return False
         if len(text) <= len(a.item.content or "") + 200:
             return False
-        if not isinstance(a.item.metadata, dict):
-            a.item.metadata = {}
         a.item.metadata["texto_completo"] = text
         return True
 
-    got = sum(await asyncio.gather(*(one(a) for a in todo))) if todo else 0
+    got = sum(await asyncio.gather(*(one(c, a) for c, a in todo))) if todo else 0
     logger.info("Texto completo: %d de %d candidatos con RSS corto", got, len(todo))
     return got
 
@@ -286,34 +332,42 @@ def parse_notes(content: str, by_id: Dict[str, Tuple[str, AnalyzedItem]], max_no
         pregunta = _clip(raw.get("pregunta_de_fondo"), 300) or None
         category, analyzed = by_id[item_id]
         it = analyzed.item
-        url, source, published, via = note_origin(it)
+        origin = note_origin(it)
         edition.notas.append(EditionNote(
-            item_id=item_id, category=category, title=titulo, url=url, source=source,
-            published=published, que_paso=que_paso, por_que_importa=por_que,
-            senal=senal, pregunta_de_fondo=pregunta, via=via,
+            item_id=item_id, category=category, title=titulo, que_paso=que_paso,
+            por_que_importa=por_que, senal=senal, pregunta_de_fondo=pregunta, **origin,
         ))
         if len(edition.notas) >= max_notes:
             break
     return edition
 
 
-def note_origin(it: Any) -> Tuple[str, str, str, Optional[Dict[str, str]]]:
+def note_origin(it: Any) -> Dict[str, Any]:
     """URL, fuente, fecha y vía de una nota.
 
-    - Un post de redes que difunde un artículo enlaza al artículo; el post queda como vía.
-    - Un preprint de arXiv lleva su fecha de envío, no la del anuncio.
-    - La fuente va con nombre legible (agents/source_names.py).
+    - Un post de redes que difunde un artículo enlaza al artículo y lleva la fecha
+      del artículo (si se pudo leer; si no, ninguna). El post queda como vía, con
+      su propia fecha: publicación y descubrimiento no se mezclan.
+    - Un preprint de arXiv lleva su fecha de envío; si la API no la dio, la del
+      anuncio, marcada como tal.
+    - La fuente va con nombre legible (generators/source_names.py).
     """
     meta = it.metadata if isinstance(getattr(it, "metadata", None), dict) else {}
-    url, source, published, via = it.url, clean_source(it.source), it.published, None
+    out: Dict[str, Any] = {"url": it.url, "source": clean_source(it.source),
+                           "published": it.published, "via": None, "fecha_tipo": "publicacion"}
     original = meta.get("enlace_original") or ""
     if it.source_type in ("bluesky", "mastodon") and original.startswith(("http://", "https://")):
         quien = meta.get("author_display_name") or (it.author or "").lstrip("@")
-        via = {"source": f"{it.source} ({quien})" if quien else it.source, "url": it.url}
-        url, source = original, clean_source(_host_name(original))
-    if meta.get("enviado"):
-        published = meta["enviado"]
-    return url, source, published, via
+        out["via"] = {"source": f"{it.source} ({quien})" if quien else it.source,
+                      "url": it.url, "published": it.published or ""}
+        out["url"], out["source"] = original, _host_name(original)
+        out["published"] = meta.get("fecha_original") or ""
+    if it.source_type == "arxiv":
+        if meta.get("enviado"):
+            out["published"] = meta["enviado"]
+        else:
+            out["fecha_tipo"] = "anuncio"
+    return out
 
 
 def _host_name(url: str) -> str:
