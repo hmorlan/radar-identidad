@@ -661,6 +661,17 @@ jobs:
             exit 1
           fi
 
+      # Radar: lo que la recolección continua (recoleccion.yml, cada 6 h) guardó de
+      # los feeds que solo muestran sus 10 notas más recientes. Sin caché, se recolecta
+      # como antes.
+      - name: Restaurar la recolección continua
+        if: steps.schedule_gate.outputs.should_run == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: data/recoleccion_cache.json
+          key: recoleccion-${{ github.run_id }}
+          restore-keys: recoleccion-
+
       - name: Run pipeline
         if: steps.schedule_gate.outputs.should_run == 'true'
         shell: bash

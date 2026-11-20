@@ -138,6 +138,7 @@ analysis:
       5. REGIÓN: a igual relevancia, prioriza Latinoamérica y España.
 
       UN HECHO, UNA ENTRADA: si dos notas cuentan el mismo hecho (aunque vengan de medios distintos), elige solo la de mejor fuente para el top 10.
+      Además, en "mismo_hecho" agrupa los IDs de TODAS las notas de la lista que cuentan el mismo hecho (mismo incidente, anuncio o documento), con la de mejor fuente primero. Solo grupos de 2 o más; no agrupes notas que solo comparten tema. Si no hay, devuelve una lista vacía.
 
       Fuera: rondas de inversión, adquisiciones y lanzamientos de producto, salvo que cambien cómo decidimos en quién confiar.
 
@@ -145,6 +146,7 @@ analysis:
       ```json
       {
         "top_10": ["id1", "id2", ...],
+        "mismo_hecho": [["id_mejor_fuente", "id_otro_medio"]],
         "category_summary": "Resumen en español con markdown (ver reglas)"
       }
       ```

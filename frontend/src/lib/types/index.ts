@@ -22,6 +22,8 @@ export interface NewsItem {
 	importance_score: number;
 	reasoning: string;
 	themes: string[];
+	/** Otros medios que contaron el mismo hecho (un hecho, una entrada). */
+	tambien_en?: { source: string; url: string; title: string }[];
 	freshness?: {
 		status: string;
 		label: string;

@@ -1596,6 +1596,14 @@ Every entry needs a nonempty summary and reasoning and a numeric score 0-100.
 
         # Get top 10 items by ranking
         top_ids = ranking_result.get('top_10', [])[:10]
+
+        # Un hecho, una entrada (Radar de Identidad, 2026-11-20): las notas que
+        # cuentan el mismo hecho se pliegan en la principal ("También lo cubren").
+        if ranking_result.get('mismo_hecho'):
+            from .same_story import fold_same_story
+            analyzed_items, folded = fold_same_story(
+                ranking_result['mismo_hecho'], analyzed_items, top_ids)
+            top_ids = list(dict.fromkeys(folded.get(i, i) for i in top_ids))
         id_to_rank = {id: i for i, id in enumerate(top_ids)}
 
         # Build top_items list in rank order

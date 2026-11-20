@@ -256,6 +256,9 @@ def sanitize_ranking_result(result: Any, where: str = "ranking") -> Dict[str, An
             clean['category_summary'] = _coerce_str(
                 result['category_summary'], MAX_CATEGORY_SUMMARY_LEN
             )
+        if 'mismo_hecho' in result:
+            from .same_story import sanitize_groups
+            clean['mismo_hecho'] = sanitize_groups(result['mismo_hecho'])
         return clean
     except Exception as exc:  # pragma: no cover - safety net
         logger.error(f"{where}: ranking sanitizer failed ({exc}); using unsanitized result")

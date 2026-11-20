@@ -39,6 +39,7 @@
 	// plegado detrás de "Ver texto original"; sin análisis, se muestra como antes.
 	$: originalHidden = Boolean(item.summary);
 	$: freshness = item.freshness;
+	$: tambienEn = (item.tambien_en || []).filter((o) => isSafeUrl(o.url));
 
 	// Use pre-rendered HTML if available, otherwise convert client-side
 	$: summaryHtml = item.summary_html || markdownToHtml(item.summary || '');
@@ -113,6 +114,20 @@
 			<span>{formatRelativeTime(item.published)}</span>
 		{/if}
 	</div>
+	{#if tambienEn.length}
+		<p class="text-sm text-radar-gray-500 dark:text-radar-gray-400 -mt-2 mb-3">
+			También lo cubren:
+			{#each tambienEn as otro, i}
+				<a
+					href={otro.url}
+					target="_blank"
+					rel="noopener noreferrer"
+					title={otro.title}
+					class="text-radar-accent hover:underline">{otro.source || 'otro medio'}</a
+				>{i < tambienEn.length - 1 ? ', ' : ''}
+			{/each}
+		</p>
+	{/if}
 
 	<!-- Análisis -->
 	{#if item.summary}

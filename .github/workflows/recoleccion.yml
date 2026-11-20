@@ -1,0 +1,50 @@
+name: Recolección continua
+
+# Cada 6 horas guarda lo que muestran los feeds RSS (scripts/snapshot_feeds.py), para
+# que la edición vea todo su periodo (48 o 72 h) aunque un feed solo muestre sus 10
+# notas más recientes (Help Net Security, Biometric Update; 20 nov). No usa la API de
+# Anthropic ni de Google: costo cero. La caché viaja en actions/cache y la edición la
+# restaura antes de recolectar (daily-pipeline.yml).
+
+on:
+  schedule:
+    - cron: "41 0,6,12,18 * * *"   # 18:41, 00:41, 06:41 y 12:41 en Ciudad de México
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recoleccion
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Dependencias mínimas
+        run: pip install feedparser requests
+
+      - name: Restaurar la caché
+        uses: actions/cache/restore@v4
+        with:
+          path: data/recoleccion_cache.json
+          key: recoleccion-${{ github.run_id }}
+          restore-keys: recoleccion-
+
+      - name: Guardar lo que muestran los feeds
+        run: python3 scripts/snapshot_feeds.py --cache data/recoleccion_cache.json
+
+      - name: Guardar la caché
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/recoleccion_cache.json
+          key: recoleccion-${{ github.run_id }}

@@ -7,6 +7,7 @@ Combines RSS collection with smart link following from social media posts.
 import asyncio
 import logging
 import os
+import re
 from urllib.parse import urlparse
 import time
 from datetime import datetime
@@ -21,7 +22,7 @@ from dateutil import parser as date_parser
 from ..base import BaseGatherer, CollectedItem, deduplicate_items, step_label_for_url
 from ..llm_client import AnthropicClient
 from .link_follower import LinkFollower
-from . import identity_filter
+from . import feed_cache, identity_filter
 from .regulator_sources import SeenCache, collect as collect_regulators, load_empresas, load_regulators
 
 logger = logging.getLogger(__name__)
@@ -87,6 +88,8 @@ class NewsGatherer(BaseGatherer):
         self.feeds = [spec.url for spec in self.feed_specs]
         if not self.feeds:
             logger.warning("No RSS feeds configured")
+        # Recolección continua (scripts/snapshot_feeds.py, cada 6 h): vacía si no existe.
+        self.feed_cache = feed_cache.load()
 
         # Reguladores sin RSS (config/regulators.txt), vía página de prensa o Google News.
         self.regulators = load_regulators(config_dir)
@@ -206,6 +209,8 @@ class NewsGatherer(BaseGatherer):
         # proxy=off -> direct session that bypasses the proxy entirely.
         session = self.direct_session if use_proxy is False else self.feed_session
 
+        rows: List[dict] = []
+        feed_title = ''
         try:
             logger.debug(f"Fetching feed: {feed_url} (proxy={'direct' if use_proxy is False else 'default'})")
             # Reintento: algunos sitios (INCIBE) rechazan una de cada dos visitas con
@@ -219,93 +224,111 @@ class NewsGatherer(BaseGatherer):
                     if attempt == 2:
                         raise
                     time.sleep(2)
-            feed = feedparser.parse(
+            parsed = feedparser.parse(
                 response.content,
                 response_headers={
                     "content-type": response.headers.get("content-type", "")
                 }
             )
 
-            if feed.bozo:
+            if parsed.bozo:
                 # CharacterEncodingOverride is benign - feedparser handles it correctly
-                exc = feed.bozo_exception
+                exc = parsed.bozo_exception
                 if exc and 'CharacterEncodingOverride' in type(exc).__name__:
                     logger.debug(f"Feed encoding override for {feed_url}: {exc}")
                 else:
                     logger.warning(f"Feed warning for {feed_url}: {exc}")
 
-            # Sin título en el feed (p. ej. Infosecurity Magazine): el dominio, no
-            # "Unknown Source".
-            feed_title = (feed.feed.get('title') or '').strip() or (
-                urlparse(feed_url).netloc.removeprefix('www.') or 'Fuente sin nombre'
-            )
-
-            for entry in feed.entries:
+            feed_title = (parsed.feed.get('title') or '').strip()
+            for entry in parsed.entries:
                 try:
-                    # Parse publication date
-                    pub_date = self._parse_date(
-                        entry.get('published_parsed') or entry.get('updated_parsed')
-                    )
-
-                    # Skip if outside date range
-                    if not self.is_in_date_range(pub_date):
-                        continue
-
-                    # Extract content
-                    content = ''
                     if hasattr(entry, 'content'):
                         content = entry.content[0].value
                     elif hasattr(entry, 'summary'):
                         content = entry.summary
                     elif hasattr(entry, 'description'):
                         content = entry.description
-
-                    # Strip HTML tags from content
-                    import re
-                    content_text = re.sub(r'<[^>]+>', '', content)
-
-                    title = entry.get('title', 'No Title')
-                    url = entry.get('link', '')
-
-                    if identity_filter.is_sponsored(title):
-                        filtered_out += 1
-                        continue
-
-                    # Fuentes ruidosas: solo entradas con tema de identidad.
-                    if filtro and not identity_filter.matches_feed_entry(
-                        filtro, title, content_text
-                    ):
-                        filtered_out += 1
-                        continue
-
-                    article = CollectedItem(
-                        id=self.generate_id(url, title),
-                        title=title,
-                        content=content_text,
-                        url=url,
-                        author=entry.get('author', 'Unknown'),
-                        published=pub_date.isoformat(),
-                        source=feed_title,
-                        source_type='rss',
-                        tags=[tag.term for tag in entry.get('tags', [])],
-                        metadata={
-                            'feed_url': feed_url,
-                            'raw_summary': entry.get('summary', '')[:500]
-                        },
-                        keywords=self.extract_keywords(f"{title} {content_text}")
-                    )
-
-                    articles.append(article)
-
+                    else:
+                        content = ''
+                    rows.append({
+                        'link': entry.get('link', ''),
+                        'title': entry.get('title', 'No Title'),
+                        'content': content,
+                        'author': entry.get('author', 'Unknown'),
+                        'published': self._parse_date(
+                            entry.get('published_parsed') or entry.get('updated_parsed')),
+                        'tags': [tag.term for tag in entry.get('tags', [])],
+                        'summary': entry.get('summary', '')[:500],
+                    })
                 except Exception as e:
                     logger.error(f"Error processing entry from {feed_url}: {e}")
-
-            if filtered_out:
-                logger.info(f"filtro=identidad descartó {filtered_out} entradas de {feed_url}")
-            logger.debug(f"Collected {len(articles)} articles from {feed_url}")
-
         except Exception as e:
             logger.error(f"Error fetching feed {feed_url}: {e}")
+
+        # Recolección continua (feed_cache): lo que el feed mostró en las últimas
+        # horas y ya no trae (solo muestra sus 10 más recientes). Si el feed falla
+        # ahora, queda lo guardado.
+        cached = feed_cache.cached_rows(getattr(self, "feed_cache", None) or {}, feed_url, {r['link'] for r in rows})
+        if cached:
+            logger.info(f"Recolección continua: {len(cached)} entradas guardadas de {feed_url}")
+        rows.extend(cached)
+
+        # Sin título en el feed (p. ej. Infosecurity Magazine): el dominio, no
+        # "Unknown Source".
+        feed_title = feed_title or feed_cache.feed_title(getattr(self, "feed_cache", None) or {}, feed_url) or (
+            urlparse(feed_url).netloc.removeprefix('www.') or 'Fuente sin nombre'
+        )
+
+        for row in rows:
+            try:
+                pub_date = row['published']
+
+                # Skip if outside date range
+                if not self.is_in_date_range(pub_date):
+                    continue
+
+                # Strip HTML tags from content
+                content_text = re.sub(r'<[^>]+>', '', row['content'] or '')
+
+                title = row['title']
+                url = row['link']
+
+                if identity_filter.is_sponsored(title):
+                    filtered_out += 1
+                    continue
+
+                # Fuentes ruidosas: solo entradas con tema de identidad.
+                if filtro and not identity_filter.matches_feed_entry(
+                    filtro, title, content_text
+                ):
+                    filtered_out += 1
+                    continue
+
+                article = CollectedItem(
+                    id=self.generate_id(url, title),
+                    title=title,
+                    content=content_text,
+                    url=url,
+                    author=row['author'],
+                    published=pub_date.isoformat(),
+                    source=feed_title,
+                    source_type='rss',
+                    tags=row['tags'],
+                    metadata={
+                        'feed_url': feed_url,
+                        'raw_summary': row['summary']
+                    },
+                    keywords=self.extract_keywords(f"{title} {content_text}")
+                )
+
+                articles.append(article)
+
+            except Exception as e:
+                logger.error(f"Error processing entry from {feed_url}: {e}")
+
+        if filtered_out:
+            logger.info(f"filtro=identidad descartó {filtered_out} entradas de {feed_url}")
+        logger.debug(f"Collected {len(articles)} articles from {feed_url}")
 
         return articles
 

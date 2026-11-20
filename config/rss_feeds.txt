@@ -92,8 +92,11 @@ https://www.axios.com/feeds/feed.rss  filtro=identidad
 https://www.linuxfoundation.org/press/rss.xml  filtro=identidad
 
 # ===== Prensa especializada en identidad =====
-# Biometric Update, ~9/día; relevancia alta (verificación de identidad, KYC, ID digital, agentes)
-https://feeds.feedburner.com/biometricupdate
+# Biometric Update, ~15/día; relevancia alta (verificación de identidad, KYC, ID digital, agentes).
+# El feed solo trae las 10 más recientes: a las 5 a.m. ya no estaban las del día anterior
+# (20 nov: se perdió Sumsub). La página 2 llega al día anterior; las repetidas se quitan por URL.
+https://www.biometricupdate.com/feed
+https://www.biometricupdate.com/feed?paged=2
 # ID Tech, ~1-2/día: prensa del sector identidad (biometría, verificación, carteras); filtrado
 https://idtechwire.com/feed/  filtro=identidad
 # FIDO Alliance (noticias y cobertura de passkeys), ~5/semana; relevancia muy alta

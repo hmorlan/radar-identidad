@@ -25,6 +25,10 @@ EU | Cartera europea de identidad digital | "EUDI Wallet" OR "European Digital I
 # ===== Autoridades mexicanas contra el fraude, en prensa (agregado 2026-11-13) =====
 # Sus sitios casi no aparecen en Google News; sus alertas sí, citadas por la prensa.
 MX | Autoridades contra el fraude digital | "Policía Cibernética" OR "CERT-MX" OR "Jornada Nacional Antifraude"
+# Autoridades financieras citadas por la prensa (agregado 2026-11-20): Milenio y Plaza de
+# Armas publicaron los 13 incidentes de Banxico y la suplantación +18.8 % de Condusef, que
+# no salen en sus propias páginas de prensa (esas siguen en regulators.txt).
+MX | Autoridades financieras en prensa | Banxico OR Condusef OR CNBV
 
 # ===== Plataformas de agentes =====
 MX | Meta (Muse) | "Muse" Meta agente

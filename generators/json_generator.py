@@ -481,6 +481,17 @@ class JSONGenerator:
             if not simplified_item.get('freshness'):
                 simplified_item.pop('freshness', None)
 
+            # Un hecho, una entrada: otros medios que contaron lo mismo (agents/same_story.py).
+            meta = (item['item'] if isinstance(item.get('item'), dict) else item).get('metadata') or {}
+            also = [
+                {'source': str(a.get('source') or '')[:120], 'url': _safe_url(a.get('url', '')),
+                 'title': str(a.get('title') or '')[:300]}
+                for a in (meta.get('tambien_en') or []) if isinstance(a, dict)
+            ] if isinstance(meta, dict) else []
+            also = [a for a in also if a['url']]
+            if also:
+                simplified_item['tambien_en'] = also
+
             # Radar en español: el título que escribe el análisis va al frente y el
             # original (casi siempre en inglés) se conserva para "Ver texto original".
             titulo = re.sub(r'<[^>]*>', '', str(item.get('titulo') or '')).strip()

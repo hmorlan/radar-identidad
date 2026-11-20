@@ -209,3 +209,11 @@ for u in sys.argv[1:]:
 Al verificar los 6 pendientes de mayor prioridad, la lista llegaría a ~17 feeds y ~40 ítems por día. Si BleepingComputer funciona, aporta ~10 por día, y sería razonable **sacar SecurityWeek**: tiene la peor relación entre volumen y relevancia.
 
 Decisión propuesta (pendiente de tu confirmación): arrancar con los 11 feeds verificados y no activar arXiv cs.CR sin prefiltro por keywords. La prioridad es verificar WeLiveSecurity en español, BleepingComputer, OpenID y IETF OAuth desde el pipeline real.
+
+## 2026-11-20: feeds que solo muestran 10 notas
+
+Help Net Security y Biometric Update solo muestran sus 10 notas más recientes y publican más de 10 al día: a las 5 a.m. ya no estaban las del día anterior (se perdieron Entrust y Sumsub). Arreglos:
+
+- Recolección continua cada 6 horas (`.github/workflows/recoleccion.yml`), para todos los feeds de noticias.
+- Biometric Update también con `?paged=2` (Help Net ignora la paginación).
+- Prensa que cita a Banxico, Condusef o CNBV en `config/empresas.txt` (sus páginas de prensa siguen en `config/regulators.txt`).
