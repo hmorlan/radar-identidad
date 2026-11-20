@@ -1,3 +1,5 @@
+<!-- Las imágenes llevan ?v=<fecha>: al regenerar un diagrama, cambia la versión para que
+     el navegador y la caché de Cloudflare no sirvan la anterior. -->
 <svelte:head>
 	<title>Acerca de | Radar de Identidad</title>
 </svelte:head>
@@ -54,25 +56,25 @@
 		</div>
 		<figure class="mt-6">
 			<picture class="block dark:hidden">
-				<source media="(max-width: 640px)" srcset="/img/como-funciona-movil-claro.webp" width="1080" height="2190" />
-				<img src="/img/como-funciona-claro.webp" width="2400" height="1232" loading="lazy"
+				<source media="(max-width: 640px)" srcset="/img/como-funciona-movil-claro.webp?v=20261120b" width="1080" height="2190" />
+				<img src="/img/como-funciona-claro.webp?v=20261120b" width="2400" height="1232" loading="lazy"
 					class="w-full h-auto border border-filete" alt="Cómo funciona en seis pasos: fuentes públicas, filtro de identidad, lectura y clasificación con Claude Haiku, redacción y verificación con Claude Opus, publicación y revisión independiente con Claude Fable." />
 			</picture>
 			<picture class="hidden dark:block">
-				<source media="(max-width: 640px)" srcset="/img/como-funciona-movil-oscuro.webp" width="1080" height="2190" />
-				<img src="/img/como-funciona-oscuro.webp" width="2400" height="1232" loading="lazy"
+				<source media="(max-width: 640px)" srcset="/img/como-funciona-movil-oscuro.webp?v=20261120b" width="1080" height="2190" />
+				<img src="/img/como-funciona-oscuro.webp?v=20261120b" width="2400" height="1232" loading="lazy"
 					class="w-full h-auto border border-filete" alt="Cómo funciona en seis pasos: fuentes públicas, filtro de identidad, lectura y clasificación con Claude Haiku, redacción y verificación con Claude Opus, publicación y revisión independiente con Claude Fable." />
 			</picture>
 		</figure>
 		<details class="mt-6 group">
 			<summary class="t-ui !text-[12px] text-oro cursor-pointer">Ver la arquitectura completa</summary>
 			<figure class="mt-4 -mx-2 sm:mx-0">
-				<a href="/img/arquitectura-claro.webp" class="block dark:hidden" target="_blank" rel="noopener">
-					<img src="/img/arquitectura-claro.webp" width="2400" height="3011" loading="lazy" class="w-full h-auto border border-filete"
+				<a href="/img/arquitectura-claro.webp?v=20261120b" class="block dark:hidden" target="_blank" rel="noopener">
+					<img src="/img/arquitectura-claro.webp?v=20261120b" width="2400" height="3011" loading="lazy" class="w-full h-auto border border-filete"
 						alt="Arquitectura del pipeline por fases, con el modelo de cada paso." />
 				</a>
-				<a href="/img/arquitectura-oscuro.webp" class="hidden dark:block" target="_blank" rel="noopener">
-					<img src="/img/arquitectura-oscuro.webp" width="2400" height="3011" loading="lazy" class="w-full h-auto border border-filete"
+				<a href="/img/arquitectura-oscuro.webp?v=20261120b" class="hidden dark:block" target="_blank" rel="noopener">
+					<img src="/img/arquitectura-oscuro.webp?v=20261120b" width="2400" height="3011" loading="lazy" class="w-full h-auto border border-filete"
 						alt="Arquitectura del pipeline por fases, con el modelo de cada paso." />
 				</a>
 				<figcaption class="t-ui !normal-case !tracking-normal !text-[12px] text-tinta-suave mt-2">
