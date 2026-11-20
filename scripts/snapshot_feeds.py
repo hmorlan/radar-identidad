@@ -23,9 +23,20 @@ import feedparser
 import requests
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
 
-from agents.gatherers import feed_cache  # noqa: E402
+
+def _load_feed_cache():
+    # Directo del archivo: el paquete agents importa el cliente LLM (httpx,
+    # anthropic...) y este workflow solo instala feedparser y requests.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "feed_cache", ROOT / "agents" / "gatherers" / "feed_cache.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+    return mod
+
+
+feed_cache = _load_feed_cache()
 
 UA = "Mozilla/5.0 (compatible; RadarDeIdentidad/1.0; +https://radar.hirammorlan.com)"
 
