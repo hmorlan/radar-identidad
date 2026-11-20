@@ -1,0 +1,59 @@
+name: Retirar ediciones
+
+# Quita del sitio las ediciones listadas en config/ediciones_retiradas.txt (sin
+# costo): baja el archivo de R2, retira esas fechas del índice, del manifiesto,
+# de los feeds y de la búsqueda (scripts/retirar_ediciones.py), sube el archivo y
+# publica. La edición sigue guardada en R2 como respaldo privado. Solo a mano.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  retirar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      TZ: America/Mexico_City
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        run: python -m pip install -r requirements.txt
+
+      - name: Traer el archivo de ediciones (R2)
+        run: python3 scripts/archive_r2.py pull web/data
+
+      - name: Retirar las ediciones de la lista
+        run: python3 scripts/retirar_ediciones.py --web-dir ./web
+
+      - name: Validar la última edición
+        run: |
+          latest=$(python3 -c "import json;print(json.load(open('web/data/index.json'))['latestDate'])")
+          python3 scripts/validate_report.py --web-dir ./web --date "$latest"
+
+      - name: Guardar el archivo en R2
+        run: python3 scripts/archive_r2.py push web/data
+
+      - name: Publicar el sitio en Cloudflare Pages
+        run: bash scripts/deploy_site.sh

@@ -118,6 +118,8 @@ Para agregar una fuente: añadirla al `.txt` correspondiente, correr `scripts/ch
 
 **Un hecho, una entrada:** el ranking de Noticias devuelve `mismo_hecho` (grupos de notas que cuentan lo mismo); `agents/same_story.py` deja una entrada y las demás aparecen en el sitio como "También lo cubren".
 
+**Ediciones retiradas:** las fechas de `config/ediciones_retiradas.txt` (hoy, la prueba del 10 nov) no se restauran de R2 ni se publican; el workflow manual **Retirar ediciones** (`scripts/retirar_ediciones.py`) las quita del índice, los feeds y la búsqueda. El objeto en R2 se conserva como respaldo.
+
 **Capturas para la revisión:** tras publicar, el pipeline toma capturas del mismo build (`scripts/capturas.py`: portada con las notas abiertas, categorías y archivo; escritorio y móvil; claro y oscuro) y las sube como artefacto `capturas`. Las usa el revisor editorial, porque el sitio está detrás de Cloudflare Access.
 
 **Alerta de fuentes caídas:** `.github/workflows/source-health.yml` corre `check_feeds.py` todos los días a las 07:17 (CDMX), sin costo. Si una fuente falla dos revisiones seguidas (o la página de prensa de un regulador deja de devolver notas), la corrida termina en rojo y GitHub manda correo (con Issues activados, además abre un issue `salud-fuentes` que se cierra solo al recuperarse).

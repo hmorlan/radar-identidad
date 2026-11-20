@@ -127,6 +127,12 @@ def pull(data: Path, run: Callable = wrangler) -> int:
         _extract(root, data)
         manifest = json.loads((data / MANIFEST).read_text(encoding="utf-8")) if (data / MANIFEST).exists() else {}
         days = manifest.get("dias", [])
+        # Ediciones retiradas del sitio (config/ediciones_retiradas.txt): se quedan en
+        # R2 como respaldo, pero no vuelven a web/data.
+        lista = Path(__file__).resolve().parent.parent / "config" / "ediciones_retiradas.txt"
+        fuera = {l.strip() for l in lista.read_text(encoding="utf-8").splitlines()
+                 if DAY_RE.match(l.strip())} if lista.exists() else set()
+        days = [d for d in days if d not in fuera]
         fetched = 0
         for day in days:
             target = Path(tmp) / f"{day}.tar.gz"

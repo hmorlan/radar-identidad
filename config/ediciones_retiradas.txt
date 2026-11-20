@@ -1,0 +1,8 @@
+# Ediciones retiradas del sitio público (una fecha AAAA-MM-DD por línea).
+# Siguen guardadas en R2 (archivo/dias/<fecha>.tar.gz), pero no se restauran ni se
+# publican: scripts/archive_r2.py las salta y scripts/retirar_ediciones.py las quita
+# del índice, el archivo, los feeds y la búsqueda (workflow manual "Retirar ediciones").
+
+# Primera corrida de prueba: 4 de 5 notas eran de arXiv y los títulos de
+# investigación seguían en inglés. El radar empieza el 13 nov. (Hiram, 20 nov)
+2026-11-10
