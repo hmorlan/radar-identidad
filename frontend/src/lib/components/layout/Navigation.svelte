@@ -12,8 +12,8 @@
 		return dateParam ? `/?date=${dateParam}&category=${category}` : `/?category=${category}`;
 	}
 
-	// v3.2 §3: menú centrado bajo un filete. Redes y Reddit siguen accesibles desde
-	// "Todo lo revisado" al pie de cada edición.
+	// v3.2 §3: menú centrado bajo un filete. Redes entra al menú (Hiram, 20 nov): solo
+	// se encontraba en "Todo lo revisado" al pie de cada edición.
 	$: items = [
 		{ label: 'Inicio', short: 'Inicio', href: '/', active: pathname === '/' && !categoryParam },
 		{ label: 'Noticias', short: 'Noticias', href: categoryHref('news'), active: categoryParam === 'news' },
@@ -23,6 +23,7 @@
 			href: categoryHref('research'),
 			active: categoryParam === 'research'
 		},
+		{ label: 'Redes', short: 'Redes', href: categoryHref('social'), active: categoryParam === 'social' },
 		{ label: 'Archivo', short: 'Archivo', href: '/archive', active: pathname === '/archive' },
 		{ label: 'La semana en identidad', short: 'La semana', href: '/archive#semana', active: false },
 		{ label: 'Acerca de', short: 'Acerca de', href: '/about', active: pathname === '/about' }

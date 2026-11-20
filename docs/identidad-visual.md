@@ -34,7 +34,7 @@ Autoalojada con `@fontsource` (la CSP del sitio solo permite fuentes propias):
 
 ## Layout y componentes
 
-- Cabecera clara, sin barra negra: nombre centrado, menú centrado bajo un filete, accesos discretos (RSS, Buscar y el icono de tema). El menú es sticky y siempre opaco.
+- Cabecera clara, sin barra negra: nombre centrado, menú centrado bajo un filete (Inicio, Noticias, Investigación y estándares, Redes, Archivo, La semana en identidad, Acerca de), accesos discretos (RSS, Buscar y el icono de tema). El menú es sticky y siempre opaco.
 - **Friso** del diario: imagen 21:9 a todo el ancho, con alto proporcional al ancho (`clamp(210px, 36vw, 58vh)`: unos 550px en 1080p, 210px en móvil), entre doble filete. La composición deja cabezas y objetos clave en el 60 % central de la altura, y el recorte vertical sigue la cabeza del sujeto (`foco_y` de la revisión visual). Un solo paneo al cargar que termina en el punto focal; sin animación con `prefers-reduced-motion`.
 - Crédito tipo museo bajo cada imagen: motivo, técnica, modelo y fecha.
 - "En 60 segundos" con rombos dorados.
