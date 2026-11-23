@@ -840,9 +840,18 @@ Snippet: {self._clip_context_text(item.content, 300)}...
 
         logger.info(f"Analyzing {len(items)} news articles with map-reduce")
 
-        # Phase 0a: Fast keyword pre-filter
-        keyword_filtered = [item for item in items if self._has_ai_keywords(item)]
-        logger.info(f"Keyword filter: {len(items)} -> {len(keyword_filtered)} AI articles")
+        # Phase 0a: sin prefiltro de palabras de IA (23 nov). El filtro heredado del
+        # proyecto original pedía una palabra de IA en inglés ("ai", "llm"...) y tiró
+        # 104 de 273 noticias antes de Haiku, entre ellas Meta Muse secuestrado con
+        # una página web. El criterio de identidad ya lo aplican filtro=identidad al
+        # recolectar y el filtro de Haiku (config/prompts.yaml, news.filter).
+        # NEWS_AI_KEYWORD_PREFILTER=1 lo vuelve a activar.
+        if os.getenv("NEWS_AI_KEYWORD_PREFILTER", "").strip().lower() in {"1", "true", "yes"}:
+            keyword_filtered = [item for item in items if self._has_ai_keywords(item)]
+            logger.info(f"Keyword filter: {len(items)} -> {len(keyword_filtered)} AI articles")
+        else:
+            keyword_filtered = list(items)
+            logger.info(f"Keyword prefilter off: {len(items)} articles go to the relevance filter")
 
         if not keyword_filtered:
             logger.warning("No AI-relevant articles found after keyword filter")

@@ -16,8 +16,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
-from .llm_client import AnthropicClient, AsyncAnthropicClient, AsyncLLMRouter, ThinkingLevel, LLMResponse
-from .edition_notes import Edition, apply_edits, build_edition
+from .llm_client import AnthropicClient, AsyncAnthropicClient, AsyncLLMRouter, ThinkingLevel, LLMResponse, attempt_timeout
+from .edition_notes import Edition, _edition_timeout, apply_edits, build_edition
 from .base import (
     BaseGatherer, BaseAnalyzer, CollectedItem, AnalyzedItem,
     CategoryReport, CategoryTheme, deduplicate_items, extract_json_str,
@@ -2149,13 +2149,16 @@ RELEASE-DATE GROUNDING (mandatory check for any topic that names or implies a mo
         )
 
         try:
-            response = await self.async_client.call_with_thinking(
-                messages=[{"role": "user", "content": user_message}],
-                system=system_prompt,
-                profile=ThinkingLevel.ULTRATHINK,
-                caller="orchestrator.topics",
-                full_output_budget=True,
-            )
+            # 23 nov: el resumen agotó 600 s solo pensando; mismo tope por intento
+            # que las notas de la edición (EDITION_LLM_TIMEOUT_SECONDS, 1200 s).
+            with attempt_timeout(_edition_timeout()):
+                response = await self.async_client.call_with_thinking(
+                    messages=[{"role": "user", "content": user_message}],
+                    system=system_prompt,
+                    profile=ThinkingLevel.ULTRATHINK,
+                    caller="orchestrator.topics",
+                    full_output_budget=True,
+                )
 
             if response.stop_reason == "max_tokens":
                 logger.error(
@@ -2300,13 +2303,16 @@ The summary should help a busy professional quickly scan and understand what's N
         )
 
         try:
-            response = await self.async_client.call_with_thinking(
-                messages=[{"role": "user", "content": user_message}],
-                system=system_prompt,
-                profile=ThinkingLevel.DEEP,
-                caller="orchestrator.summary",
-                full_output_budget=True,
-            )
+            # 23 nov: el resumen agotó 600 s solo pensando; mismo tope por intento
+            # que las notas de la edición (EDITION_LLM_TIMEOUT_SECONDS, 1200 s).
+            with attempt_timeout(_edition_timeout()):
+                response = await self.async_client.call_with_thinking(
+                    messages=[{"role": "user", "content": user_message}],
+                    system=system_prompt,
+                    profile=ThinkingLevel.DEEP,
+                    caller="orchestrator.summary",
+                    full_output_budget=True,
+                )
 
             if response.stop_reason == "max_tokens":
                 logger.error(

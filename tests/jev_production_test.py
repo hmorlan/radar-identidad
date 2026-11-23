@@ -108,6 +108,9 @@ class JevProductionTests(unittest.IsolatedAsyncioTestCase):
         with patch.dict("os.environ", {"NEWS_RELEVANCE_PROVIDER": "typesafe"}):
             analyzer = NewsAnalyzer(async_client=client)
         capture = []
+        # El prefiltro de palabras de IA está apagado por defecto (23 nov); esta
+        # prueba ejercita el modo heredado.
+        self.enterContext(patch.dict("os.environ", {"NEWS_AI_KEYWORD_PREFILTER": "1"}))
         async def evaluate(records):
             capture.extend(records)
             return {"status": "complete", "decisions": [{"id": row["id"], "effective_keep": False}
