@@ -1,6 +1,6 @@
 {
   "date": "2026-11-23",
-  "motivo": "Revisión editorial del 23 nov (Fable 5.2), verificada por Claude: fechas de fuente corridas un día por zona horaria (notas I y III); «Qué pasó» de BundID cortado a media frase; Citi repetida de la edición del 20 nov sin marcar como seguimiento; nota del IETF etiquetada como verificada con solo el aviso del feed; enlace de la intrusión en el FBI atribuido a quien no lo publicó; sección «Regulación y Latinoamérica» sin notas de la región; tema sin sujeto; nota de 404 Media sin la vía de Bluesky; título de quishing que atribuía a Argentina casos que el artículo no documenta; texto alternativo de la imagen que no corresponde a la imagen; nombres de fuente crudos.",
+  "motivo": "Revisión editorial del 23 nov (Fable 5.2), verificada por Claude: fechas de fuente corridas un día por zona horaria (notas I y III); «Qué pasó» de BundID cortado a media frase; Citi repetida de la edición del 20 nov sin marcar como seguimiento; nota del IETF etiquetada como verificada con solo el aviso del feed; enlace de la intrusión en el FBI atribuido a quien no lo publicó; sección «Regulación y Latinoamérica» sin notas de la región; tema sin sujeto; nota de 404 Media sin la vía de Bluesky; título de quishing que atribuía a Argentina casos que el artículo no documenta; texto alternativo de la imagen que no corresponde a la imagen; nombres de fuente crudos. Segunda reparación (23 nov, comparación con el Daily Brief): la nota VIII (explicativo de quishing, que la revisión consideró que no entraba sola) se sustituye por la demostración de NebuSec sobre Meta Muse (The Hacker News, 21 nov), que el prefiltro heredado de palabras de IA descartó antes del triage; el resumen ejecutivo la menciona en el apartado de Meta.",
   "fuentes": [
     "Texto de la fuente guardado por el pipeline (news.json, social.json, research.json, replay-prompts.json.gz de la corrida 45152133075); las páginas en vivo no pudieron leerse en esta verificación (WebFetch sin permiso en la corrida programada)",
     "https://www.bleepingcomputer.com/news/security/microsoft-entra-connect-health-flaw-exploited-to-steal-tenant-data/ (publicado 2026-11-21T18:01:58 UTC = 21 nov, 13:01 ET)",
@@ -11,7 +11,8 @@
     "https://bsky.app/profile/404media.co/post/3n2wrigc73l2t (2026-11-22T23:30:26 UTC)",
     "https://www.lanacion.com.ar/tecnologia/la-nueva-estafa-del-qr-en-restaurantes-como-funciona-y-como-no-caer-en-noviembre-de-2026-nid19112026/",
     "https://datatracker.ietf.org/doc/draft-shankarlingam-oauth-agent-dns-link/ (el pipeline solo tuvo «New version available: draft-shankarlingam-oauth-agent-dns-link-03.txt»)",
-    "/data/2026-11-23/hero-light.jpg (revisión visual)"
+    "/data/2026-11-23/hero-light.jpg (revisión visual)",
+    "https://thehackernews.com/2026/11/a-single-malicious-webpage-let.html (leída el 23 nov: demostración de laboratorio de NebuSec; según la firma, Meta corrigió las fallas antes de publicar; Meta no lo ha confirmado)"
   ],
   "reemplazos": [
     {
@@ -85,6 +86,13 @@
       "archivos": [
         "summary.json"
       ]
+    },
+    {
+      "antes": "los bloqueos automáticos de la plataforma.\n- **Citi**",
+      "archivos": [
+        "summary.json"
+      ],
+      "despues": "los bloqueos automáticos de la plataforma. Además, según The Hacker News, la firma NebuSec mostró en laboratorio que una sola página web maliciosa podía [sacar de Muse las conversaciones y memorias](https://thehackernews.com/2026/11/a-single-malicious-webpage-let.html) de un usuario sin pedir aprobación, y que el ataque podía llegar a las credenciales de sus cuentas conectadas; NebuSec dice que Meta ya lo corrigió, algo que Meta no ha confirmado públicamente.\n- **Citi**"
     }
   ],
   "notas": {
@@ -110,8 +118,17 @@
       "por_que_importa": "Por su título, apuntaría a dar a quien expone APIs o canales digitales una forma de saber qué agente hay detrás de un cliente OAuth, en lugar de inferirlo por su comportamiento, y a decidir de forma explícita a qué agentes se da acceso. Es un borrador individual, no un estándar, y esta nota se escribió con el aviso del feed, sin revisar el texto del borrador; conviene seguirlo entre las propuestas que buscan dar a los agentes una identidad verificable."
     },
     "5bdb0478b00d": {
-      "titulo": "La Nación explica el quishing en restaurantes: QR falsos pegados sobre los originales",
-      "que_paso": "La Nación explica una modalidad de quishing en restaurantes y bares: los estafadores pegan etiquetas con códigos QR maliciosos sobre los originales, y quien los escanea llega a páginas falsas que buscan robar datos personales y bancarios o instalar software dañino. El artículo no documenta casos concretos en Argentina. Cita datos de Microsoft según los cuales el phishing con códigos QR creció un 146% entre enero y marzo de 2026, y un caso de agosto en España, atribuido a «fuentes de ciberseguridad» sin nombrarlas, en el que un cliente que escaneó un menú digital terminó con una suscripción premium que no había autorizado."
+      "titulo": "Una página web maliciosa bastó para secuestrar el agente Muse de Meta y sacar chats privados, según investigadores",
+      "url": "https://thehackernews.com/2026/11/a-single-malicious-webpage-let.html",
+      "source": "The Hacker News",
+      "published": "2026-11-21",
+      "via": null,
+      "fecha_tipo": "publicacion",
+      "que_paso": "Según The Hacker News, la firma de seguridad NebuSec mostró que una página web maliciosa abierta por Muse, el agente personal de Meta, podía enviar a un servidor externo el historial de conversaciones y las memorias guardadas del usuario, y alterarlas, sin que apareciera ninguna solicitud de aprobación. Al encadenar una falla del navegador integrado del agente con otra del kernel de Linux, los investigadores tomaron el control de la máquina en la nube de ese usuario, incluido su almacén de credenciales. Fue una demostración de laboratorio limitada a la máquina de un usuario. NebuSec dice que todas las fallas se corrigieron antes de publicar; Meta no lo ha confirmado.",
+      "por_que_importa": "El navegador que hace útil al agente es también su puerta de entrada: lo que el agente lee en la web puede terminar actuando con los permisos que el usuario le dio. Según el artículo, el ataque podía extenderse a las credenciales de las cuentas conectadas, que en teoría quedaban fuera del alcance del agente. Para quien conecta agentes a correo, pagos o redes, aprobar cada acción no basta si el contenido que el agente procesa puede saltarse la aprobación; también cuentan el aislamiento de su navegador, qué credenciales guarda y cómo se revocan.",
+      "pregunta_de_fondo": "Si una página que visita el agente puede actuar con nuestros permisos, ¿quién decide qué contenido es confiable para un agente?",
+      "senal": "media",
+      "verificacion": "verificada"
     }
   }
 }
