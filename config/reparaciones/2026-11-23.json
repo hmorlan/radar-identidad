@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-23",
+  "motivo": "Revisión editorial del 23 nov (Fable 5.2), verificada por Claude: fechas de fuente corridas un día por zona horaria (notas I y III); «Qué pasó» de BundID cortado a media frase; Citi repetida de la edición del 20 nov sin marcar como seguimiento; nota del IETF etiquetada como verificada con solo el aviso del feed; enlace de la intrusión en el FBI atribuido a quien no lo publicó; sección «Regulación y Latinoamérica» sin notas de la región; tema sin sujeto; nota de 404 Media sin la vía de Bluesky; título de quishing que atribuía a Argentina casos que el artículo no documenta; texto alternativo de la imagen que no corresponde a la imagen; nombres de fuente crudos.",
+  "fuentes": [
+    "Texto de la fuente guardado por el pipeline (news.json, social.json, research.json, replay-prompts.json.gz de la corrida 45152133075); las páginas en vivo no pudieron leerse en esta verificación (WebFetch sin permiso en la corrida programada)",
+    "https://www.bleepingcomputer.com/news/security/microsoft-entra-connect-health-flaw-exploited-to-steal-tenant-data/ (publicado 2026-11-21T18:01:58 UTC = 21 nov, 13:01 ET)",
+    "https://www.pymnts.com/news/artificial-intelligence/2026/citi-cautions-customers-against-using-third-party-ai-agents/ (publicado 2026-11-20T22:33:55 UTC)",
+    "https://www.biometricupdate.com/202611/bundid-attack-hits-germanys-weakest-login-route-locking-out-legitimate-users (texto guardado completo: «nine incorrect entries disable the password route…»; «at least 10,000 accounts had been affected»)",
+    "https://techcrunch.com/2026/11/18/more-banks-says-customers-using-ai-agents-are-on-their-own-even-if-they-get-hacked/ (nota 8dd6e877e1ed de la edición del 20 nov)",
+    "https://www.securityweek.com/fbi-investigating-apparent-hack-of-its-key-national-criminal-justice-database-ap-source-says/ (autor: Associated Press)",
+    "https://bsky.app/profile/404media.co/post/3n2wrigc73l2t (2026-11-22T23:30:26 UTC)",
+    "https://www.lanacion.com.ar/tecnologia/la-nueva-estafa-del-qr-en-restaurantes-como-funciona-y-como-no-caer-en-noviembre-de-2026-nid19112026/",
+    "https://datatracker.ietf.org/doc/draft-shankarlingam-oauth-agent-dns-link/ (el pipeline solo tuvo «New version available: draft-shankarlingam-oauth-agent-dns-link-03.txt»)",
+    "/data/2026-11-23/hero-light.jpg (revisión visual)"
+  ],
+  "reemplazos": [
+    {
+      "antes": "Page 2 – Biometric Update",
+      "despues": "Biometric Update"
+    },
+    {
+      "antes": "SCM feed for Latest",
+      "despues": "SC Media"
+    },
+    {
+      "antes": "Security News | TechCrunch",
+      "despues": "TechCrunch"
+    },
+    {
+      "antes": "www.theregister.com - Articles",
+      "despues": "The Register"
+    },
+    {
+      "antes": "Lo último",
+      "despues": "El Economista",
+      "archivos": [
+        "news.json"
+      ]
+    },
+    {
+      "antes": "en su banca web, con lo que la postura restrictiva ya reseñada pasa a figurar en las condiciones del servicio.",
+      "despues": "en su banca web, un cambio ya reseñado el 20 de noviembre; PYMNTS detalla además que el banco puede cortar el acceso de esos agentes y que deja fuera de estas reglas a los suyos.",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "Zack Whittaker y Risky Bulletin suman [una nueva intrusión](/?date=2026-11-23&category=news#item-873cf6c005d7) en el **FBI** y [un incidente de seguridad](/?date=2026-11-23&category=social#item-90707c2a750e) en el **USDA**.",
+      "despues": "Según una fuente citada por AP, el **FBI** investiga [un aparente hackeo](/?date=2026-11-23&category=news#item-873cf6c005d7) de su base de datos nacional de justicia penal, y Risky Bulletin recoge [un incidente de seguridad](/?date=2026-11-23&category=social#item-90707c2a750e) en el **USDA**.",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "mientras Zack Whittaker y Risky Bulletin suman una [nueva intrusión en el FBI](/?date=2026-11-23&category=news#item-873cf6c005d7) y un [incidente de seguridad en el USDA](/?date=2026-11-23&category=social#item-90707c2a750e).",
+      "despues": "mientras, según una fuente citada por AP, el FBI investiga un [aparente hackeo de su base de datos de justicia penal](/?date=2026-11-23&category=news#item-873cf6c005d7), y Risky Bulletin recoge un [incidente de seguridad en el USDA](/?date=2026-11-23&category=social#item-90707c2a750e).",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "#### Regulación y Latinoamérica",
+      "despues": "#### Incidentes, fraude y regulación",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "Según PYMNTS, [actualizó su acuerdo de usuario]",
+      "despues": "Según PYMNTS, Citi [actualizó su acuerdo de usuario]",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "textos de investigación de esta edición son borradores",
+      "despues": "textos de investigación destacados de esta edición son borradores",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "Un caballo de madera ante una puerta de ciudad recibe, a través de un mensajero de bronce que entrega una carta sellada a un guardia, un hilo de fibra óptica que llega a su costado, donde una rejilla de teselas de microchip deja ver el contorno de un certificado caducado.",
+      "despues": "Mosaico romano: un caballo de madera sobre ruedas, con un microchip dorado en el costado del que salen grietas de oro como circuitos, está unido por un hilo de oro a un hombre en túnica que entrega una carta sellada a un soldado con casco ante la puerta de una ciudad amurallada.",
+      "archivos": [
+        "summary.json"
+      ]
+    }
+  ],
+  "notas": {
+    "e1609be27b50": {
+      "published": "2026-11-21"
+    },
+    "041e8d611418": {
+      "que_paso": "La Oficina Federal de Seguridad de la Información (BSI) confirmó el lunes 16 de noviembre un ataque contra BundID, la cuenta ciudadana federal de Alemania. Según la agencia Anadolu, se probaron combinaciones de usuario y contraseña filtradas de otros servicios, y según dpa no hay evidencia de acceso a perfiles ni de robo de datos. Ese lunes las autoridades cortaron el acceso con usuario y contraseña y lo reabrieron por la tarde con un código enviado al correo; el acceso con la identificación en línea del documento nacional y con ELSTER siguió funcionando. Como nueve intentos fallidos desactivan el acceso con contraseña y obligan a restablecerla, la ola de intentos bloqueó a titulares legítimos: el 18 de noviembre el Ministerio Digital cifró en al menos 10.000 las cuentas afectadas."
+    },
+    "2d17d98d3888": {
+      "published": "2026-11-20",
+      "que_paso": "Seguimiento de la edición del 20 de noviembre. Según PYMNTS, Citi añadió este mes a su acuerdo de usuario de banca en línea y móvil una sección que desaconseja usar agentes de IA de terceros. Si el cliente les entrega sus credenciales o les permite operar, el banco considerará autorizados por él todos los accesos y acciones del agente, incluso si las credenciales se filtran, si el agente contradice sus instrucciones o si excede la autoridad recibida. Citi se reserva el derecho de cortar en cualquier momento el acceso de esos agentes, advierte que no controla lo que hacen con los datos del usuario y deja fuera de estas reglas a los agentes que ofrece en Citi Online y Citi Mobile."
+    },
+    "d782581324d0": {
+      "via": {
+        "source": "Bluesky (404 Media)",
+        "url": "https://bsky.app/profile/404media.co/post/3n2wrigc73l2t",
+        "published": "2026-11-22"
+      }
+    },
+    "893fa7e47d9d": {
+      "verificacion": "sin_verificar",
+      "por_que_importa": "Por su título, apuntaría a dar a quien expone APIs o canales digitales una forma de saber qué agente hay detrás de un cliente OAuth, en lugar de inferirlo por su comportamiento, y a decidir de forma explícita a qué agentes se da acceso. Es un borrador individual, no un estándar, y esta nota se escribió con el aviso del feed, sin revisar el texto del borrador; conviene seguirlo entre las propuestas que buscan dar a los agentes una identidad verificable."
+    },
+    "5bdb0478b00d": {
+      "titulo": "La Nación explica el quishing en restaurantes: QR falsos pegados sobre los originales",
+      "que_paso": "La Nación explica una modalidad de quishing en restaurantes y bares: los estafadores pegan etiquetas con códigos QR maliciosos sobre los originales, y quien los escanea llega a páginas falsas que buscan robar datos personales y bancarios o instalar software dañino. El artículo no documenta casos concretos en Argentina. Cita datos de Microsoft según los cuales el phishing con códigos QR creció un 146% entre enero y marzo de 2026, y un caso de agosto en España, atribuido a «fuentes de ciberseguridad» sin nombrarlas, en el que un cliente que escaneó un menú digital terminó con una suscripción premium que no había autorizado."
+    }
+  }
+}
