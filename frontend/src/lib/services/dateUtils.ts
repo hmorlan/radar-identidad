@@ -97,7 +97,10 @@ export const isSameDay = dateFnsIsSameDay;
  * Format relative time (e.g., "2 hours ago")
  */
 export function formatRelativeTime(dateStr: string): string {
-	const date = parseDate(dateStr);
+	// 23 nov: las horas del pipeline vienen en UTC sin zona; sin la "Z" se leían
+	// como hora local y en CDMX la nota parecía 6 horas más reciente.
+	const naive = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(dateStr || '');
+	const date = parseDate(naive ? `${dateStr}Z` : dateStr);
 	if (!date) return '';
 
 	const now = new Date();

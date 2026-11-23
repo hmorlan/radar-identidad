@@ -20,6 +20,7 @@ from pathlib import Path
 import nh3
 
 from generators.source_names import clean_source
+from generators import social_filter
 
 logger = logging.getLogger(__name__)
 
@@ -206,6 +207,12 @@ class JSONGenerator:
             senal = text(raw.get('senal'), 10).lower()
             if senal not in ('baja', 'media', 'alta'):
                 continue
+            via = None
+            raw_via = raw.get('via')
+            if isinstance(raw_via, dict) and _safe_url(raw_via.get('url')):
+                via = {'url': _safe_url(raw_via.get('url')),
+                       'source': text(raw_via.get('source'), 120),
+                       'published': text(raw_via.get('published'), 40)}
             notes.append({
                 'item_id': text(raw.get('item_id'), 40),
                 'category': text(raw.get('category'), 20),
@@ -218,6 +225,10 @@ class JSONGenerator:
                 'pregunta_de_fondo': text(raw.get('pregunta_de_fondo'), 400) or None,
                 'senal': senal,
                 'verificacion': text(raw.get('verificacion'), 20) or 'sin_verificar',
+                # 23 nov: la nota que llega por una red guarda la vía (post y fecha);
+                # antes se perdía aquí y el sitio nunca la mostraba.
+                'via': via,
+                'fecha_tipo': text(raw.get('fecha_tipo'), 20) or 'publicacion',
             })
         return {'titular': text(edition.get('titular'), 200), 'notas': notes}
 
@@ -228,13 +239,14 @@ class JSONGenerator:
         # Build category summaries with only top items
         categories = {}
         for category, report in category_reports.items():
-            top_items = report.get('top_items', [])[:10]
+            all_items, themes = self._published(category, report)
+            top_items = self._published(category, {'all_items': report.get('top_items', [])})[0][:10]
             category_summary = report.get('category_summary', '')
             categories[category] = {
-                'count': len(report.get('all_items', [])),
+                'count': len(all_items),
                 'category_summary': category_summary,
                 'category_summary_html': self._markdown_to_html(category_summary),
-                'themes': report.get('themes', []),
+                'themes': themes,
                 'top_items': self._simplify_items(top_items)
             }
 
@@ -283,13 +295,27 @@ class JSONGenerator:
         self._write_json(output_path, summary)
         logger.info(f"Generated summary.json ({self._file_size_kb(output_path)} KB)")
 
+    @staticmethod
+    def _published(category: str, report: Dict[str, Any]):
+        """Entradas y temas que se publican. En Redes se deja fuera lo ajeno al
+        radar, lo de puntaje mínimo y los posts sin texto (generators/social_filter.py)."""
+        items = report.get('all_items', []) or []
+        themes = report.get('themes', []) or []
+        if category != 'social':
+            return items, themes
+        kept = social_filter.publishable(items)
+        if len(kept) != len(items):
+            logger.info("Redes: %s de %s entradas se publican (ajenas, puntaje bajo o sin texto)",
+                        len(kept), len(items))
+        return kept, social_filter.publishable_themes(themes)
+
     def _generate_category_files(self, date_dir: str, result: Dict[str, Any]) -> None:
         """Generate individual category JSON files."""
         category_reports = result.get('category_reports', {})
         report_date = result.get('date', '')
 
         for category, report in category_reports.items():
-            all_items = report.get('all_items', [])
+            all_items, themes = self._published(category, report)
             category_summary = report.get('category_summary', '')
 
             category_data = {
@@ -297,7 +323,7 @@ class JSONGenerator:
                 'date': report_date,
                 'category_summary': category_summary,
                 'category_summary_html': self._markdown_to_html(category_summary),
-                'themes': report.get('themes', []),
+                'themes': themes,
                 'total_items': len(all_items),
                 'items': self._simplify_items(all_items)
             }

@@ -32,9 +32,20 @@ export function host(url: string): string {
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
-/** "10 nov 2026" a partir de una fecha ISO; vacío si no se puede leer. */
+/** "10 nov 2026" a partir de una fecha ISO; vacío si no se puede leer.
+ *
+ * 23 nov: el pipeline guarda la hora en UTC y sin zona ("2026-11-21T18:01:58").
+ * `new Date()` la leía como hora local y luego la imprimía en UTC, así que en
+ * Ciudad de México la nota salía un día después. Si la cadena empieza con
+ * AAAA-MM-DD se usan esos tres números tal cual, sin pasar por ninguna zona. */
 export function shortDate(iso: string | undefined | null): string {
 	if (!iso) return '';
+	const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso.trim());
+	if (m) {
+		const mes = Number(m[2]) - 1;
+		if (mes < 0 || mes > 11) return '';
+		return `${Number(m[3])} ${MESES[mes]} ${m[1]}`;
+	}
 	const d = new Date(iso);
 	if (Number.isNaN(d.getTime())) return '';
 	return `${d.getUTCDate()} ${MESES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;

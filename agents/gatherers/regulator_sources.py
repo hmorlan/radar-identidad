@@ -187,6 +187,32 @@ def is_press_wire(title: str) -> bool:
     return bool(PRESS_WIRE_RE.search(title or ""))
 
 
+# 23 nov (revisión de Instinct, P5): el sitio promete no usar comunicados de
+# proveedores y aun así entraron dos por Google News: mEinstein (comunicado en
+# metrowestdailynews.com/press-release/...) y la Agentic AI Foundation vía
+# TradersUnion. El título no siempre lo delata; la URL ya resuelta, sí.
+PRESS_RELEASE_HOSTS = (
+    "openpr.com", "einpresswire.com", "prnewswire.com", "globenewswire.com", "businesswire.com",
+    "accesswire.com", "accessnewswire.com", "newsfilecorp.com", "prweb.com", "prlog.org",
+    "issuewire.com", "newswire.com", "tradersunion.com", "explainx.ai",
+)
+PRESS_RELEASE_PATH_RE = re.compile(
+    r"/(?:press-?releases?|news-?releases?|pressemitteilung|sponsored|partner-content|brandpost)(?:/|-|$)", re.I)
+
+
+def is_press_release_url(url: str) -> bool:
+    """URL de un comunicado o nota pagada: agencia de comunicados, agregador que solo
+    republica titulares, o ruta /press-release/ dentro de un medio."""
+    try:
+        parsed = urllib.parse.urlparse(url or "")
+    except ValueError:
+        return False
+    host = (parsed.hostname or "").lower()
+    if any(host == h or host.endswith("." + h) for h in PRESS_RELEASE_HOSTS):
+        return True
+    return bool(PRESS_RELEASE_PATH_RE.search(parsed.path or ""))
+
+
 def _on_topic(title: str, spec: "RegulatorSpec") -> bool:
     """Reguladores: TOPIC_RE (amplio, sus notas ya son del tema). Empresas e
     iniciativas observadas: el filtro de identidad estricto, porque con TOPIC_RE
@@ -421,6 +447,11 @@ def collect(
             time.sleep(pause)
             if not url:
                 logger.info(f"Reguladores: sin enlace original, se omite: {clean_title(title)[:80]}")
+                continue
+            # Los reguladores sí pueden ser fuente de su propio comunicado; las
+            # empresas observadas, no (regla de agnosticismo de proveedores).
+            if spec.query and is_press_release_url(url):
+                logger.info(f"Empresas: comunicado o nota pagada, se omite: {url[:100]}")
                 continue
             if url in seen_urls or (seen and seen.seen_before(url, today)):
                 continue

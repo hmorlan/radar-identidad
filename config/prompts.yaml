@@ -122,6 +122,7 @@ analysis:
       - **Negritas** solo para organizaciones, estándares y cifras clave.
       - Viñetas (- ) para desarrollos relacionados; máximo 2-3 párrafos cortos o su equivalente.
       - Las afirmaciones de una empresa se atribuyen ("según la empresa").
+      - No subas el nivel de certeza de la fuente ni del análisis: conserva «aparente», «presuntamente», «según», «podría» y «sin confirmar» tal como vienen. Si la fuente atribuye o duda, el resumen también.
 
     # Variables: ${analysis_summary}
     ranking: |
@@ -157,6 +158,7 @@ analysis:
       - Viñetas (- ) para desarrollos relacionados, agrupados por tema.
       - Frases de menos de 30 palabras; máximo 2-3 párrafos cortos o su equivalente.
       - Las afirmaciones de una empresa se atribuyen ("según la empresa"). No compares ni recomiendes proveedores.
+      - No subas el nivel de certeza de la fuente ni del análisis: conserva «aparente», «presuntamente», «según», «podría» y «sin confirmar» tal como vienen. Si la fuente atribuye o duda, el resumen también.
 
   # -------------------------
   # INVESTIGACIÓN Y ESTÁNDARES
@@ -214,6 +216,7 @@ analysis:
       - **Negritas** para estándares, organismos y cifras clave.
       - Viñetas (- ) por tema; máximo 2-3 párrafos cortos o su equivalente.
       - Los textos de autor se citan como opinión, por nombre del autor.
+      - No subas el nivel de certeza de la fuente: un borrador es un borrador y una propuesta académica no es un estándar; conserva «propone», «podría» y «según».
 
   # -------------------------
   # REDES (Mastodon, Bluesky)
@@ -223,7 +226,7 @@ analysis:
     batch_analysis: |
       Eres analista de un radar en español sobre identidad digital y confianza. Analiza estas publicaciones en redes (lote ${batch_index} de ${total_batches}).
 
-      Puntúa según la regla de entrada (¿cambia cómo decidimos en quién o en qué confiar?): alto si aporta un hecho nuevo o un análisis original sobre identidad, autenticación, fraude o agentes de IA; bajo si es promoción, opinión sin sustento o tema ajeno.
+      Puntúa según la regla de entrada (¿cambia cómo decidimos en quién o en qué confiar?), en esta escala: 70-100 aporta un hecho nuevo o un análisis original sobre identidad, autenticación, fraude o agentes de IA; 40-69 incidente, privacidad o regulación con algún ángulo de identidad; 20-39 promoción, opinión sin sustento o tema solo cercano; 0-19 tema ajeno al radar. Si la publicación no tiene relación con identidad, autenticación, fraude, privacidad, vigilancia ni agentes de IA (ciencia, videojuegos, consumo, política general, vacantes, avisos internos), puntúala por debajo de 20 y usa como único tema «Ajeno al radar». Esas no se publican.
 
       Para cada publicación: "summary" (1-2 frases EN ESPAÑOL), "importance_score", "reasoning" (una frase) y "themes" (1-3 temas en español). "titulo" es el título en español: traducción fiel y breve del original (si ya está en español, cópialo; conserva nombres propios, siglas y los términos de la industria en inglés como passkey, MFA, OAuth, deepfake).
 
@@ -261,7 +264,7 @@ analysis:
       }
       ```
 
-      Resumen: en español, sobrio, **negritas** para personas, organizaciones y temas clave, viñetas por conversación, máximo 2-3 párrafos cortos.
+      Resumen: en español, sobrio, **negritas** para personas, organizaciones y temas clave, viñetas por conversación, máximo 2-3 párrafos cortos. No subas el nivel de certeza de las publicaciones: lo que alguien afirma en una red se atribuye a esa persona o medio.
 
   # -------------------------
   # REDDIT (desactivado: API de pago; se conserva para que el pipeline cargue)
@@ -358,6 +361,7 @@ orchestration:
     - Tono factual y sobrio: sin exageración, sin signos de exclamación, sin "importante desarrollo" ni frases de relleno.
     - **Negritas** para organizaciones, estándares y cifras clave; #### para secciones; - para viñetas de 1-2 frases.
     - Las afirmaciones de una empresa se atribuyen ("según la empresa"). No compares ni recomiendes proveedores.
+    - No subas el nivel de certeza de la fuente: conserva «aparente», «presuntamente», «según», «podría» y «sin confirmar» tal como vienen.
     - No inventes cifras, fechas ni citas.
 
     EVITA REPETIR:
@@ -437,7 +441,11 @@ orchestration:
 
     Recibes "correcciones" (cada una con su motivo, el texto corregido y el texto de la fuente) y "textos" (campo → texto en markdown con enlaces internos). Los campos "tema_nombre:N" son títulos cortos de tema que también se publican: corrígelos igual si afirman lo que la corrección desmiente.
 
-    Tu tarea: encontrar en "textos" cada frase que contradiga una corrección o que afirme lo que una nota descartada no sostiene, y proponer el reemplazo mínimo.
+    También recibes "notas_verificadas": notas que la verificación confirmó contra su fuente.
+
+    Tu tarea:
+    1. Encontrar en "textos" cada frase que contradiga una corrección o que afirme lo que una nota descartada no sostiene, y proponer el reemplazo mínimo.
+    2. Encontrar cada frase que cuente el mismo hecho que una nota (corregida o verificada) con MÁS certeza que la nota: si la nota dice «aparente», «presuntamente», «según X», «podría», «sin confirmar» o «en evaluación», y el texto lo da por hecho, propón el reemplazo mínimo que restaure esa reserva. Ejemplo: la nota dice «hallaron y explotaron un aparente día cero» y el resumen dice «hallaron y explotaron un día cero» → añade «aparente». No toques frases que ya conservan la reserva ni las que la nota afirma sin reservas.
     - Cambia solo lo necesario para que el texto diga lo mismo que la nota corregida y su fuente. No reescribas por estilo, no resumas, no agregues hechos nuevos.
     - Conserva intactos todos los enlaces markdown [texto](/?date=…) del fragmento: el texto del enlace puede cambiar, la URL no.
     - Si una frase no tiene arreglo mínimo, reemplázala por una versión más corta que solo afirme lo que la fuente respalda.

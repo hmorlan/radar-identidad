@@ -65,22 +65,16 @@
 		margin: 0 auto;
 		padding: 12px 24px;
 	}
-	/* Móvil (§3.9): scroll horizontal sin barra visible y desvanecido al borde. */
+	/* Móvil: dos renglones centrados (23 nov). El scroll horizontal con desvanecido
+	   (§3.9) funcionaba, pero nada avisaba que había más: a 390 px quedaban ocultos
+	   Archivo, La semana y Acerca de (revisiones del 13, 20 y 23 nov). */
 	@media (max-width: 680px) {
 		ul {
-			justify-content: flex-start;
-			gap: 20px;
-			padding: 10px 16px;
-			overflow-x: auto;
-			scrollbar-width: none;
-			-webkit-mask-image: linear-gradient(90deg, #000 80%, transparent);
-			mask-image: linear-gradient(90deg, #000 80%, transparent);
-		}
-		ul::-webkit-scrollbar {
-			display: none;
-		}
-		li:last-child {
-			padding-right: 40px;
+			flex-wrap: wrap;
+			justify-content: center;
+			column-gap: 18px;
+			row-gap: 4px;
+			padding: 8px 12px;
 		}
 	}
 </style>

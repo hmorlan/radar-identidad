@@ -174,13 +174,21 @@ class CoherenceTest(NoNetwork):
         again = en.Edition.from_dict(edition.to_dict())
         self.assertEqual(again.ajustes, edition.ajustes)
 
-    def test_no_corrections_no_coherence_call(self):
+    def test_sin_correcciones_igual_revisa_el_nivel_de_certeza(self):
+        # 23 nov (Instinct, P2): el resumen de Noticias quitó el "aparente" de una
+        # nota verificada. La coherencia corre aunque no haya correcciones y recibe
+        # las notas verificadas como referencia.
         all_ok = json.dumps({"revisiones": [{"id": i, "veredicto": "verificada"} for i in ("id0", "id1", "id2")]})
-        client = FakeClient([NOTES_JSON, all_ok])
+        reply = json.dumps({"ajustes": [
+            {"campo": "executive_summary", "antes": "y deepfakes que superan la verificación",
+             "despues": "y deepfakes que, según la fuente, intentan superar la verificación", "motivo": "certeza"}]})
+        client = FakeClient([NOTES_JSON, all_ok, reply])
         edition = asyncio.run(en.build_edition(client, FakePrompts(), _reports(), "2026-11-06",
                                                derived=dict(self.DERIVED)))
-        self.assertEqual(len(client.calls), 2)
-        self.assertEqual(edition.ajustes, [])
+        self.assertEqual(len(client.calls), 3)
+        self.assertEqual(client.calls[-1]["caller"], "orchestrator.edition_coherence")
+        self.assertIn("notas_verificadas", json.dumps(client.calls[-1]["messages"], ensure_ascii=False))
+        self.assertEqual(len(edition.ajustes), 1)
 
     def test_failed_coherence_degrades_without_losing_notes(self):
         client = FakeClient([NOTES_JSON, CHECK_JSON, RuntimeError("caído")])

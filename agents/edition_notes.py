@@ -441,7 +441,11 @@ _MD_LINK = re.compile(r"\]\(([^)\s]+)\)")
 
 
 def needs_coherence(edition: Edition) -> bool:
-    return bool(edition.descartadas) or any(n.verificacion == "corregida" for n in edition.notas)
+    # 23 nov (revisión de Instinct, P2): también sin correcciones. El resumen de
+    # Noticias afirmó "hallaron y explotaron un día cero" donde la nota verificada
+    # y la fuente decían "aparente"; la coherencia ahora revisa el nivel de certeza
+    # contra las notas verificadas (Haiku, una llamada corta).
+    return bool(edition.notas) or bool(edition.descartadas)
 
 
 def coherence_context(edition: Edition, by_id: Dict[str, Tuple[str, AnalyzedItem]],
@@ -464,8 +468,12 @@ def coherence_context(edition: Edition, by_id: Dict[str, Tuple[str, AnalyzedItem
             "titulo_descartado": d.get("titulo", ""),
             "fuente": source_text(it, CONTENT_CLIP * 2) if it else "",
         })
+    referencias = [
+        {"id": n.item_id, "titulo": n.title, "que_paso": n.que_paso}
+        for n in edition.notas if n.verificacion == "verificada"
+    ]
     textos = {TITULAR_FIELD: edition.titular, **derived}
-    return json.dumps({"correcciones": corrections,
+    return json.dumps({"correcciones": corrections, "notas_verificadas": referencias,
                        "textos": {k: v for k, v in textos.items() if v}},
                       ensure_ascii=False, indent=1)
 
