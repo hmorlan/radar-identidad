@@ -1,0 +1,198 @@
+{
+  "date": "2026-11-25",
+  "motivo": "Revisión editorial del 25 nov (Fable 5.2), verificada por Claude contra el texto completo de las 8 fuentes: el resumen ejecutivo negaba un vínculo entre Dragos y OpenRouter que la propia fuente menciona; la carta del Congreso aparecía dos veces (The Record y el post de Krebs); el dato de Entra se presentaba como novedad cuando ya estaba en la edición del 23; la sección «Regulación y Latinoamérica» no mencionaba la nota de Reniec; el resumen de la ley de Vietnam omitía el alcance (transacciones de alto riesgo) y la fecha (1 jul 2027); la campaña de phishing por Signal se atribuía a una investigación de CORRECTIV de marzo; prefijos de seguimiento en inglés con «yesterday»; frase huérfana en Noticias; reserva y desmentido omitidos en Inception; matiz omitido en AAuth; cifra de PORTA mal relacionada; reglamento pendiente de Reniec; fecha y nombre de fuente de El Economista; nombres de fuente crudos, autor genérico en inglés y comentarios internos visibles; una entrada de Teletica atribuida sin base al Banco de Costa Rica; grafías poscuánticos y antibots.",
+  "fuentes": [
+    "Artefacto fuentes de la corrida 45590946873 (texto completo de las 8 notas)",
+    "https://ciberseguridadlatam.com/tres-proveedores-de-ia-expusieron-prompts-durante-meses-incluidos-los-marcados-como-no-almacenables/ («OpenRouter, mencionado en el reporte de Dragos»)",
+    "https://www.bleepingcomputer.com/news/security/openrouter-drops-ai-providers-over-leaked-prompts-and-secrets/ (solo el extracto del feed: «removed three AI providers from its platform after discovering that they had violated their stated data-handling policies and exposed sensitive data»; página no leída)",
+    "https://therecord.media/idscan-data-breach-warning-congressional-letter",
+    "https://infosec.exchange/@briankrebs/117671955631409861",
+    "https://www.biometricupdate.com/202611/vietnam-mandates-digital-id-checks-for-social-media-banking-ecommerce (texto guardado por el pipeline)",
+    "https://bsky.app/profile/campuscodi.risky.biz/post/3n32qnvhnik2v (enlaza CORRECTIV del 24 mar 2026 y Le Monde del 20 nov 2026)",
+    "https://www.bleepingcomputer.com/news/security/new-inception-extortion-gang-launches-large-scale-vishing-campaign/",
+    "https://openid.net/announcing-the-agent-auth-aauth-working-group/",
+    "https://arxiv.org/abs/2611.33015",
+    "https://gestion.pe/economia/dni-desde-tu-celular-facilidad-para-peruanos-podria-dar-tambien-este-giro-en-las-empresas-esto-dice-reniec-noticia/",
+    "https://www.eleconomista.com.mx/sectorfinanciero/bancos-estadounidenses-refuerzan-controles-sobre-agentes-ia-evitar-descontrolen-20261123-845452.html («Publicado: 23.11.2026 - 21:47»)",
+    "Edición del 23 nov (nota e1609be27b50 sobre Entra Connect Health)",
+    "https://www.teletica.com/amp/nacional/empresa-investigada-por-presunta-filtracion-de-datos-en-dark-web-niega-extraccion-masiva_421708 (el título no identifica a la empresa)"
+  ],
+  "reemplazos": [
+    {
+      "antes": "mientras que OpenRouter retiró de su plataforma a tres proveedores que, según la empresa, incumplieron sus políticas de manejo de datos; la información disponible no vincula ambos casos, pero los dos tienen que ver con cómo protegen y tratan los proveedores de IA los datos que reciben.",
+      "despues": "mientras que OpenRouter, que según CiberSeguridad Latam aparece mencionado en el reporte de Dragos, [retiró de su plataforma](https://www.bleepingcomputer.com/news/security/openrouter-drops-ai-providers-over-leaked-prompts-and-secrets/) a tres proveedores que, según BleepingComputer, incumplieron sus políticas de manejo de datos y expusieron datos sensibles.",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "Mientras tanto, según The Record, una carta bipartidista del **Congreso de EE. UU.** [insta a las empresas de verificación](/?date=2026-11-25&category=news#item-61fa563f522a) de identidad a reforzar su seguridad tras un hackeo en septiembre. Brian Krebs cuenta, por su parte, que legisladores de la Cámara y el Senado citaron sus reportajes en una carta a proveedores de escaneo de documentos de identidad, en la que les piden detalles sobre cómo recolectan, almacenan y protegen esos datos.",
+      "despues": "Según The Record, una carta bipartidista del **Congreso de EE. UU.** [insta a las empresas de verificación](/?date=2026-11-25&category=news#item-61fa563f522a) de identidad a reforzar su seguridad tras la brecha de **IDScan** de septiembre y les pide detallar cómo gestionan y protegen los datos de sus clientes; Brian Krebs, que reveló esa brecha, [afirma](/?date=2026-11-25&category=social#item-62c28f2590ce) que más de dos docenas de proveedores guardan los documentos escaneados, a menudo por defecto.",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "El mismo medio informa de una [carta bipartidista](/?date=2026-11-25&category=news#item-61fa563f522a) del Congreso de EE. UU. que insta a las empresas de verificación de identidad a reforzar su seguridad tras un hackeo en septiembre, y Brian Krebs cuenta que legisladores de ambas cámaras citaron sus reportajes al pedir a proveedores de escaneo de identificaciones detalles sobre cómo recolectan, almacenan y protegen esos datos.",
+      "despues": "El mismo medio informa de una [carta bipartidista](/?date=2026-11-25&category=news#item-61fa563f522a) del Congreso de EE. UU. que, tras la brecha de IDScan de septiembre, insta a las empresas de verificación de identidad a reforzar su seguridad y a detallar cómo gestionan y protegen los datos de sus clientes; Brian Krebs, que reveló esa brecha, afirma que más de dos docenas de proveedores guardan los documentos escaneados, a menudo por defecto.",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": ", lo que concreta qué datos de los clientes se vieron afectados; en otro caso, Radware informó",
+      "despues": ", algo que ya recogía la edición del 23 de noviembre; en otro caso, según BleepingComputer, Radware informó",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "#### Regulación y Latinoamérica\n- Según Biometric Update, la **Asamblea Nacional de Vietnam** aprobó la [Ley de Identificación y Autenticación Electrónica](/?date=2026-11-25&category=news#item-168d70439e6d), que exige verificar la identidad en redes sociales, banca y comercio electrónico.",
+      "despues": "#### Regulación y Latinoamérica\n- Según Diario Gestión, **Reniec** lanzó en Perú el [DNI digital en la billetera PerúPass](/?date=2026-11-25&category=news#item-fbda1861a84b); según su jefa, Carmen Velarde, las empresas que hoy pagan convenios para validar identidades contra su base de datos podrían usar en su lugar un validador gratuito. Reniec aún debe elaborar el reglamento que fijará cómo verificar la identidad con esta credencial.\n- Según Biometric Update, la **Asamblea Nacional de Vietnam** aprobó la [Ley de Identificación y Autenticación Electrónica](/?date=2026-11-25&category=news#item-168d70439e6d), que desde el 1 de julio de 2027 obligará a quienes hagan transacciones designadas de alto riesgo en redes sociales, banca o comercio electrónico a vincular sus cuentas a una identidad electrónica verificada.",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "Autenticación Electrónica. La ley exige verificar la identidad en redes sociales, banca y comercio electrónico.",
+      "despues": "Autenticación Electrónica. Desde el 1 de julio de 2027, quienes hagan transacciones designadas de alto riesgo en redes sociales, banca o comercio electrónico deberán vincular sus cuentas a una identidad electrónica verificada."
+    },
+    {
+      "antes": "que [exige verificar la identidad en redes sociales](/?date=2026-11-25&category=news#item-168d70439e6d), banca y comercio electrónico.",
+      "despues": "que, desde julio de 2027, [exigirá vincular a una identidad verificada](/?date=2026-11-25&category=news#item-168d70439e6d) las cuentas de redes sociales, banca y comercio electrónico usadas en transacciones de alto riesgo.",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "Una investigación de **CORRECTIV** [atribuye a actores vinculados a Rusia](/?date=2026-11-25&category=social#item-9f18bdcf39fc) una campaña de phishing contra usuarios de **Signal** y **Telegram** en la que se hacen pasar por una ONG; la publicación menciona a Frontier Blizzard, Sentry Bear y UNC5792.",
+      "despues": "En Bluesky, Catalin Cimpanu (Risky Business) [atribuye a Frontier Blizzard, Sentry Bear y UNC5792](/?date=2026-11-25&category=social#item-9f18bdcf39fc) una nueva campaña de phishing por **Signal** y **Telegram** y enlaza la cobertura de Le Monde del 20 de noviembre; la investigación de **CORRECTIV** que también cita, sobre una campaña anterior contra usuarios de Signal, es de marzo.",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "según una investigación de **CORRECTIV**, actores vinculados a Rusia [se hicieron pasar por una ONG](/?date=2026-11-25&category=social#item-9f18bdcf39fc) en una campaña de phishing contra usuarios de Signal y Telegram. La publicación cita a Frontier Blizzard, Sentry Bear y UNC5792.",
+      "despues": "Catalin Cimpanu (Risky Business) [atribuye a Frontier Blizzard, Sentry Bear y UNC5792](/?date=2026-11-25&category=social#item-9f18bdcf39fc) una nueva campaña de phishing por Signal y Telegram y enlaza la cobertura de Le Monde del 20 de noviembre; la investigación de CORRECTIV que también cita es de marzo."
+    },
+    {
+      "antes": "y una investigación de CORRECTIV atribuye a actores vinculados a Rusia [un phishing contra usuarios de Signal y Telegram](/?date=2026-11-25&category=social#item-9f18bdcf39fc) en el que se hacen pasar por una ONG.",
+      "despues": "y Catalin Cimpanu (Risky Business) atribuye a Frontier Blizzard, Sentry Bear y UNC5792 [una nueva campaña de phishing por Signal y Telegram](/?date=2026-11-25&category=social#item-9f18bdcf39fc).",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "Una investigación de CORRECTIV atribuye a Rusia una campaña de phishing contra usuarios de Signal, en la que los atacantes se hacen pasar por una ONG proucraniana para atacar a periodistas y a un diputado francés. Varios medios recogen la atribución.",
+      "despues": "Catalin Cimpanu atribuye a Frontier Blizzard, Sentry Bear y UNC5792 una nueva campaña de phishing por Telegram y Signal. Enlaza la cobertura de Le Monde (20 de noviembre) y de United24, y una investigación de CORRECTIV de marzo que vinculó con Rusia una campaña anterior contra usuarios de Signal."
+    },
+    {
+      "antes": "Also flagged in yesterday's [Social](/?date=2026-11-23&category=social#item-c16d7d501a7b) roundup, Alemania implementó",
+      "despues": "Seguimiento de [Redes](/?date=2026-11-23&category=social#item-c16d7d501a7b) del 23 de noviembre: Alemania implementó"
+    },
+    {
+      "antes": "As first reported in [News](/?date=2026-11-23&category=news#item-e1609be27b50) yesterday, Según Microsoft,",
+      "despues": "Seguimiento de [Noticias](/?date=2026-11-23&category=news#item-e1609be27b50) del 23 de noviembre. Según Microsoft,"
+    },
+    {
+      "antes": "Following yesterday's [News](/?date=2026-11-23&category=news#item-378cac7ef736) coverage, Signal",
+      "despues": "Tras la cobertura en [Noticias](/?date=2026-11-23&category=news#item-378cac7ef736) del 23 de noviembre, Signal"
+    },
+    {
+      "antes": "\nSegún el medio, [preparan marcos «know your agent»](/?date=2026-11-25&category=news#item-2e8480121fbd).",
+      "despues": "\n- Según American Banker, los bancos [planean pasar de bloquear a los agentes externos a trabajar con ellos](/?date=2026-11-25&category=news#item-2e8480121fbd) mediante marcos «know your agent»."
+    },
+    {
+      "antes": "Page 2 – Biometric Update",
+      "despues": "Biometric Update"
+    },
+    {
+      "antes": "www.theregister.com - Articles",
+      "despues": "The Register"
+    },
+    {
+      "antes": "Lo último",
+      "despues": "El Economista"
+    },
+    {
+      "antes": " La etiqueta de la fuente indica México, pero el dominio y la moneda (RD$) corresponden a República Dominicana, por lo que conviene verificar la jurisdicción.",
+      "despues": "",
+      "archivos": [
+        "news.json"
+      ]
+    },
+    {
+      "antes": " La etiqueta de la fuente indica México, pero el medio y la moneda corresponden a República Dominicana.",
+      "despues": "",
+      "archivos": [
+        "news.json"
+      ]
+    },
+    {
+      "antes": "Banco de Costa Rica (BCR) (Costa Rica)",
+      "despues": "Teletica",
+      "archivos": [
+        "news.json"
+      ]
+    },
+    {
+      "antes": "Nota sobre Banco de Costa Rica (BCR) (empresa observada; lo que afirme la empresa va atribuido): ",
+      "despues": "",
+      "archivos": [
+        "news.json"
+      ]
+    },
+    {
+      "antes": " La etiqueta del origen atribuye la nota al Banco de Costa Rica (BCR), pero el título no identifica a la empresa, así que esa atribución debe verificarse.",
+      "despues": "",
+      "archivos": [
+        "news.json"
+      ]
+    },
+    {
+      "antes": "en un proveedor de servicios financieros, con la versión de la empresa",
+      "despues": "en una empresa que el título no identifica, con su versión",
+      "archivos": [
+        "news.json"
+      ]
+    },
+    {
+      "antes": "Banco de Costa Rica (BCR)",
+      "despues": "",
+      "archivos": [
+        "news.json"
+      ]
+    },
+    {
+      "antes": "Unknown",
+      "despues": ""
+    },
+    {
+      "antes": "post-cuántic",
+      "despues": "poscuántic"
+    },
+    {
+      "antes": "defensas anti-bot",
+      "despues": "defensas antibots"
+    }
+  ],
+  "notas": {
+    "84e765f0a672": {
+      "que_paso": "Inception, un grupo de extorsión que apareció el 17 de noviembre, reivindica siete víctimas, entre ellas AMD, PepsiCo y Cigna Healthcare, aunque ninguna ha confirmado públicamente una brecha. ReversingLabs afirma que el grupo opera desde finales de octubre y confirmó 21 dominios usados para phishing de SSO, en una campaña que, al parecer, se basa en ingeniería social por teléfono y en sitios que imitan servicios de autenticación, sobre todo de Okta y también de NetIQ/OpenText Access Manager. Okta vinculó al grupo con O-UNC-053, un clúster de amenazas que antes había asociado con ShinyHunters. Inception niega cualquier vínculo con otros grupos."
+    },
+    "c512e6f45736": {
+      "que_paso": "La OpenID Foundation creó el Agent Auth Working Group (AAuth WG), que desarrollará especificaciones para que un agente de IA demuestre quién es y en nombre de quién actúa, y para que obtenga y use autorización entre dominios de confianza. Según su carta constitutiva, el alcance incluye prueba de posesión en cada solicitud sin registro previo ni secretos compartidos, la identificación de la persona u organización a la que representa el agente a partir de OpenID Connect, la separación entre el agente que ejecuta y el supervisor que aprueba, la delegación entre agentes y la expiración y revocación de tokens. El borrador AAuth Protocol y sus borradores complementarios se presentarán como contribuciones iniciales; el grupo decidirá si los adopta como punto de partida."
+    },
+    "dc3d8600fe24": {
+      "por_que_importa": "Un broker concentra la confianza de todos los servicios que tiene detrás. Según los autores, las especificaciones de autenticación vigentes no cubren del todo su doble papel de cliente y de proveedor de identidad. Quien opere uno debería seguir sus avisos de seguridad como los de un sistema crítico, porque, según los autores, solo 14 de las 33 vulnerabilidades halladas estaban corregidas."
+    },
+    "fbda1861a84b": {
+      "que_paso": "Reniec lanzó oficialmente el Documento Nacional de Identidad Digital (DNId), que se alojará en los celulares de los peruanos a través de la billetera PerúPass, ya disponible en Android y Apple. Según su jefa, Carmen Velarde, las empresas que hoy pagan convenios con Reniec para consultar su base de datos y validar identidades podrían prescindir de ellos y usar un validador gratuito. Velarde advirtió además que el ciudadano tendrá más independencia para entregar o no los datos que se le pidan. Reniec aún debe elaborar el Reglamento de Usabilidad del DNI digital, que fijará cómo las entidades públicas y privadas deberán verificar la identidad con esta credencial."
+    },
+    "554e039140a3": {
+      "source": "El Economista",
+      "published": "2026-11-23"
+    }
+  },
+  "limpiar_fuentes": true
+}
