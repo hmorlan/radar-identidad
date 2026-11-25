@@ -234,7 +234,31 @@ def apply_patch(patch: Dict[str, Any], day_dir: Path, dry_run: bool = False) -> 
         for name, data in files.items():
             (day_dir / name).write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n",
                                         encoding="utf-8")
+        report["indice"] = _sync_index(day_dir, summary)
     return report
+
+
+def _sync_index(day_dir: Path, summary: Dict[str, Any]) -> bool:
+    """El archivo (index.json) muestra el titular y el texto alternativo de la imagen:
+    si el parche los cambió, se copian (25 nov: el titular pasó a IDScan)."""
+    index_path = day_dir.parent / "index.json"
+    if not index_path.exists():
+        return False
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    titular = (summary.get("edition") or {}).get("titular")
+    alt = (summary.get("hero_image") or {}).get("alt") if isinstance(summary.get("hero_image"), dict) else None
+    changed = False
+    for entry in index.get("dates") or []:
+        if isinstance(entry, dict) and entry.get("date") == day_dir.name:
+            if titular and entry.get("titular") != titular:
+                entry["titular"] = titular
+                changed = True
+            if alt and "hero_alt" in entry and entry.get("hero_alt") != alt:
+                entry["hero_alt"] = alt
+                changed = True
+    if changed:
+        index_path.write_text(json.dumps(index, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return changed
 
 
 def rebuild_indexes(web_dir: Path, base_url: str) -> None:

@@ -1,6 +1,6 @@
 {
   "date": "2026-11-25",
-  "motivo": "Revisión editorial del 25 nov (Fable 5.2), verificada por Claude contra el texto completo de las 8 fuentes: el resumen ejecutivo negaba un vínculo entre Dragos y OpenRouter que la propia fuente menciona; la carta del Congreso aparecía dos veces (The Record y el post de Krebs); el dato de Entra se presentaba como novedad cuando ya estaba en la edición del 23; la sección «Regulación y Latinoamérica» no mencionaba la nota de Reniec; el resumen de la ley de Vietnam omitía el alcance (transacciones de alto riesgo) y la fecha (1 jul 2027); la campaña de phishing por Signal se atribuía a una investigación de CORRECTIV de marzo; prefijos de seguimiento en inglés con «yesterday»; frase huérfana en Noticias; reserva y desmentido omitidos en Inception; matiz omitido en AAuth; cifra de PORTA mal relacionada; reglamento pendiente de Reniec; fecha y nombre de fuente de El Economista; nombres de fuente crudos, autor genérico en inglés y comentarios internos visibles; una entrada de Teletica atribuida sin base al Banco de Costa Rica; grafías poscuánticos y antibots.",
+  "motivo": "Revisión editorial del 25 nov (Fable 5.2), verificada por Claude contra el texto completo de las 8 fuentes: el resumen ejecutivo negaba un vínculo entre Dragos y OpenRouter que la propia fuente menciona; la carta del Congreso aparecía dos veces (The Record y el post de Krebs); el dato de Entra se presentaba como novedad cuando ya estaba en la edición del 23; la sección «Regulación y Latinoamérica» no mencionaba la nota de Reniec; el resumen de la ley de Vietnam omitía el alcance (transacciones de alto riesgo) y la fecha (1 jul 2027); la campaña de phishing por Signal se atribuía a una investigación de CORRECTIV de marzo; prefijos de seguimiento en inglés con «yesterday»; frase huérfana en Noticias; reserva y desmentido omitidos en Inception; matiz omitido en AAuth; cifra de PORTA mal relacionada; reglamento pendiente de Reniec; fecha y nombre de fuente de El Economista; nombres de fuente crudos, autor genérico en inglés y comentarios internos visibles; una entrada de Teletica atribuida sin base al Banco de Costa Rica; grafías poscuánticos y antibots. Decisiones de Hiram (25 nov): se quitan los nombres de las víctimas que reivindica Inception (no confirmadas), y el titular y \"Lo principal\" pasan a la nota de IDScan (señal alta, fuente primaria); AAuth pasa a la lista.",
   "fuentes": [
     "Artefacto fuentes de la corrida 45590946873 (texto completo de las 8 notas)",
     "https://ciberseguridadlatam.com/tres-proveedores-de-ia-expusieron-prompts-durante-meses-incluidos-los-marcados-como-no-almacenables/ («OpenRouter, mencionado en el reporte de Dragos»)",
@@ -174,11 +174,32 @@
     {
       "antes": "defensas anti-bot",
       "despues": "defensas antibots"
+    },
+    {
+      "antes": "La retención cero no frenó el robo de prompts en tres proveedores de IA, según Dragos",
+      "despues": "Legisladores de EE. UU. presionan a los proveedores de verificación de identidad tras la brecha de IDScan",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "#### Lo principal\nLa **OpenID Foundation** [anunció el grupo de trabajo](/?date=2026-11-25&category=research#item-c512e6f45736) **AAuth (Agent Auth)** para definir cómo un agente de IA prueba quién es, para quién actúa y cómo obtiene y usa autorización, aunque por ahora es un grupo que arranca y no una especificación.",
+      "despues": "#### Lo principal\nSegún The Record, una carta bipartidista del **Congreso de EE. UU.** [insta a las empresas de verificación](/?date=2026-11-25&category=news#item-61fa563f522a) de identidad a reforzar su seguridad tras la brecha de **IDScan** de septiembre y les pide detallar cómo gestionan y protegen los datos de sus clientes; Brian Krebs, que reveló esa brecha, [afirma](/?date=2026-11-25&category=social#item-62c28f2590ce) que más de dos docenas de proveedores guardan los documentos escaneados, a menudo por defecto.",
+      "archivos": [
+        "summary.json"
+      ]
+    },
+    {
+      "antes": "- Según The Record, una carta bipartidista del **Congreso de EE. UU.** [insta a las empresas de verificación](/?date=2026-11-25&category=news#item-61fa563f522a) de identidad a reforzar su seguridad tras la brecha de **IDScan** de septiembre y les pide detallar cómo gestionan y protegen los datos de sus clientes; Brian Krebs, que reveló esa brecha, [afirma](/?date=2026-11-25&category=social#item-62c28f2590ce) que más de dos docenas de proveedores guardan los documentos escaneados, a menudo por defecto.",
+      "despues": "- La **OpenID Foundation** [anunció el grupo de trabajo](/?date=2026-11-25&category=research#item-c512e6f45736) **AAuth (Agent Auth)** para definir cómo un agente de IA prueba quién es, para quién actúa y cómo obtiene y usa autorización, aunque por ahora es un grupo que arranca y no una especificación.",
+      "archivos": [
+        "summary.json"
+      ]
     }
   ],
   "notas": {
     "84e765f0a672": {
-      "que_paso": "Inception, un grupo de extorsión que apareció el 17 de noviembre, reivindica siete víctimas, entre ellas AMD, PepsiCo y Cigna Healthcare, aunque ninguna ha confirmado públicamente una brecha. ReversingLabs afirma que el grupo opera desde finales de octubre y confirmó 21 dominios usados para phishing de SSO, en una campaña que, al parecer, se basa en ingeniería social por teléfono y en sitios que imitan servicios de autenticación, sobre todo de Okta y también de NetIQ/OpenText Access Manager. Okta vinculó al grupo con O-UNC-053, un clúster de amenazas que antes había asociado con ShinyHunters. Inception niega cualquier vínculo con otros grupos."
+      "que_paso": "Inception, un grupo de extorsión que apareció el 17 de noviembre, reivindica siete víctimas, ninguna de las cuales ha confirmado públicamente una brecha. ReversingLabs afirma que el grupo opera desde finales de octubre y confirmó 21 dominios usados para phishing de SSO, en una campaña que, al parecer, se basa en ingeniería social por teléfono y en sitios que imitan servicios de autenticación, sobre todo de Okta y también de NetIQ/OpenText Access Manager. Okta vinculó al grupo con O-UNC-053, un clúster de amenazas que antes había asociado con ShinyHunters. Inception niega cualquier vínculo con otros grupos."
     },
     "c512e6f45736": {
       "que_paso": "La OpenID Foundation creó el Agent Auth Working Group (AAuth WG), que desarrollará especificaciones para que un agente de IA demuestre quién es y en nombre de quién actúa, y para que obtenga y use autorización entre dominios de confianza. Según su carta constitutiva, el alcance incluye prueba de posesión en cada solicitud sin registro previo ni secretos compartidos, la identificación de la persona u organización a la que representa el agente a partir de OpenID Connect, la separación entre el agente que ejecuta y el supervisor que aprueba, la delegación entre agentes y la expiración y revocación de tokens. El borrador AAuth Protocol y sus borradores complementarios se presentarán como contribuciones iniciales; el grupo decidirá si los adopta como punto de partida."
@@ -194,5 +215,6 @@
       "published": "2026-11-23"
     }
   },
-  "limpiar_fuentes": true
+  "limpiar_fuentes": true,
+  "aviso": "Tras la revisión editorial corregimos fechas, atribuciones y precisión de varias notas y del resumen, y cambiamos el titular a la nota de mayor señal."
 }

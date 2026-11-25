@@ -16,7 +16,7 @@ El código parte de [flyryan/ai-news-aggregator](https://github.com/flyryan/ai-n
 - **Revisa el código real** antes de proponer cambios; si una sugerencia contradice el código, señálalo con archivo y línea.
 - **Costos.** Claude: ~US$80/mes (créditos API del plan Max). Imágenes: < US$10/mes. Antes de cualquier cambio que suba el costo, estima el impacto y pide confirmación.
 - **Acciones con efecto real.** No hagas push a `main`, despliegues ni corridas del pipeline (incluidas reanudaciones y backfills) sin confirmación explícita de Hiram. Correr tests no requiere permiso.
-- **Commits.** Autor `hmorlan <hmorlan@users.noreply.github.com>` para no exponer correos personales en un repo público.
+- **Commits.** Autor `hmorlan <hmorlan@users.noreply.github.com>` para no exponer correos personales en un repo público. Sin la línea `Claude-Session:` en los mensajes (decisión de Hiram, 25 nov: el repo es público); `Co-Authored-By` sí va.
 
 ## Criterio editorial
 
