@@ -33,6 +33,11 @@
 	// Correcciones después de publicar (25 nov): cada nota corregida lo dice y la
 	// edición las lista al final de las notas, con fecha y aviso.
 	$: reparaciones = (summary.reparaciones ?? []).filter((r): r is Reparacion => !!r && !!r.fecha);
+	// Varias reparaciones el mismo día se muestran como una: la más reciente (su aviso
+	// y su lista de cambios ya describen la edición corregida).
+	$: reparacionesPorDia = Object.values(
+		reparaciones.reduce<Record<string, Reparacion>>((acc, r) => ((acc[r.fecha] = r), acc), {})
+	);
 	$: corregidaEn = reparaciones.reduce<Record<string, string>>((acc, r) => {
 		for (const id of r.notas_corregidas ?? []) acc[id] = r.fecha;
 		return acc;
@@ -108,14 +113,19 @@
 			<NotaEdicion {note} index={i} collapsed={i >= EXPANDED} corregidaEl={corregidaEn[note.item_id] ?? ''} />
 		{/each}
 	</div>
-	{#if reparaciones.length}
+	{#if reparacionesPorDia.length}
 		<section id="correcciones" class="columna correcciones" aria-label="Correcciones">
 			<h2 class="t-kicker text-oro mb-3">Correcciones</h2>
 			<ul>
-				{#each reparaciones as r}
+				{#each reparacionesPorDia as r}
 					<li>
 						<strong>{shortDate(r.fecha)}.</strong>
 						{r.aviso || 'Tras la revisión editorial corregimos datos de esta edición.'}
+						{#if r.cambios?.length}
+							<ul class="cambios">
+								{#each r.cambios as c}<li>{c}</li>{/each}
+							</ul>
+						{/if}
 					</li>
 				{/each}
 			</ul>
@@ -389,5 +399,13 @@
 	.correcciones li {
 		margin-bottom: 6px;
 		line-height: 1.5;
+	}
+	.correcciones ul.cambios {
+		list-style: disc;
+		padding-left: 1.25rem;
+		margin: 4px 0 0;
+	}
+	.correcciones ul.cambios li {
+		margin-bottom: 2px;
 	}
 </style>

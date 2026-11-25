@@ -113,6 +113,32 @@ def _rerender(changed: List[Tuple[dict, str]]) -> int:
     return n
 
 
+def cambios_publicos(patch: Dict[str, Any]) -> List[str]:
+    """Lista corta, para el lector, de qué cambió (25 nov, Instinct: el aviso genérico
+    no decía qué se corrigió). La escribe la verificación en el parche: "cambios"."""
+    out = []
+    for c in patch.get("cambios") or []:
+        if isinstance(c, str) and c.strip():
+            out.append(c.strip()[:240])
+    return out[:12]
+
+
+def _update_public_notes(summary: Dict[str, Any], patch: Dict[str, Any]) -> bool:
+    regs = [r for r in summary.get("reparaciones") or [] if isinstance(r, dict)]
+    if not regs:
+        return False
+    last, changed = regs[-1], False
+    cambios = cambios_publicos(patch)
+    if cambios and last.get("cambios") != cambios:
+        last["cambios"] = cambios
+        changed = True
+    aviso = str(patch.get("aviso") or "")[:400]
+    if aviso and last.get("aviso") != aviso:
+        last["aviso"] = aviso
+        changed = True
+    return changed
+
+
 def aviso_publico(n_notas: int, resumen: bool) -> str:
     """Texto para el lector cuando el parche no trae su propio "aviso"."""
     partes = []
@@ -216,6 +242,12 @@ def apply_patch(patch: Dict[str, Any], day_dir: Path, dry_run: bool = False) -> 
 
     if not report["notas"] and not any("veces" in r for r in report["reemplazos"]):
         report["sin_cambios"] = True
+        # El texto ya estaba corregido, pero el parche puede traer ahora el aviso o la
+        # lista de cambios para el lector: se completan en el último registro.
+        if _update_public_notes(files["summary.json"], patch) and not dry_run:
+            (day_dir / "summary.json").write_text(
+                json.dumps(files["summary.json"], ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            report["aviso_actualizado"] = True
         return report
 
     summary = files["summary.json"]
@@ -229,6 +261,7 @@ def apply_patch(patch: Dict[str, Any], day_dir: Path, dry_run: bool = False) -> 
         "aviso": str(patch.get("aviso") or aviso_publico(len(corregidas), resumen))[:400],
         "notas_corregidas": corregidas,
         "resumen_corregido": resumen,
+        "cambios": cambios_publicos(patch),
     })
     if not dry_run:
         for name, data in files.items():

@@ -126,6 +126,8 @@ export interface Reparacion {
 	aviso?: string;
 	notas_corregidas?: string[];
 	resumen_corregido?: boolean;
+	/** Qué cambió, una línea por cambio, para el lector. */
+	cambios?: string[];
 }
 
 export interface DaySummary {

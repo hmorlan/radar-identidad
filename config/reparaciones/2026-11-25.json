@@ -216,5 +216,15 @@
     }
   },
   "limpiar_fuentes": true,
-  "aviso": "Tras la revisión editorial corregimos fechas, atribuciones y precisión de varias notas y del resumen, y cambiamos el titular a la nota de mayor señal."
+  "aviso": "Tras la revisión editorial corregimos fechas, atribuciones y precisión de varias notas y del resumen, y cambiamos el titular a la nota de mayor señal.",
+  "cambios": [
+    "Titular y «Lo principal»: pasan a la nota de IDScan, la de mayor señal; AAuth pasa a la lista.",
+    "Nota II (Inception): se quitan los nombres de víctimas que reivindica el grupo y que no han confirmado una brecha; se aclara que la campaña «al parecer» usa llamadas y que el grupo niega vínculos con otros.",
+    "Resumen (Dragos y OpenRouter): ya no se niega el vínculo; OpenRouter aparece mencionado en el reporte de Dragos, según CiberSeguridad Latam.",
+    "Nota VI: la fuente es El Economista y la fecha correcta es el 23 de noviembre.",
+    "Nota VII (Reniec): se añade que aún falta el reglamento de uso del DNI digital; Reniec pasa al resumen.",
+    "Nota III (AAuth) y nota VIII (brokers de identidad): se precisa que los borradores son propuestas iniciales y que, según los autores, 14 de las 33 fallas estaban corregidas.",
+    "Resumen: se unen las dos menciones de la carta del Congreso, se precisa la ley de Vietnam (alcance y fecha) y se corrigen atribuciones en Redes.",
+    "Listas: nombres de medio legibles, avisos de seguimiento en español y una nota de Teletica que estaba atribuida por error al Banco de Costa Rica."
+  ]
 }

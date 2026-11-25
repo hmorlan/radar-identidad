@@ -121,6 +121,11 @@ def main() -> int:
                                       timeout=30000)
                             if nombre == "portada":
                                 abrir_notas(page)
+                            # 25 nov: el menú es position: sticky; tras abrir las notas
+                            # la página queda desplazada y el menú se pintaba fuera del
+                            # recorte (en la portada móvil no aparecía). Arriba y quieto.
+                            page.add_style_tag(content="nav.menu{position:static !important;top:auto !important}")
+                            page.evaluate("window.scrollTo(0, 0)")
                             page.wait_for_timeout(600)
                             hechas += capturar(page, out / f"{nombre}-{vista}-{tema}",
                                                opts["viewport"], max_tramos(nombre, tema))

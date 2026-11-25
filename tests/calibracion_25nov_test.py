@@ -138,3 +138,23 @@ class RedditApagadoTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CambiosPublicosTest(unittest.TestCase):
+    def test_lista_de_cambios_y_completar_registro_ya_aplicado(self):
+        repair = _load("repair_edition")
+        summary = {"executive_summary": "x", "edition": {"titular": "t", "notas": [
+            {"item_id": "a1", "title": "t", "que_paso": "malo", "por_que_importa": "p", "senal": "media"}]}}
+        patch_ = {"motivo": "m", "notas": {"a1": {"que_paso": "bueno"}}}
+        with tempfile.TemporaryDirectory() as d:
+            day = Path(d)
+            (day / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+            repair.apply_patch(patch_, day)
+            # Ya aplicado: el mismo parche con lista de cambios solo completa el registro.
+            patch_["cambios"] = ["Nota I: se corrige el dato."]
+            rep = repair.apply_patch(patch_, day)
+            regs = json.loads((day / "summary.json").read_text(encoding="utf-8"))["reparaciones"]
+        self.assertTrue(rep.get("sin_cambios"))
+        self.assertTrue(rep.get("aviso_actualizado"))
+        self.assertEqual(len(regs), 1)
+        self.assertEqual(regs[-1]["cambios"], ["Nota I: se corrige el dato."])
