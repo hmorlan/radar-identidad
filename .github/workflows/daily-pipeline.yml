@@ -841,6 +841,28 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
+      # Radar: texto completo de la fuente de cada nota, para la revisión editorial.
+      # Las tareas programadas no pueden abrir páginas con WebFetch (nadie aprueba la
+      # lectura); Actions sí tiene red. No se publica. Sin costo; nunca bloquea.
+      - name: Fuentes de las notas para la revisión
+        id: fuentes
+        if: success() && steps.schedule_gate.outputs.should_run == 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
+          python3 scripts/fuentes_notas.py --web-dir web --date "$report_date" --out fuentes
+
+      - name: Subir las fuentes
+        if: steps.fuentes.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuentes
+          path: fuentes/
+          retention-days: 14
+          if-no-files-found: ignore
+
       # Radar: reclamos de ransomware en México, LatAm y España del periodo de la
       # edición (ransomware.live). NO se publican: son pistas sin verificar para el
       # revisor editorial, que busca si la prensa independiente las confirmó.

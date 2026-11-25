@@ -125,6 +125,8 @@ Para agregar una fuente: añadirla al `.txt` correspondiente, correr `scripts/ch
 
 **Capturas para la revisión:** tras publicar, el pipeline toma capturas del mismo build (`scripts/capturas.py`: portada con las notas abiertas, categorías y archivo; escritorio y móvil; claro y oscuro) y las sube como artefacto `capturas`. Las usa el revisor editorial, porque el sitio está detrás de Cloudflare Access.
 
+**Fuentes para la revisión:** tras publicar, `scripts/fuentes_notas.py` baja el texto completo de la fuente de cada nota (y de su vía) y lo sube como artefacto `fuentes` (`fuentes.json` + un .txt por enlace). Lo usan Fable y la verificación, porque en una tarea programada WebFetch no puede pedir aprobación. Los sitios que bloquean bots quedan marcados "sin texto completo".
+
 **Alerta de fuentes caídas:** `.github/workflows/source-health.yml` corre `check_feeds.py` todos los días a las 07:17 (CDMX), sin costo. Si una fuente falla dos revisiones seguidas (o la página de prensa de un regulador deja de devolver notas), la corrida termina en rojo y GitHub manda correo (con Issues activados, además abre un issue `salud-fuentes` que se cierra solo al recuperarse).
 
 ## Arquitectura
