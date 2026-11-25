@@ -51,6 +51,30 @@ class RepairEditionTest(unittest.TestCase):
             self.assertTrue(again.get("sin_cambios"))
             self.assertEqual(len(json.loads((d / "summary.json").read_text())["reparaciones"]), 1)
 
+    def test_multiline_replacement_is_idempotent(self):
+        # 25 nov: un "despues" con salto de línea (una viñeta nueva) hacía fallar
+        # la segunda aplicación porque se buscaba en json.dumps.
+        patch = {"date": "2026-11-17", "motivo": "prueba",
+                 "reemplazos": [{"antes": "El FBI [alerta](/?date=x#a)",
+                                 "despues": "Nueva viñeta.\n- El FBI [avisa](/?date=x#a)",
+                                 "archivos": ["summary.json"]}]}
+        with tempfile.TemporaryDirectory() as t:
+            d = _day(Path(t))
+            re_.apply_patch(patch, d)
+            again = re_.apply_patch(patch, d)
+            self.assertTrue(again.get("sin_cambios"))
+            s = json.loads((d / "summary.json").read_text())
+            self.assertEqual(s["executive_summary"].count("Nueva viñeta."), 1)
+
+    def test_real_patches_never_contain_their_own_antes(self):
+        for path in sorted(Path("config/reparaciones").glob("*.json")):
+            patch = json.loads(path.read_text(encoding="utf-8"))
+            for r in patch.get("reemplazos") or []:
+                self.assertNotIn(r["antes"], r["despues"], f"{path.name}: {r['antes'][:60]}")
+                self.assertTrue(set(r) <= {"antes", "despues", "archivos"}, path.name)
+            for fields in (patch.get("notas") or {}).values():
+                self.assertTrue(set(fields) <= set(re_.NOTE_FIELDS), path.name)
+
     def test_unknown_text_or_note_cancels_without_writing(self):
         with tempfile.TemporaryDirectory() as t:
             d = _day(Path(t))

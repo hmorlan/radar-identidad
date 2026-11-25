@@ -80,7 +80,16 @@ def _walk_replace(node: Any, antes: str, despues: str, changed: List[Tuple[dict,
 
 
 def _contains(node: Any, text: str) -> bool:
-    return text in json.dumps(node, ensure_ascii=False)
+    # Busca en los textos, no en json.dumps: ahí un salto de línea sale como "\n"
+    # escapado y un "despues" con varias líneas nunca contaba como ya aplicado
+    # (25 nov: la segunda aplicación del parche se cancelaba).
+    if isinstance(node, str):
+        return text in node
+    if isinstance(node, dict):
+        return any(_contains(v, text) for v in node.values())
+    if isinstance(node, list):
+        return any(_contains(v, text) for v in node)
+    return False
 
 
 def _rerender(changed: List[Tuple[dict, str]]) -> int:
