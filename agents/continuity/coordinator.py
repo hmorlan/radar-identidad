@@ -21,6 +21,23 @@ from .curator import EditorialCurator
 logger = logging.getLogger(__name__)
 
 
+
+_CATEGORIAS_ES = {"news": "Noticias", "research": "Investigación", "social": "Redes", "reddit": "Reddit"}
+_MESES_ES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
+             "septiembre", "octubre", "noviembre", "diciembre")
+
+
+def seguimiento_text(original_date: str, original_category: str, original_item_id: str) -> str:
+    """"Seguimiento de [Noticias](enlace) del 23 de noviembre:" (vacío si falta la fecha)."""
+    import re as _re
+    m = _re.match(r"(\d{4})-(\d{2})-(\d{2})", str(original_date or ""))
+    if not m or not 1 <= int(m.group(2)) <= 12:
+        return ""
+    cat = _CATEGORIAS_ES.get(str(original_category or "").lower(), "el radar")
+    link = f"/?date={original_date}&category={original_category}#item-{original_item_id}"
+    return f"Seguimiento de [{cat}]({link}) del {int(m.group(3))} de {_MESES_ES[int(m.group(2)) - 1]}:"
+
+
 class ContinuityCoordinator:
     """
     Coordinates the two-stage continuity detection process.
@@ -267,36 +284,14 @@ class ContinuityCoordinator:
                     cont = cont_lookup[item.item.id]
                     item.continuation = cont
 
-                    # Prepend reference text to summary if not already there
-                    if cont.reference_text and not item.summary.startswith(cont.reference_text[:20]):
-                        # Add link to the original item
-                        link = f"/?date={cont.original_date}&category={cont.original_category}#item-{cont.original_item_id}"
-
-                        ref_text = cont.reference_text
-                        link_added = False
-
-                        # Replace category placeholder with link
-                        for cat in self.CATEGORIES:
-                            cat_formatted = f"**{cat.capitalize()}**"
-                            if cat_formatted in ref_text:
-                                ref_text = ref_text.replace(
-                                    cat_formatted,
-                                    f"[{cat.capitalize()}]({link})"
-                                )
-                                link_added = True
-
-                        # Handle follow_up type (same category, no placeholder)
-                        # Link "yesterday" to the original coverage
-                        if not link_added and "yesterday" in ref_text.lower():
-                            ref_text = ref_text.replace(
-                                "yesterday",
-                                f"[yesterday]({link})"
-                            )
-
-                        # Ensure comma before the new content
-                        if not ref_text.rstrip().endswith((',', '.', ':', ';')):
-                            ref_text = ref_text.rstrip() + ","
-
+                    # 25 nov: el aviso de seguimiento se arma aquí, en español y con la
+                    # fecha real. El curador (heredado) proponía frases en inglés con
+                    # "yesterday" aunque la edición anterior fuera de dos días antes.
+                    ref_text = seguimiento_text(cont.original_date, cont.original_category,
+                                                cont.original_item_id)
+                    if ref_text:
+                        cont.reference_text = ref_text
+                    if ref_text and not item.summary.startswith("Seguimiento de "):
                         item.summary = f"{ref_text} {item.summary}"
 
             # Also update top_items references

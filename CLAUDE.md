@@ -45,7 +45,7 @@ Hoy el workflow `.github/workflows/daily-pipeline.yml` **no tiene horario**: sol
 | Verificación y edición | Segunda pasada de Claude Opus 5.5 |
 | Imágenes | Gemini 3 Pro Image, `gemini-3-pro-image` en modo `native` (API `v1beta`), 2 candidatas por edición en Batch API; revisión visual de cada candidata con Haiku 5.5 |
 
-Usar Batch API donde no se necesite respuesta inmediata. **No usar Fable en el pipeline** (costo).
+Usar Batch API donde no se necesite respuesta inmediata. **No usar Fable en el pipeline** (costo). La revisión editorial posterior a publicar sí usa Fable 5.2, pero corre como tarea programada de Claude, fuera del pipeline y fuera de los créditos de la API; la verificación de sus hallazgos y la comparación con el Daily Brief usan Opus 5.5 en tareas programadas.
 
 ## Comandos
 
@@ -105,7 +105,7 @@ GOOGLE_API_KEY=... python3 scripts/check_image_model.py --generate   # una image
 | Filtro previo de identidad para fuentes ruidosas | Directiva `filtro=identidad` (título y resumen) o `filtro=titulo` (solo título, para boletines como CERT-FR) en `config/rss_feeds.txt` y `config/research_feeds.txt` → `agents/gatherers/identity_filter.py`; ahí también se descartan webinars y contenido patrocinado |
 | Mastodon y Bluesky | `config/mastodon_accounts.txt`, `config/bluesky_accounts.txt` (directiva `filtro=identidad` por cuenta para las generalistas) |
 | Hacker News | `config/hackernews.txt` (búsquedas en la API pública de Algolia; mínimo `HACKERNEWS_MIN_POINTS`, 20) |
-| X y Reddit | Desactivados. X: API de pago por uso, se evalúa tras la corrida del 23 nov. Reddit: descartado (apagó sus RSS el 13 nov 2026 y retira su API pública; no se usan scrapers de terceros) |
+| X y Reddit | Desactivados. X: API de pago por uso, en evaluación. Reddit: descartado (apagó sus RSS el 13 nov 2026 y retira su API pública; no se usan scrapers de terceros); desde el 25 nov el pipeline ni lo intenta (estado `disabled`), `REDDIT_ENABLED=1` lo reactiva |
 | Prompts editoriales | `config/prompts.yaml` (en español): notas, verificación y coherencia (fase 4.4: lleva las correcciones a resúmenes y temas) |
 | Reparaciones de ediciones publicadas | `config/reparaciones/<fecha>.json` → `scripts/repair_edition.py` (workflow **Reparar edición**) |
 | Modelos, keys y URL base | `config/providers.yaml` (copia de `providers.yaml.example`) |
@@ -126,6 +126,10 @@ Para agregar una fuente: añadirla al `.txt` correspondiente, correr `scripts/ch
 **Capturas para la revisión:** tras publicar, el pipeline toma capturas del mismo build (`scripts/capturas.py`: portada con las notas abiertas, categorías y archivo; escritorio y móvil; claro y oscuro) y las sube como artefacto `capturas`. Las usa el revisor editorial, porque el sitio está detrás de Cloudflare Access.
 
 **Fuentes para la revisión:** tras publicar, `scripts/fuentes_notas.py` baja el texto completo de la fuente de cada nota (y de su vía) y lo sube como artefacto `fuentes` (`fuentes.json` + un .txt por enlace). Lo usan Fable y la verificación, porque en una tarea programada WebFetch no puede pedir aprobación. Los sitios que bloquean bots quedan marcados "sin texto completo".
+
+**Revisión mecánica antes de publicar:** `scripts/lint_edicion.py` lista nombres de fuente crudos, autor genérico, inglés, comentarios internos y una nota de LatAm fuera del resumen; la corrida lo sube como artefacto `lint` (no bloquea). Los arreglos van en el código que produjo el error: `generators/source_names.py` (`display_source`), `generators/themes.py` (fusión de temas), `generators/social_filter.py` (Redes: corte 40) y los avisos de seguimiento en español de `agents/continuity/coordinator.py`.
+
+**Correcciones visibles:** cada reparación guarda en `summary.json → reparaciones` las notas que cambió y un `aviso` para el lector (el parche puede traer el suyo); el sitio marca la nota como "corregida el …" y lista las correcciones al final de la edición.
 
 **Alerta de fuentes caídas:** `.github/workflows/source-health.yml` corre `check_feeds.py` todos los días a las 07:17 (CDMX), sin costo. Si una fuente falla dos revisiones seguidas (o la página de prensa de un regulador deja de devolver notas), la corrida termina en rojo y GitHub manda correo (con Issues activados, además abre un issue `salud-fuentes` que se cierra solo al recuperarse).
 

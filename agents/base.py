@@ -21,7 +21,7 @@ import asyncio
 from urllib.parse import urlparse
 import re
 
-from .llm_client import AnthropicClient, AsyncAnthropicClient, ThinkingLevel, LLMResponse
+from .llm_client import AnthropicClient, AsyncAnthropicClient, ThinkingLevel, LLMResponse, attempt_timeout
 from .analysis_schema import sanitize_batch_result, sanitize_ranking_result
 from .prompt_security import (
     DATA_POINTER,
@@ -1545,17 +1545,21 @@ Every entry needs a nonempty summary and reasoning and a numeric score 0-100.
         )
 
         try:
-            response = await self.async_client.call_with_thinking(
-                messages=[{"role": "user", "content": ranking_user}],
-                system=system_prompt,
-                profile=self.thinking_budget,  # DEEP
-                caller=f"{self.category}_analyzer.reduce_rank",
-                # Ranking + summary is a single max-effort call whose thinking
-                # and visible output share one token budget. Give it the full
-                # output ceiling so a deep ranking pass cannot truncate the
-                # category_summary mid-word (effort stays at max).
-                full_output_budget=True,
-            )
+            # 25 nov: el ranking de Noticias agotó dos veces los 600 s pensando (~US$2.9
+            # perdidos); usa el mismo tope por intento que las notas de la edición.
+            from .edition_notes import _edition_timeout  # import tardío: edition_notes importa de base
+            with attempt_timeout(_edition_timeout()):
+                response = await self.async_client.call_with_thinking(
+                    messages=[{"role": "user", "content": ranking_user}],
+                    system=system_prompt,
+                    profile=self.thinking_budget,  # DEEP
+                    caller=f"{self.category}_analyzer.reduce_rank",
+                    # Ranking + summary is a single max-effort call whose thinking
+                    # and visible output share one token budget. Give it the full
+                    # output ceiling so a deep ranking pass cannot truncate the
+                    # category_summary mid-word (effort stays at max).
+                    full_output_budget=True,
+                )
 
             if response.stop_reason == "max_tokens":
                 logger.error(

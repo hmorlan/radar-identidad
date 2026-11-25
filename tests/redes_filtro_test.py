@@ -58,11 +58,12 @@ class JsonRedesTest(unittest.TestCase):
             gen._generate_category_files(day, result)
             gen._generate_summary_json(day, result)
             social = json.load(open(os.path.join(day, "social.json")))
-            self.assertEqual([i["id"] for i in social["items"]], ["s1", "s6"])
+            # Corte por defecto 40 (25 nov): s6 (38, solo cercano) ya no se publica.
+            self.assertEqual([i["id"] for i in social["items"]], ["s1"])
             self.assertEqual(social["themes"], [])
             self.assertEqual(len(json.load(open(os.path.join(day, "news.json")))["items"]), 1)
             summary = json.load(open(os.path.join(day, "summary.json")))
-            self.assertEqual(summary["categories"]["social"]["count"], 2)
+            self.assertEqual(summary["categories"]["social"]["count"], 1)
             nota = summary["edition"]["notas"][0]
             self.assertEqual(nota["via"]["source"], "Bluesky (404 Media)")
             self.assertEqual(nota["fecha_tipo"], "publicacion")

@@ -12,6 +12,8 @@
 	export let note: EditionNote;
 	export let index: number;
 	export let collapsed = false;
+	/** Fecha de la última corrección posterior a la publicación, si esta nota cambió. */
+	export let corregidaEl = '';
 
 	const SIGNAL_LABEL: Record<string, string> = { alta: 'Señal alta', media: 'Señal media', baja: 'Señal baja' };
 	// "Corregida" es un paso interno (la verificación ajustó el borrador antes de
@@ -75,6 +77,9 @@
 				<span class:sin-verificar={note.verificacion === 'sin_verificar'}>
 					· {VERIFICACION[note.verificacion] ?? VERIFICACION.sin_verificar}
 				</span>
+				{#if corregidaEl}
+					<a class="corregida" href="#correcciones">· corregida el {shortDate(corregidaEl)}</a>
+				{/if}
 			</p>
 		{:else}
 			<h3 class="titulo titulo-chico">{note.title}</h3>
@@ -86,6 +91,15 @@
 </article>
 
 <style>
+	.corregida {
+		color: rgb(var(--oro));
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	.corregida:hover,
+	.corregida:focus-visible {
+		text-decoration: underline;
+	}
 	.nota {
 		display: grid;
 		grid-template-columns: 80px minmax(0, 680px);

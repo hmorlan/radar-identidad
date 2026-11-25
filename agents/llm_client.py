@@ -1815,6 +1815,14 @@ class AsyncAnthropicClient:
                     )
                     if progress_state.get(key)
                 }
+                # 25 nov: un intento que agota el tiempo mientras piensa no recibe el
+                # message_delta final, así que output_tokens llega vacío y el reporte
+                # registraba solo la entrada (~US$0.06 de ~US$1.4). Se estima la salida
+                # por los caracteres recibidos (~3.5 por token; queda marcado partial).
+                if not progress_state.get("output_tokens"):
+                    chars = (progress_state.get("thinking_chars") or 0) + (progress_state.get("text_chars") or 0)
+                    if chars:
+                        usage["output_tokens"] = int(chars / 3.5)
                 if not usage:
                     return
                 ctx = request_context or {}

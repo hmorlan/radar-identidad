@@ -113,6 +113,17 @@ def _rerender(changed: List[Tuple[dict, str]]) -> int:
     return n
 
 
+def aviso_publico(n_notas: int, resumen: bool) -> str:
+    """Texto para el lector cuando el parche no trae su propio "aviso"."""
+    partes = []
+    if n_notas:
+        partes.append(f"{n_notas} nota{'s' if n_notas != 1 else ''}")
+    if resumen:
+        partes.append("el resumen")
+    que = " y ".join(partes) if partes else "algunos datos de la edición"
+    return f"Tras la revisión editorial corregimos {que} (fechas, atribuciones o precisión de los datos)."
+
+
 def apply_patch(patch: Dict[str, Any], day_dir: Path, dry_run: bool = False) -> Dict[str, Any]:
     files = {p.name: json.loads(p.read_text(encoding="utf-8")) for p in sorted(day_dir.glob("*.json"))}
     if "summary.json" not in files:
@@ -123,6 +134,11 @@ def apply_patch(patch: Dict[str, Any], day_dir: Path, dry_run: bool = False) -> 
     # (20 nov: segunda revisión del mismo día): si la edición ya tiene reparaciones,
     # un reemplazo cuyo texto nuevo ya está se da por aplicado.
     already = any(isinstance(r, dict) for r in files["summary.json"].get("reparaciones") or [])
+    # 25 nov (Instinct): las correcciones se muestran al lector. Se guarda qué notas
+    # cambiaron y si cambió el resumen, comparando antes y después del parche.
+    _notes0 = {n.get("item_id"): json.dumps(n, sort_keys=True, ensure_ascii=False)
+               for n in ((files["summary.json"].get("edition") or {}).get("notas") or []) if isinstance(n, dict)}
+    _resumen0 = files["summary.json"].get("executive_summary", "")
 
     for r in patch.get("reemplazos") or []:
         antes, despues = r.get("antes", ""), r.get("despues", "")
@@ -203,9 +219,16 @@ def apply_patch(patch: Dict[str, Any], day_dir: Path, dry_run: bool = False) -> 
         return report
 
     summary = files["summary.json"]
+    corregidas = [n.get("item_id") for n in ((summary.get("edition") or {}).get("notas") or [])
+                  if isinstance(n, dict) and n.get("item_id") in _notes0
+                  and json.dumps(n, sort_keys=True, ensure_ascii=False) != _notes0[n.get("item_id")]]
+    resumen = summary.get("executive_summary", "") != _resumen0
     summary.setdefault("reparaciones", []).append({
         "fecha": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "motivo": patch.get("motivo", ""),
+        "aviso": str(patch.get("aviso") or aviso_publico(len(corregidas), resumen))[:400],
+        "notas_corregidas": corregidas,
+        "resumen_corregido": resumen,
     })
     if not dry_run:
         for name, data in files.items():

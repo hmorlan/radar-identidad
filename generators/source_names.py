@@ -46,12 +46,47 @@ HOSTS = {
     "eleconomista.com.mx": "El Economista", "expansion.mx": "Expansión", "milenio.com": "Milenio",
     "eff.org": "EFF", "derechosdigitales.org": "Derechos Digitales", "r3d.mx": "R3D",
     "arxiv.org": "arXiv", "github.com": "GitHub", "datatracker.ietf.org": "IETF",
+    # 25 nov: nombres que llegaban crudos (dominio o título genérico del feed)
+    "correctiv.org": "CORRECTIV", "lemonde.fr": "Le Monde", "teletica.com": "Teletica",
+    "gestion.pe": "Diario Gestión", "df.cl": "Diario Financiero", "pymnts.com": "PYMNTS",
+    "americanbanker.com": "American Banker", "cyberscoop.com": "CyberScoop",
+    "cybersecuritydive.com": "Cybersecurity Dive", "scworld.com": "SC Media",
+    "idtechwire.com": "ID Tech", "dplnews.com": "DPL News", "lanacion.com.ar": "La Nación",
+    "eltiempo.com": "El Tiempo", "portafolio.co": "Portafolio", "eldiario.es": "elDiario.es",
+    "elnacional.com.do": "El Nacional", "elnuevodiario.com.do": "El Nuevo Diario",
+    "openid.net": "OpenID Foundation", "modelcontextprotocol.io": "Model Context Protocol",
+    "ciberseguridadlatam.com": "CiberSeguridad Latam", "nist.gov": "NIST", "fidoalliance.org": "FIDO Alliance",
 }
 _HOST_RE = re.compile(r"^[a-z0-9-]+(\.[a-z0-9-]+)+$")
 
 _IETF = re.compile(r"^I-D list for (.+?)(?: RSS Feed)?$", re.I)
 _IETF_GROUPS = {"web authorization protocol": "OAuth"}
 _SUFFIX = re.compile(r"\s+[-–|]\s*(latest news|articles|all|feed|rss)$", re.I)
+
+
+# Títulos de feed que no dicen qué medio es: se usa el dominio del enlace (25 nov:
+# "Lo último" era El Economista; "All Feed", un feed de investigación).
+GENERIC = {"lo último", "lo ultimo", "últimas noticias", "ultimas noticias", "noticias", "portada",
+           "inicio", "home", "all feed", "all", "feed", "rss", "latest", "latest news", "news",
+           "articles", "unknown", ""}
+_PAGE_PREFIX = re.compile(r"^page\s+\d+\s*[-–|]\s*", re.I)
+
+
+def display_source(name: str, url: str = "") -> str:
+    """Nombre del medio para mostrar: limpia el título del feed y, si queda genérico o
+    como un dominio pelón, lo saca del dominio del enlace."""
+    from urllib.parse import urlparse
+
+    cleaned = clean_source(_PAGE_PREFIX.sub("", (name or "").strip()))
+    host = (urlparse(url or "").hostname or "").lower().removeprefix("www.")
+    generic = cleaned.lower() in GENERIC or bool(_HOST_RE.match(cleaned.lower().removeprefix("www.")))
+    if generic and host:
+        for h in (host, ".".join(host.split(".")[-2:]), ".".join(host.split(".")[-3:])):
+            if h in HOSTS:
+                return HOSTS[h]
+        if cleaned.lower() in GENERIC:
+            return host
+    return cleaned
 
 
 def clean_source(name: str) -> str:

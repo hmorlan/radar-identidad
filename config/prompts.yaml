@@ -123,6 +123,7 @@ analysis:
       - Viñetas (- ) para desarrollos relacionados; máximo 2-3 párrafos cortos o su equivalente.
       - Las afirmaciones de una empresa se atribuyen ("según la empresa").
       - No subas el nivel de certeza de la fuente ni del análisis: conserva «aparente», «presuntamente», «según», «podría» y «sin confirmar» tal como vienen. Si la fuente atribuye o duda, el resumen también.
+      - No comentes en el texto la etiqueta, la búsqueda o el origen interno de una nota ("la etiqueta de la fuente…", "conviene verificar…"): si un dato no es seguro, no lo afirmes; esas dudas no se publican.
 
     # Variables: ${analysis_summary}
     ranking: |
@@ -159,6 +160,7 @@ analysis:
       - Frases de menos de 30 palabras; máximo 2-3 párrafos cortos o su equivalente.
       - Las afirmaciones de una empresa se atribuyen ("según la empresa"). No compares ni recomiendes proveedores.
       - No subas el nivel de certeza de la fuente ni del análisis: conserva «aparente», «presuntamente», «según», «podría» y «sin confirmar» tal como vienen. Si la fuente atribuye o duda, el resumen también.
+      - No comentes en el texto la etiqueta, la búsqueda o el origen interno de una nota ("la etiqueta de la fuente…", "conviene verificar…"): si un dato no es seguro, no lo afirmes; esas dudas no se publican.
 
   # -------------------------
   # INVESTIGACIÓN Y ESTÁNDARES
@@ -226,7 +228,7 @@ analysis:
     batch_analysis: |
       Eres analista de un radar en español sobre identidad digital y confianza. Analiza estas publicaciones en redes (lote ${batch_index} de ${total_batches}).
 
-      Puntúa según la regla de entrada (¿cambia cómo decidimos en quién o en qué confiar?), en esta escala: 70-100 aporta un hecho nuevo o un análisis original sobre identidad, autenticación, fraude o agentes de IA; 40-69 incidente, privacidad o regulación con algún ángulo de identidad; 20-39 promoción, opinión sin sustento o tema solo cercano; 0-19 tema ajeno al radar. Si la publicación no tiene relación con identidad, autenticación, fraude, privacidad, vigilancia ni agentes de IA (ciencia, videojuegos, consumo, política general, vacantes, avisos internos), puntúala por debajo de 20 y usa como único tema «Ajeno al radar». Esas no se publican.
+      Puntúa según la regla de entrada (¿cambia cómo decidimos en quién o en qué confiar?), en esta escala: 70-100 aporta un hecho nuevo o un análisis original sobre identidad, autenticación, fraude o agentes de IA; 40-69 incidente o regulación con un ángulo de identidad concreto (credenciales, verificación de identidad o de edad, account takeover, suplantación, accesos de agentes); 20-39 tema solo cercano: privacidad, perfilado publicitario, vigilancia, brechas de datos o políticas de plataformas SIN ese ángulo, promoción u opinión sin sustento; 0-19 tema ajeno al radar (ciencia, videojuegos, consumo, política general, vacantes, episodios de pódcast, avisos internos). Lo que puntúe por debajo de 40 no se publica; si no tiene ninguna relación, usa además como único tema «Ajeno al radar». Ejemplos que NO pasan: anuncios personalizados con IA, licencias de un navegador, lectores de placas, un panel académico.
 
       Para cada publicación: "summary" (1-2 frases EN ESPAÑOL), "importance_score", "reasoning" (una frase) y "themes" (1-3 temas en español). "titulo" es el título en español: traducción fiel y breve del original (si ya está en español, cópialo; conserva nombres propios, siglas y los términos de la industria en inglés como passkey, MFA, OAuth, deepfake).
 

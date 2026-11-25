@@ -813,6 +813,28 @@ jobs:
         shell: bash
         run: python3 scripts/archive_r2.py push web/data --historial data/hero_historial.json
 
+      # Radar: revisión mecánica de lo que se va a publicar (sin IA, sin costo):
+      # nombres de fuente crudos, autor genérico, inglés, comentarios internos, LatAm
+      # fuera del resumen. No bloquea; la revisión técnica y la verificación lo leen.
+      - name: Revisión mecánica de la edición
+        id: lint
+        if: success() && steps.schedule_gate.outputs.should_run == 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
+          python3 scripts/lint_edicion.py --web-dir web --date "$report_date" --out lint/lint.json
+
+      - name: Subir la revisión mecánica
+        if: steps.lint.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint
+          path: lint/
+          retention-days: 14
+          if-no-files-found: ignore
+
       - name: Publicar el sitio en Cloudflare Pages
         if: success() && steps.schedule_gate.outputs.should_run == 'true' && env.CLOUDFLARE_API_TOKEN != ''
         shell: bash

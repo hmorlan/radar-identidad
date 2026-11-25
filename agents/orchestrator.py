@@ -57,6 +57,11 @@ except ImportError:
     HERO_GENERATOR_AVAILABLE = False
     initialize_hero_generator = None
 
+def _reddit_enabled() -> bool:
+    flag = os.getenv("REDDIT_ENABLED", "").strip().lower() in {"1", "true", "yes"}
+    return flag or reddit_required()
+
+
 # Shared "usable Reddit" policy with scripts/validate_report.py (see module
 # docstring for why the two gates must not drift). Namespace import matches
 # the scripts.lesswrong_cookie_fetch precedent.
@@ -1768,6 +1773,11 @@ class MainOrchestrator:
 
         async def gather_category(name: str) -> tuple:
             gatherer = self.gatherers[name]
+            # 25 nov: Reddit está descartado (sin RSS desde el 13 nov y sin API pública
+            # aprobada). No se intenta: antes fallaba por la key y dejaba toda la
+            # corrida en "partial". REDDIT_ENABLED=1 (o REDDIT_REQUIRED=1) lo reactiva.
+            if name == 'reddit' and not _reddit_enabled():
+                return name, [], 'disabled'
             try:
                 items = await gatherer.gather()
                 logger.info(f"    {name} gatherer collected {len(items)} items")
@@ -1785,7 +1795,9 @@ class MainOrchestrator:
 
         for name, items, error in phase1_results:
             results[name] = items
-            if error:
+            if error == 'disabled':
+                collection_status[name] = {'status': 'disabled', 'count': 0, 'error': None}
+            elif error:
                 collection_status[name] = {'status': 'failed', 'count': 0, 'error': error}
             else:
                 collection_status[name] = self._status_for(name, items)

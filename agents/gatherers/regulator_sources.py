@@ -121,6 +121,7 @@ class RegulatorItem:
     url: str
     published: datetime
     google_link: str
+    outlet: str = ""  # medio que publicó la nota (Google News <source>), si se conoce
 
 
 def parse_regulators(lines: Iterable[str]) -> List[RegulatorSpec]:
@@ -211,6 +212,50 @@ def is_press_release_url(url: str) -> bool:
     if any(host == h or host.endswith("." + h) for h in PRESS_RELEASE_HOSTS):
         return True
     return bool(PRESS_RELEASE_PATH_RE.search(parsed.path or ""))
+
+
+# 25 nov (verificación): la búsqueda "Autoridades contra el fraude digital (México)"
+# trajo tres notas de República Dominicana, y una nota de Teletica sobre una filtración
+# quedó atribuida al Banco de Costa Rica aunque su título no lo nombra.
+CC_TLD = {
+    "MX": "mx", "ES": "es", "CO": "co", "AR": "ar", "CL": "cl", "PE": "pe", "CR": "cr",
+    "GT": "gt", "DO": "do", "EC": "ec", "VE": "ve", "UY": "uy", "PY": "py", "BO": "bo",
+    "PA": "pa", "HN": "hn", "SV": "sv", "NI": "ni", "BR": "br", "CU": "cu", "PR": "pr",
+}
+_TLD_COUNTRY = {v: k for k, v in CC_TLD.items()}
+
+
+def other_country_domain(url: str, country: str) -> bool:
+    """True si la URL es de un dominio nacional de OTRO país de la lista (p. ej. un
+    .com.do en una búsqueda de México). Los .com, .org y similares no cuentan."""
+    if country not in CC_TLD:
+        return False
+    host = (urllib.parse.urlparse(url or "").hostname or "").lower()
+    tld = host.rsplit(".", 1)[-1] if "." in host else ""
+    owner = _TLD_COUNTRY.get(tld)
+    return bool(owner and owner != country)
+
+
+def query_terms(query: str) -> List[str]:
+    """Términos de una consulta de Google News: frases entre comillas y palabras sueltas,
+    sin operadores."""
+    phrases = re.findall(r'"([^"]+)"', query or "")
+    rest = re.sub(r'"[^"]+"', " ", query or "")
+    words = [w for w in re.split(r"[\s()]+", rest) if w and w.upper() not in {"OR", "AND", "-"}
+             and not w.startswith(("site:", "-"))]
+    return [t.strip() for t in phrases + words if len(t.strip()) >= 2]
+
+
+def _fold(text: str) -> str:
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFD", text or "") if unicodedata.category(c) != "Mn").lower()
+
+
+def names_subject(title: str, spec: "RegulatorSpec") -> bool:
+    """El título nombra a la empresa o iniciativa buscada (alguno de sus términos)."""
+    t = _fold(title)
+    terms = query_terms(spec.query or "") or [spec.name]
+    return any(re.search(r"(?<![\w])" + re.escape(_fold(term)) + r"(?![\w])", t) for term in terms)
 
 
 def _on_topic(title: str, spec: "RegulatorSpec") -> bool:
@@ -453,12 +498,21 @@ def collect(
             if spec.query and is_press_release_url(url):
                 logger.info(f"Empresas: comunicado o nota pagada, se omite: {url[:100]}")
                 continue
+            if other_country_domain(url, spec.country):
+                logger.info(f"Reguladores: dominio de otro país para {spec.label}, se omite: {url[:100]}")
+                continue
+            if spec.query and not names_subject(clean_title(title), spec):
+                logger.info(f"Empresas: el título no nombra a {spec.name}, se omite: {clean_title(title)[:80]}")
+                continue
             if url in seen_urls or (seen and seen.seen_before(url, today)):
                 continue
             seen_urls.add(url)
             if seen:
                 seen.mark(url, today)
-            items.append(RegulatorItem(spec, clean_title(title), url, published, entry.get("link", "")))
+            src = entry.get("source") or {}
+            outlet = (src.get("title") if isinstance(src, dict) else "") or ""
+            items.append(RegulatorItem(spec, clean_title(title), url, published, entry.get("link", ""),
+                                       outlet.strip()[:120]))
             found += 1
 
         if on_spec:

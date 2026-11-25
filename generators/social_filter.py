@@ -7,8 +7,8 @@ solo una URL cortada ("papoi www.404media.co/scientists-m...").
 
 Se deja fuera de social.json (y de summary.json) la entrada que:
 - el análisis marca con un tema "ajeno" (el prompt pide "Ajeno al radar"),
-- puntúa por debajo de SOCIAL_MIN_SCORE (20 por defecto: en la escala del prompt,
-  0-19 es "tema ajeno"; el 23 nov todo lo que quedó abajo de 20 era ajeno), o
+- puntúa por debajo de SOCIAL_MIN_SCORE (40 por defecto desde el 25 nov: en la escala
+  del prompt, 20-39 es "tema solo cercano" sin ángulo de identidad), o
 - no tiene texto propio: menos de 3 palabras una vez quitadas las URL.
 
 El análisis no cambia ni se borra: sigue en los checkpoints y en el replay.
@@ -19,7 +19,7 @@ import os
 import re
 from typing import Any, Dict, Iterable, List
 
-DEFAULT_MIN_SCORE = 20.0
+DEFAULT_MIN_SCORE = 40.0  # 25 nov: con 20 pasaban perfilado publicitario y vigilancia sin ángulo de identidad
 _URLISH = re.compile(r"(https?://\S+|www\.\S+|\S+\.(com|org|net|co|io|ai|social|app|news)(/\S*)?)", re.I)
 _WORD = re.compile(r"[^\W\d_]{2,}", re.UNICODE)
 

@@ -118,8 +118,19 @@ export interface HeroImage {
 	archivo?: boolean;
 }
 
+/** Corrección hecha después de publicar (scripts/repair_edition.py). */
+export interface Reparacion {
+	fecha: string;
+	motivo?: string;
+	/** Texto para el lector. */
+	aviso?: string;
+	notas_corregidas?: string[];
+	resumen_corregido?: boolean;
+}
+
 export interface DaySummary {
 	date: string;
+	reparaciones?: Reparacion[];
 	coverage_date?: string;
 	coverage_start?: string;
 	coverage_end?: string;

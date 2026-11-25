@@ -19,8 +19,9 @@ from pathlib import Path
 
 import nh3
 
-from generators.source_names import clean_source
+from generators.source_names import clean_source, display_source
 from generators import social_filter
+from generators.themes import merge_themes
 
 logger = logging.getLogger(__name__)
 
@@ -211,14 +212,14 @@ class JSONGenerator:
             raw_via = raw.get('via')
             if isinstance(raw_via, dict) and _safe_url(raw_via.get('url')):
                 via = {'url': _safe_url(raw_via.get('url')),
-                       'source': text(raw_via.get('source'), 120),
+                       'source': display_source(text(raw_via.get('source'), 120), raw_via.get('url') or ''),
                        'published': text(raw_via.get('published'), 40)}
             notes.append({
                 'item_id': text(raw.get('item_id'), 40),
                 'category': text(raw.get('category'), 20),
                 'title': text(raw.get('title'), 200),
                 'url': _safe_url(raw.get('url')),
-                'source': text(raw.get('source'), 120),
+                'source': display_source(text(raw.get('source'), 120), raw.get('url') or ''),
                 'published': text(raw.get('published'), 40),
                 'que_paso': text(raw.get('que_paso')),
                 'por_que_importa': text(raw.get('por_que_importa')),
@@ -300,7 +301,7 @@ class JSONGenerator:
         """Entradas y temas que se publican. En Redes se deja fuera lo ajeno al
         radar, lo de puntaje mínimo y los posts sin texto (generators/social_filter.py)."""
         items = report.get('all_items', []) or []
-        themes = report.get('themes', []) or []
+        themes = merge_themes(report.get('themes', []) or [])
         if category != 'social':
             return items, themes
         kept = social_filter.publishable(items)
@@ -508,16 +509,27 @@ class JSONGenerator:
 
             if not simplified_item.get('freshness'):
                 simplified_item.pop('freshness', None)
-            simplified_item['source'] = clean_source(simplified_item.get('source', ''))
+            simplified_item['source'] = display_source(simplified_item.get('source', ''),
+                                                       simplified_item.get('url', '') or '')
+            # 25 nov: los recolectores ponen "Unknown" cuando el feed no trae autor; en
+            # el sitio no se muestra un autor que no existe.
+            if str(simplified_item.get('author') or '').strip().lower() in ('unknown', 'desconocido', 'n/a'):
+                simplified_item['author'] = ''
 
             # Un hecho, una entrada: otros medios que contaron lo mismo (agents/same_story.py).
             meta = (item['item'] if isinstance(item.get('item'), dict) else item).get('metadata') or {}
             also = [
-                {'source': str(a.get('source') or '')[:120], 'url': _safe_url(a.get('url', '')),
-                 'title': str(a.get('title') or '')[:300]}
+                {'source': display_source(str(a.get('source') or '')[:120], a.get('url', '') or ''),
+                 'url': _safe_url(a.get('url', '')), 'title': str(a.get('title') or '')[:300]}
                 for a in (meta.get('tambien_en') or []) if isinstance(a, dict)
             ] if isinstance(meta, dict) else []
-            also = [a for a in also if a['url']]
+            # Un medio una vez por grupo (25 nov: The Register salía dos veces).
+            seen_src, uniq = {simplified_item['source'].lower()}, []
+            for a in also:
+                if a['url'] and a['source'].lower() not in seen_src:
+                    seen_src.add(a['source'].lower())
+                    uniq.append(a)
+            also = uniq
             if also:
                 simplified_item['tambien_en'] = also
 

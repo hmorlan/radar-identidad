@@ -7,7 +7,7 @@
 	Todo el texto de las notas se pinta como texto (nunca HTML).
 -->
 <script lang="ts">
-	import type { DaySummary, Category, EditionNote, HeroImage } from '$lib/types';
+	import type { DaySummary, Category, EditionNote, HeroImage, Reparacion } from '$lib/types';
 	import { CATEGORY_CONFIG } from '$lib/types';
 	import { formatDate, formatDayOfWeek } from '$lib/services/dateUtils';
 	import { safeHtml } from '$lib/services/safeHtml';
@@ -16,6 +16,7 @@
 	import DateNavigator from '$lib/components/calendar/DateNavigator.svelte';
 	import HeroFriso from './HeroFriso.svelte';
 	import NotaEdicion from './NotaEdicion.svelte';
+	import { shortDate } from './editionUtils';
 	import SelloArmilar from './SelloArmilar.svelte';
 	import { LINKEDIN_URL, HUMAN_STRIP } from '$lib/config/site';
 
@@ -29,6 +30,13 @@
 	const EXPANDED = 2;
 
 	$: notes = (summary.edition?.notas ?? []) as EditionNote[];
+	// Correcciones después de publicar (25 nov): cada nota corregida lo dice y la
+	// edición las lista al final de las notas, con fecha y aviso.
+	$: reparaciones = (summary.reparaciones ?? []).filter((r): r is Reparacion => !!r && !!r.fecha);
+	$: corregidaEn = reparaciones.reduce<Record<string, string>>((acc, r) => {
+		for (const id of r.notas_corregidas ?? []) acc[id] = r.fecha;
+		return acc;
+	}, {});
 	$: domingo = summary.edition?.tipo === 'domingo';
 	$: weekday = formatDayOfWeek(summary.date);
 	$: dateLong = formatDate(summary.date);
@@ -97,9 +105,23 @@
 
 	<div class="notas">
 		{#each notes as note, i (note.item_id)}
-			<NotaEdicion {note} index={i} collapsed={i >= EXPANDED} />
+			<NotaEdicion {note} index={i} collapsed={i >= EXPANDED} corregidaEl={corregidaEn[note.item_id] ?? ''} />
 		{/each}
 	</div>
+	{#if reparaciones.length}
+		<section id="correcciones" class="columna correcciones" aria-label="Correcciones">
+			<h2 class="t-kicker text-oro mb-3">Correcciones</h2>
+			<ul>
+				{#each reparaciones as r}
+					<li>
+						<strong>{shortDate(r.fecha)}.</strong>
+						{r.aviso || 'Tras la revisión editorial corregimos datos de esta edición.'}
+					</li>
+				{/each}
+			</ul>
+			<p class="t-meta">Las correcciones las aprueba una persona antes de publicarse.</p>
+		</section>
+	{/if}
 {:else}
 	<section class="columna resumen">
 		<h2 class="t-kicker text-oro mb-3">Resumen de la edición</h2>
@@ -352,5 +374,20 @@
 			flex-direction: column;
 			align-items: flex-start;
 		}
+	}
+	.correcciones {
+		padding-top: 24px;
+		padding-bottom: 8px;
+		border-top: 1px solid rgb(var(--filete));
+		color: rgb(var(--tinta-suave));
+	}
+	.correcciones ul {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 8px;
+	}
+	.correcciones li {
+		margin-bottom: 6px;
+		line-height: 1.5;
 	}
 </style>

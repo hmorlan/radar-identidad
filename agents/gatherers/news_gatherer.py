@@ -24,6 +24,7 @@ from ..llm_client import AnthropicClient
 from .link_follower import LinkFollower
 from . import feed_cache, identity_filter
 from .regulator_sources import SeenCache, collect as collect_regulators, load_empresas, load_regulators
+from generators.source_names import clean_source
 
 logger = logging.getLogger(__name__)
 
@@ -360,19 +361,26 @@ class NewsGatherer(BaseGatherer):
 
         items = []
         for it in found:
+            # 25 nov: la fuente visible es el medio que publicó la nota, nunca la
+            # etiqueta de la búsqueda (una nota de Teletica salió como "Banco de Costa
+            # Rica (BCR)"). La empresa observada va solo en metadata y en el contexto
+            # que lee el análisis, no en el texto publicado.
+            outlet = clean_source(it.outlet) if it.outlet else ""
+            if not outlet:
+                outlet = clean_source((urlparse(it.url).hostname or "").removeprefix("www."))
             items.append(CollectedItem(
                 id=self.generate_id(it.url, it.title),
                 title=it.title,
-                content=(f"Nota sobre {it.spec.name} (empresa observada; lo que afirme la "
-                         f"empresa va atribuido): {it.title}"),
+                content=it.title,
                 url=it.url,
-                author=it.spec.name,
+                author="",
                 published=it.published.isoformat(),
-                source=it.spec.label,
+                source=outlet or it.spec.label,
                 source_type='empresa',
                 tags=['empresa observada', it.spec.country],
                 metadata={
                     'empresa': it.spec.name,
+                    'busqueda': it.spec.label,
                     'country': it.spec.country,
                     'via': 'google_news',
                 },
