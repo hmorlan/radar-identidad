@@ -52,6 +52,8 @@ def _load_base_module():
         stub = types.ModuleType("agents.llm_client")
         for name in ("AnthropicClient", "AsyncAnthropicClient", "ThinkingLevel", "LLMResponse"):
             setattr(stub, name, type(name, (), {}))
+        import contextlib
+        stub.attempt_timeout = lambda seconds: contextlib.nullcontext()  # base.py lo importa (25 nov)
         sys.modules["agents.llm_client"] = stub
 
     if "agents.analysis_schema" not in sys.modules:
