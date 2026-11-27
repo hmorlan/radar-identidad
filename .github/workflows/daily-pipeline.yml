@@ -815,7 +815,10 @@ jobs:
 
       # Radar: revisión mecánica de lo que se va a publicar (sin IA, sin costo):
       # nombres de fuente crudos, autor genérico, inglés, comentarios internos, LatAm
-      # fuera del resumen. No bloquea; la revisión técnica y la verificación lo leen.
+      # fuera del resumen, enlaces rotos. Desde el 27 nov, enlace roto y autor genérico
+      # (correo, "Newsletter") BLOQUEAN: el sitio no se despliega y la corrida termina en rojo
+      # al final (las capturas y las fuentes se suben igual para la revisión). La
+      # edición queda en R2: se publica con el workflow "Reparar edición".
       - name: Revisión mecánica de la edición
         id: lint
         if: success() && steps.schedule_gate.outputs.should_run == 'true'
@@ -824,7 +827,7 @@ jobs:
         run: |
           set -euo pipefail
           report_date="${TARGET_DATE_INPUT:-$(TZ=America/Mexico_City date +%F)}"
-          python3 scripts/lint_edicion.py --web-dir web --date "$report_date" --out lint/lint.json
+          python3 scripts/lint_edicion.py --web-dir web --date "$report_date" --out lint/lint.json --github-output "$GITHUB_OUTPUT"
 
       - name: Subir la revisión mecánica
         if: steps.lint.outcome == 'success'
@@ -836,7 +839,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Publicar el sitio en Cloudflare Pages
-        if: success() && steps.schedule_gate.outputs.should_run == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        if: success() && steps.schedule_gate.outputs.should_run == 'true' && env.CLOUDFLARE_API_TOKEN != '' && steps.lint.outputs.bloquea != 'true'
         shell: bash
         run: bash scripts/deploy_site.sh
 
@@ -1089,6 +1092,17 @@ jobs:
           artifact carries cost_report + orchestrator_result, which is what \
           generators/replay_generator.py needs to rebuild the index offline."
           fi
+
+      # Radar (27 nov): la revisión mecánica encontró un error que el código debía
+      # corregir. El sitio no se desplegó; aquí la corrida termina en rojo y GitHub
+      # manda correo. Se publica con "Reparar edición".
+      - name: Bloquear si la revisión mecánica encontró errores
+        if: always() && steps.lint.outputs.bloquea == 'true'
+        shell: bash
+        run: |
+          python3 -c "import json;r=json.load(open('lint/lint.json'));print('Bloqueantes:', r['bloqueantes'])"
+          echo "::error::La edición no se publicó: la revisión mecánica encontró errores bloqueantes (ver artefacto lint). Publicar con el workflow Reparar edición."
+          exit 1
 
       # Proactive failure alert (2026-06-21). Fires on ANY failure of a run that
       # was supposed to publish (RED synthesis, publish-gate revert, or the

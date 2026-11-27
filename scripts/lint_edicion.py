@@ -78,6 +78,7 @@ def lint(day_dir: Path) -> List[Dict[str, str]]:
         for path, value in _texts(doc):
             if path.endswith(("title_original", "content", "original_title", "reference_text")) \
                     or ".reparaciones" in path \
+                    or ".freshness" in path \
                     or path.startswith("reparaciones"):
                 continue  # el original en inglés y el registro de correcciones son legítimos
             if path.endswith(".source") or path == "source":
@@ -87,7 +88,7 @@ def lint(day_dir: Path) -> List[Dict[str, str]]:
                 continue
             if path.endswith(".author"):
                 v = value.strip().lower()
-                if v in ("unknown", "desconocido", "newsletter", "admin", "staff", "editor", "redacción") or re.search(r"\S+@\S+\.\w+", v):
+                if v in ("unknown", "desconocido", "newsletter", "admin", "staff", "editor", "redacción") or (re.search(r"\S+@\S+\.\w+", v) and not v.startswith("@")):
                     add("autor_generico", f"{name}:{path}", value)
                 continue
             if path.endswith(".title") and TITULO_SUFIJO.search(value):
@@ -121,11 +122,19 @@ def lint(day_dir: Path) -> List[Dict[str, str]]:
     return found
 
 
+# 27 nov (decisión de Hiram): estos tipos ya los corrige el código antes de
+# publicar; si aparece uno es un bug y la edición no se publica hasta repararla.
+# fuente_cruda no bloquea: un dominio sin nombre conocido (p. ej. ncsc.gov.uk) se
+# muestra como dominio, que es legible aunque no ideal.
+BLOQUEANTES = ("enlace_roto", "autor_generico")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--web-dir", default="web")
     ap.add_argument("--date", required=True)
     ap.add_argument("--out", default="")
+    ap.add_argument("--github-output", default="", help="archivo $GITHUB_OUTPUT para escribir bloquea=true|false")
     args = ap.parse_args()
     day_dir = Path(args.web_dir) / "data" / args.date
     if not (day_dir / "summary.json").exists():
@@ -135,11 +144,18 @@ def main() -> int:
     by_type: Dict[str, int] = {}
     for f in found:
         by_type[f["tipo"]] = by_type.get(f["tipo"], 0) + 1
-    report = {"date": args.date, "total": len(found), "por_tipo": by_type, "hallazgos": found}
+    bloqueantes = {t: n for t, n in by_type.items() if t in BLOQUEANTES}
+    report = {"date": args.date, "total": len(found), "por_tipo": by_type,
+              "bloqueantes": bloqueantes, "hallazgos": found}
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Revisión mecánica {args.date}: {len(found)} hallazgos {by_type}")
+    if bloqueantes:
+        print(f"BLOQUEA la publicación: {bloqueantes}")
+    if args.github_output:
+        with open(args.github_output, "a", encoding="utf-8") as fh:
+            fh.write(f"bloquea={'true' if bloqueantes else 'false'}\n")
     for f in found[:60]:
         print(f"  [{f['tipo']}] {f['donde']}: {f['texto']}")
     return 0

@@ -31,7 +31,7 @@ EXACT = {
 # Dominios de artículos que llegan desde redes (Bluesky, Hacker News): la nota
 # enlaza al original y muestra el nombre del medio, no el dominio.
 HOSTS = {
-    "theregister.com": "The Register", "techcrunch.com": "TechCrunch",
+    "theregister.com": "The Register", "ncsc.gov.uk": "NCSC (Reino Unido)", "techcrunch.com": "TechCrunch",
     "bleepingcomputer.com": "BleepingComputer", "thehackernews.com": "The Hacker News",
     "darkreading.com": "Dark Reading", "wired.com": "WIRED", "es.wired.com": "WIRED en Español",
     "therecord.media": "The Record", "krebsonsecurity.com": "Krebs on Security",
@@ -119,7 +119,9 @@ _EMAIL = re.compile(r"\S+@\S+\.\w+")
 
 def clean_author(author, source: str = "") -> str:
     a = str(author or "").strip()
-    if not a or a.lower() in _AUTOR_GENERICO or _EMAIL.search(a):
+    if not a or a.lower() in _AUTOR_GENERICO:
+        return ""
+    if _EMAIL.search(a) and not a.startswith("@"):  # @usuario@instancia es Mastodon, no correo
         return ""
     if source and a.lower() == source.strip().lower():
         return ""

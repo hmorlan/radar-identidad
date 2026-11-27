@@ -97,6 +97,7 @@ class MecanicosTest(unittest.TestCase):
         self.assertEqual(clean_author("Newsletter"), "")
         self.assertEqual(clean_author("@zackwhittaker.com"), "@zackwhittaker.com")
         self.assertEqual(clean_author("Chris Burt"), "Chris Burt")
+        self.assertEqual(clean_author("@briankrebs@infosec.exchange"), "@briankrebs@infosec.exchange")
         self.assertEqual(strip_title_suffix("Nueva estafa de Coppel - E-Tlaxcala", "E-Tlaxcala"), "Nueva estafa de Coppel")
         self.assertEqual(strip_title_suffix("youniqx entrega componentes • OSD", "x"), "youniqx entrega componentes")
         self.assertEqual(strip_title_suffix("Policía Cibernética alerta (16:00 h)", "x"), "Policía Cibernética alerta")
