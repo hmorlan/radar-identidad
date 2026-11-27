@@ -297,6 +297,11 @@ class NewsGatherer(BaseGatherer):
                 if identity_filter.is_sponsored(title):
                     filtered_out += 1
                     continue
+                # Política B (27 nov): ni el sitio ni la firma de un proveedor de
+                # identidad, fraude o verificación (config/proveedores.txt).
+                if identity_filter.is_identity_vendor(url, row.get('author') or ''):
+                    filtered_out += 1
+                    continue
 
                 # Fuentes ruidosas: solo entradas con tema de identidad.
                 if filtro and not identity_filter.matches_feed_entry(

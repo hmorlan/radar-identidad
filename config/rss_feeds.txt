@@ -159,3 +159,13 @@ https://www.iupana.com/feed/
 # El Economista: responde 403.
 # ESET feedburner antiguo (esetla-laboratorio): el dominio ya no resuelve.
 # DOF, CNBV y Banxico: sin RSS utilizable; requieren un recolector propio (pendiente).
+
+# ===== Investigación de equipos de inteligencia de amenazas (política B, 27 nov) =====
+# Lista cerrada en config/proveedores.txt [investigacion]. Fuente directa solo para su
+# investigación, siempre atribuida; filtro=identidad para dejar solo lo de credenciales,
+# MFA, sesiones, agentes con accesos, fraude. Agregadas sin check_feeds (la sesión no
+# tenía red): la alerta de fuentes caídas y la revisión técnica del lunes lo confirman.
+# Cisco Talos, ~3-5/semana
+https://blog.talosintelligence.com/rss/  filtro=identidad
+# Palo Alto Networks Unit 42, ~3-5/semana
+https://unit42.paloaltonetworks.com/feed/  filtro=identidad

@@ -448,8 +448,46 @@ def needs_coherence(edition: Edition) -> bool:
     return bool(edition.notas) or bool(edition.descartadas)
 
 
+_INTERNAL_ID = re.compile(r"#item-([0-9a-fA-F]{6,})")
+LINKED_MAX = 70
+LINKED_CLIP = 1200
+
+
+def _solo_aviso(text: str) -> bool:
+    t = (text or "").strip().lower()
+    return t.startswith("new version available") or len(t) < 120
+
+
+def linked_entries(derived: Dict[str, str], linked: Optional[Dict[str, Tuple[str, AnalyzedItem]]]) -> List[Dict[str, Any]]:
+    """Las entradas que enlazan los textos: lo que el resumen afirma debe estar ahí."""
+    if not linked:
+        return []
+    seen: List[str] = []
+    for text in derived.values():
+        for iid in _INTERNAL_ID.findall(text or ""):
+            if iid in linked and iid not in seen:
+                seen.append(iid)
+    out = []
+    for iid in seen[:LINKED_MAX]:
+        cat, a = linked[iid]
+        it = a.item
+        cont = getattr(a, "continuation", None)
+        content = source_text(it, LINKED_CLIP)
+        out.append({
+            "id": iid, "categoria": cat, "titulo": _clip(getattr(a, "titulo", "") or it.title, 300),
+            "titulo_original": _clip(it.title, 300), "medio": it.source, "autor": it.author,
+            "fecha": str(it.published)[:10], "resumen_del_analisis": _clip(a.summary, 600),
+            "texto": content,
+            "solo_aviso": _solo_aviso(it.content),
+            "seguimiento": ({"tipo": getattr(cont, "continuation_type", ""),
+                             "fecha_original": getattr(cont, "original_date", "")} if cont else None),
+        })
+    return out
+
+
 def coherence_context(edition: Edition, by_id: Dict[str, Tuple[str, AnalyzedItem]],
-                      derived: Dict[str, str]) -> str:
+                      derived: Dict[str, str],
+                      linked: Optional[Dict[str, Tuple[str, AnalyzedItem]]] = None) -> str:
     corrections = []
     for note in edition.notas:
         if note.verificacion != "corregida":
@@ -468,12 +506,16 @@ def coherence_context(edition: Edition, by_id: Dict[str, Tuple[str, AnalyzedItem
             "titulo_descartado": d.get("titulo", ""),
             "fuente": source_text(it, CONTENT_CLIP * 2) if it else "",
         })
-    referencias = [
-        {"id": n.item_id, "titulo": n.title, "que_paso": n.que_paso}
-        for n in edition.notas if n.verificacion == "verificada"
-    ]
+    referencias = []
+    for n in edition.notas:
+        if n.verificacion != "verificada":
+            continue
+        it = by_id[n.item_id][1].item if n.item_id in by_id else None
+        referencias.append({"id": n.item_id, "titulo": n.title, "que_paso": n.que_paso,
+                            "fuente": source_text(it, CONTENT_CLIP * 2) if it else ""})
     textos = {TITULAR_FIELD: edition.titular, **derived}
     return json.dumps({"correcciones": corrections, "notas_verificadas": referencias,
+                       "entradas_enlazadas": linked_entries(derived, linked),
                        "textos": {k: v for k, v in textos.items() if v}},
                       ensure_ascii=False, indent=1)
 
@@ -525,8 +567,15 @@ async def reconcile_derived(
     derived: Dict[str, str],
     target_date: str,
     max_notes: int = 8,
+    linked: Optional[Dict[str, Tuple[str, AnalyzedItem]]] = None,
 ) -> Edition:
-    """Fase 4.4. Never raises: on failure the derived texts stay as they were."""
+    """Fase 4.4: verificación del resumen. Never raises: on failure the derived texts
+    stay as they were.
+
+    27 nov: casi todas las correcciones posteriores (48 el 27 nov) estaban en el
+    resumen ejecutivo y los temas, no en las notas. Ahora esta fase revisa cada frase
+    con enlace contra la entrada que enlaza (cifras, fechas, "según X", seguimientos,
+    borradores vistos solo por su aviso), con Opus y con el texto de esas entradas."""
     if not derived or not needs_coherence(edition):
         return edition
     prompt = _prompt(prompt_accessor, "edition_coherence", target_date, max_notes)
@@ -535,15 +584,16 @@ async def reconcile_derived(
         return edition
     nonce = new_fence_nonce()
     try:
-        response = await async_client.call_with_thinking(
-            messages=[{"role": "user", "content": build_fenced_user_message(
-                coherence_context(edition, by_id, derived), nonce,
-                task_line="Revisa los textos cercados contra las correcciones, según tus "
-                          "instrucciones de sistema.")}],
-            system=build_hardened_system(prompt, nonce),
-            profile=ThinkingLevel.QUICK,
-            caller="orchestrator.edition_coherence",
-        )
+        with attempt_timeout(_edition_timeout()):
+            response = await async_client.call_with_thinking(
+                messages=[{"role": "user", "content": build_fenced_user_message(
+                    coherence_context(edition, by_id, derived, linked), nonce,
+                    task_line="Revisa los textos cercados contra las notas y las entradas que "
+                              "enlazan, según tus instrucciones de sistema.")}],
+                system=build_hardened_system(prompt, nonce),
+                profile=ThinkingLevel.DEEP,
+                caller="orchestrator.edition_coherence",
+            )
         texts = {TITULAR_FIELD: edition.titular, **derived}
         edits = parse_coherence(response.content, texts)
     except Exception as e:  # noqa: BLE001
@@ -627,8 +677,10 @@ async def build_edition(
         logger.error("Verificación de notas falló: %s", e)
         edition.degradations.append(f"verificación: falló ({type(e).__name__}); notas sin verificar")
         return edition
+    linked = {a.item.id: (cat, a) for cat, report in (category_reports or {}).items()
+              for a in (getattr(report, "all_items", None) or [])}
     return await reconcile_derived(async_client, prompt_accessor, edition, by_id,
-                                   derived or {}, target_date, max_notes)
+                                   derived or {}, target_date, max_notes, linked=linked)
 
 
 def _prompt(prompt_accessor: Any, name: str, target_date: str, max_notes: int) -> Optional[str]:

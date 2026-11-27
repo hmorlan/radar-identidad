@@ -1108,6 +1108,15 @@ class MainOrchestrator:
         if edition.ajustes:
             executive_summary = self._apply_edition_adjustments(
                 edition.ajustes, executive_summary, category_reports, top_topics)
+        # 27 nov: cada nota de México, LatAm o España va enlazada en el resumen
+        # (tres ediciones seguidas quedó fuera alguna).
+        if edition.notas:
+            from generators.region import ensure_latam_in_summary
+            nuevo = ensure_latam_in_summary(executive_summary, [n.to_dict() for n in edition.notas],
+                                            self.target_date or "")
+            if nuevo != executive_summary:
+                logger.info("  Resumen: se agregó al resumen ejecutivo una nota de la región que faltaba")
+                executive_summary = nuevo
 
         # Phase 4.6: Ecosystem Enrichment (detect new model releases from news)
         if self.replay_context is not None:

@@ -56,6 +56,8 @@ HOSTS = {
     "elnacional.com.do": "El Nacional", "elnuevodiario.com.do": "El Nuevo Diario",
     "openid.net": "OpenID Foundation", "modelcontextprotocol.io": "Model Context Protocol",
     "ciberseguridadlatam.com": "CiberSeguridad Latam", "nist.gov": "NIST", "fidoalliance.org": "FIDO Alliance",
+    "meganoticias.mx": "Meganoticias", "elpinero.mx": "El Piñero", "adnsureste.info": "ADN Sureste",
+    "e-tlaxcala.mx": "E-Tlaxcala", "24-horas.mx": "24 Horas",
 }
 _HOST_RE = re.compile(r"^[a-z0-9-]+(\.[a-z0-9-]+)+$")
 
@@ -77,9 +79,10 @@ def display_source(name: str, url: str = "") -> str:
     como un dominio pelón, lo saca del dominio del enlace."""
     from urllib.parse import urlparse
 
-    cleaned = clean_source(_PAGE_PREFIX.sub("", (name or "").strip()))
+    cleaned = clean_source(_PAGE_PREFIX.sub("", (name or "").strip())).rstrip(" .,;:")
     host = (urlparse(url or "").hostname or "").lower().removeprefix("www.")
-    generic = cleaned.lower() in GENERIC or bool(_HOST_RE.match(cleaned.lower().removeprefix("www.")))
+    generic = (cleaned.lower() in GENERIC or bool(_HOST_RE.match(cleaned.lower().removeprefix("www.")))
+               or ", " in cleaned)  # "El Piñero, Periodismo y Debate": lema del feed
     if generic and host:
         for h in (host, ".".join(host.split(".")[-2:]), ".".join(host.split(".")[-3:])):
             if h in HOSTS:
@@ -104,3 +107,41 @@ def clean_source(name: str) -> str:
         group = m.group(1).strip()
         return f"IETF ({_IETF_GROUPS.get(group.lower(), group)})"
     return _SUFFIX.sub("", raw).strip() or raw
+
+
+# 27 nov: autores que no son personas ("Newsletter", "Redacción", el correo del feed
+# de The Hacker News) y títulos con el medio pegado al final ("… - E-Tlaxcala",
+# "… • OSD", "… (16:00 h)").
+_AUTOR_GENERICO = {"unknown", "desconocido", "n/a", "newsletter", "admin", "staff", "editor",
+                   "redacción", "redaccion", "editorial", "news desk"}
+_EMAIL = re.compile(r"\S+@\S+\.\w+")
+
+
+def clean_author(author, source: str = "") -> str:
+    a = str(author or "").strip()
+    if not a or a.lower() in _AUTOR_GENERICO or _EMAIL.search(a):
+        return ""
+    if source and a.lower() == source.strip().lower():
+        return ""
+    return a
+
+
+_SUFIJO_HORA = re.compile(r"\s*\(\d{1,2}:\d{2}\s*h\)\s*$")
+_SUFIJO_MEDIO = re.compile(r"\s+[-–|•]\s+([^-–|•]{2,32})$")
+
+
+def _letters(x: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", x.lower())
+
+
+def strip_title_suffix(title: str, source: str = "") -> str:
+    t = _SUFIJO_HORA.sub("", title or "").strip()
+    cut = max((t.rfind(sep), sep) for sep in (" - ", " – ", " | ", " • "))
+    pos, sep = cut
+    if pos > 0:
+        tail = t[pos + len(sep):].strip()
+        src = _letters(source or "")
+        same = bool(src) and bool(_letters(tail)) and (_letters(tail) in src or src in _letters(tail))
+        if 2 <= len(tail) <= 32 and (sep.strip() == "•" or same or tail.lower() in ("inicio", "home", "portada")):
+            t = t[:pos].rstrip()
+    return t

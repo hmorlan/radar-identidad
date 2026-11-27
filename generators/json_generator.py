@@ -19,7 +19,7 @@ from pathlib import Path
 
 import nh3
 
-from generators.source_names import clean_source, display_source
+from generators.source_names import clean_author, clean_source, display_source, strip_title_suffix
 from generators import social_filter
 from generators.themes import merge_themes
 
@@ -233,16 +233,56 @@ class JSONGenerator:
             })
         return {'titular': text(edition.get('titular'), 200), 'notas': notes}
 
+    def _published_ids(self, result: Dict[str, Any]) -> Dict[str, set]:
+        """IDs que de verdad se publican, por categoría (después de los cortes)."""
+        out: Dict[str, set] = {}
+        for category, report in (result.get('category_reports') or {}).items():
+            items, _ = self._published(category, report)
+            out[category] = {str(getattr(i, 'id', None) or (i.get('id') if isinstance(i, dict) else '') or
+                                 ((i.get('item') or {}).get('id') if isinstance(i, dict) else ''))
+                             for i in items}
+        return out
+
+    _MD_INTERNAL = re.compile(r"\[([^\]]+)\]\(/\?date=([0-9-]{10})&(?:amp;)?category=(\w+)#item-([0-9a-fA-F]+)\)")
+    _HTML_INTERNAL = re.compile(r'<a\s+[^>]*href="/\?date=([0-9-]{10})&(?:amp;)?category=(\w+)#item-([0-9a-fA-F]+)"[^>]*>(.*?)</a>', re.S)
+
+    def _unlink_missing(self, text: str, date: str, known: Dict[str, set]) -> str:
+        """27 nov: un enlace interno a una entrada que no se publica deja el texto sin
+        destino (26 enlaces rotos en Redes). Se conserva el texto y se quita el enlace."""
+        if not text or not known:
+            return text
+
+        def missing(d, cat, iid):
+            return d == date and cat in known and iid not in known[cat]
+
+        def md(m):
+            if missing(m.group(2), m.group(3), m.group(4)):
+                self._unlinked += 1
+                return m.group(1)
+            return m.group(0)
+
+        def html(m):
+            if missing(m.group(1), m.group(2), m.group(3)):
+                self._unlinked += 1
+                return m.group(4)
+            return m.group(0)
+
+        return self._HTML_INTERNAL.sub(html, self._MD_INTERNAL.sub(md, text))
+
     def _generate_summary_json(self, date_dir: str, result: Dict[str, Any]) -> None:
         """Generate summary.json with executive summary and top items."""
         category_reports = result.get('category_reports', {})
+        known = self._published_ids(result)
+        date = str(result.get('date', '') or '')
+        self._unlinked = 0
+        fix = lambda t: self._unlink_missing(t, date, known)  # noqa: E731
 
         # Build category summaries with only top items
         categories = {}
         for category, report in category_reports.items():
             all_items, themes = self._published(category, report)
             top_items = self._published(category, {'all_items': report.get('top_items', [])})[0][:10]
-            category_summary = report.get('category_summary', '')
+            category_summary = fix(report.get('category_summary', ''))
             categories[category] = {
                 'count': len(all_items),
                 'category_summary': category_summary,
@@ -251,8 +291,16 @@ class JSONGenerator:
                 'top_items': self._simplify_items(top_items)
             }
 
-        executive_summary = result.get('executive_summary', '')
+        executive_summary = fix(result.get('executive_summary', ''))
         collection_status = result.get('collection_status', {})
+        topics_in = []
+        for t in result.get('top_topics', []) or []:
+            if isinstance(t, dict):
+                t = dict(t)
+                for k in ('description', 'description_html'):
+                    if isinstance(t.get(k), str):
+                        t[k] = fix(t[k])
+            topics_in.append(t)
 
         summary = {
             'date': result.get('date', ''),
@@ -261,7 +309,7 @@ class JSONGenerator:
             'coverage_end': result.get('coverage_end', ''),
             'executive_summary': executive_summary,
             'executive_summary_html': self._markdown_to_html(executive_summary),
-            'top_topics': self._sanitize_top_topics(result.get('top_topics', [])),
+            'top_topics': self._sanitize_top_topics(topics_in),
             'total_items_collected': result.get('total_items_collected', 0),
             'total_items_analyzed': result.get('total_items_analyzed', 0),
             'collection_status': self._format_collection_status(collection_status),
@@ -315,9 +363,12 @@ class JSONGenerator:
         category_reports = result.get('category_reports', {})
         report_date = result.get('date', '')
 
+        known = self._published_ids(result)
+        self._unlinked = getattr(self, '_unlinked', 0)
         for category, report in category_reports.items():
             all_items, themes = self._published(category, report)
-            category_summary = report.get('category_summary', '')
+            category_summary = self._unlink_missing(report.get('category_summary', ''),
+                                                    str(result.get('date', '') or ''), known)
 
             category_data = {
                 'category': category,
@@ -513,8 +564,10 @@ class JSONGenerator:
                                                        simplified_item.get('url', '') or '')
             # 25 nov: los recolectores ponen "Unknown" cuando el feed no trae autor; en
             # el sitio no se muestra un autor que no existe.
-            if str(simplified_item.get('author') or '').strip().lower() in ('unknown', 'desconocido', 'n/a'):
-                simplified_item['author'] = ''
+            simplified_item['author'] = clean_author(simplified_item.get('author'), simplified_item['source'])
+            for key in ('title', 'title_original'):
+                if isinstance(simplified_item.get(key), str):
+                    simplified_item[key] = strip_title_suffix(simplified_item[key], simplified_item['source'])
 
             # Un hecho, una entrada: otros medios que contaron lo mismo (agents/same_story.py).
             meta = (item['item'] if isinstance(item.get('item'), dict) else item).get('metadata') or {}

@@ -1,0 +1,72 @@
+# Radar de Identidad: política de proveedores (opción B, decidida por Hiram el 27 nov 2026).
+#
+# 1) INVESTIGACIÓN PERMITIDA (sección [investigacion]): equipos de inteligencia de amenazas
+#    de empresas grandes que publican investigación primaria. Pueden ser fuente directa,
+#    siempre atribuidos ("según Cisco Talos"), y solo su investigación: nunca anuncios de
+#    producto. Lista cerrada: se amplía solo con el OK de Hiram.
+# 2) EXCLUIDOS (sección [identidad]): proveedores de identidad, autenticación, fraude,
+#    verificación o protección contra bots. No son fuente nunca; solo aparecen cuando los
+#    cubre prensa independiente, un organismo de estándares o un regulador. Una entrada
+#    cuyo enlace es de uno de estos dominios, o cuyo autor es una de estas empresas
+#    (p. ej. tribunas firmadas por la empresa en Biometric Update), no se publica.
+#    Formato: dominio  |  nombre(s) de la empresa, separados por coma.
+
+[investigacion]
+blog.talosintelligence.com | Cisco Talos
+unit42.paloaltonetworks.com | Unit 42, Palo Alto Networks Unit 42
+cloud.google.com/blog/topics/threat-intelligence | Google Threat Intelligence, GTIG, Mandiant
+microsoft.com/en-us/security/blog/topic/threat-intelligence | Microsoft Threat Intelligence
+aws.amazon.com/blogs/security | Amazon Threat Intelligence
+
+[identidad]
+okta.com | Okta
+auth0.com | Auth0
+pingidentity.com | Ping Identity
+forgerock.com | ForgeRock
+transmitsecurity.com | Transmit Security
+cyberark.com | CyberArk
+sailpoint.com | SailPoint
+beyondidentity.com | Beyond Identity
+hypr.com | HYPR
+1kosmos.com | 1Kosmos
+duo.com | Duo
+yubico.com | Yubico
+descope.com | Descope
+stytch.com | Stytch
+frontegg.com | Frontegg
+fusionauth.io | FusionAuth
+jumio.com | Jumio
+onfido.com | Onfido
+sumsub.com | Sumsub
+veriff.com | Veriff
+socure.com | Socure
+incode.com | Incode
+iproov.com | iProov
+withpersona.com | Persona
+idenfy.com | iDenfy
+au10tix.com | AU10TIX
+mitek.com | Mitek
+daon.com | Daon
+signicat.com | Signicat
+entrust.com | Entrust
+osd.at | Österreichische Staatsdruckerei, OSD
+youniqx.com | youniqx
+shuftipro.com | Shufti, Shufti Pro
+facetec.com | FaceTec
+regulaforensics.com | Regula
+idnow.io | IDnow
+trulioo.com | Trulioo
+prove.com | Prove
+biocatch.com | BioCatch
+feedzai.com | Feedzai
+sardine.ai | Sardine
+featurespace.com | Featurespace
+sift.com | Sift
+seon.io | SEON
+nuance.com | Nuance
+pindrop.com | Pindrop
+arkoselabs.com | Arkose Labs
+humansecurity.com | HUMAN Security
+datadome.co | DataDome
+kasada.io | Kasada
+castle.io | Castle

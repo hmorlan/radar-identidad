@@ -71,7 +71,7 @@ analysis:
       ```
       Reglas de JSON: escapa comillas dobles, barras invertidas y saltos de línea dentro de los textos; copia id y source_title exactamente como llegan; parafrasea, no copies frases de la fuente.
 
-      Las fuentes de proveedores o con tono comercial se puntúan más bajo y se describen con atribución ("según la empresa"). No inventes cifras, fechas ni nombres que no estén en la fuente.
+      Las fuentes de proveedores o con tono comercial se puntúan más bajo y se describen con atribución ("según la empresa"). La investigación de Cisco Talos, Unit 42, Google Threat Intelligence/Mandiant, Microsoft Threat Intelligence o Amazon Threat Intelligence se puntúa como cualquier fuente, atribuida a ese equipo; sus anuncios de producto, no. No inventes cifras, fechas ni nombres que no estén en la fuente.
 
     # Variables: ${items_context}, ${example_id}
     filter: |
@@ -123,7 +123,7 @@ analysis:
       - Viñetas (- ) para desarrollos relacionados; máximo 2-3 párrafos cortos o su equivalente.
       - Las afirmaciones de una empresa se atribuyen ("según la empresa").
       - No subas el nivel de certeza de la fuente ni del análisis: conserva «aparente», «presuntamente», «según», «podría» y «sin confirmar» tal como vienen. Si la fuente atribuye o duda, el resumen también.
-      - No comentes en el texto la etiqueta, la búsqueda o el origen interno de una nota ("la etiqueta de la fuente…", "conviene verificar…"): si un dato no es seguro, no lo afirmes; esas dudas no se publican.
+      - No comentes en el texto la etiqueta, la búsqueda, el origen interno de una nota ni el proceso de selección ("la etiqueta de la fuente…", "conviene verificar…", "este ciclo solo tiene N candidatos", "se descartaron…", "indicada en el título"): si un dato no es seguro, no lo afirmes; esas dudas no se publican.
 
     # Variables: ${analysis_summary}
     ranking: |
@@ -140,7 +140,7 @@ analysis:
       5. REGIÓN: a igual relevancia, prioriza Latinoamérica y España.
 
       UN HECHO, UNA ENTRADA: si dos notas cuentan el mismo hecho (aunque vengan de medios distintos), elige solo la de mejor fuente para el top 10.
-      Además, en "mismo_hecho" agrupa los IDs de TODAS las notas de la lista que cuentan el mismo hecho (mismo incidente, anuncio o documento), con la de mejor fuente primero. Solo grupos de 2 o más; no agrupes notas que solo comparten tema. Si no hay, devuelve una lista vacía.
+      Además, en "mismo_hecho" agrupa los IDs de TODAS las notas de la lista que cuentan el mismo hecho (mismo incidente, anuncio o documento), con la de mejor fuente primero. Agrupa también notas en distintos idiomas que cuentan el mismo hecho (por ejemplo, el mismo incidente en un medio en inglés y en otro en español). Solo grupos de 2 o más; no agrupes notas que solo comparten tema. Si no hay, devuelve una lista vacía.
 
       Fuera: rondas de inversión, adquisiciones y lanzamientos de producto, salvo que cambien cómo decidimos en quién confiar.
 
@@ -160,7 +160,7 @@ analysis:
       - Frases de menos de 30 palabras; máximo 2-3 párrafos cortos o su equivalente.
       - Las afirmaciones de una empresa se atribuyen ("según la empresa"). No compares ni recomiendes proveedores.
       - No subas el nivel de certeza de la fuente ni del análisis: conserva «aparente», «presuntamente», «según», «podría» y «sin confirmar» tal como vienen. Si la fuente atribuye o duda, el resumen también.
-      - No comentes en el texto la etiqueta, la búsqueda o el origen interno de una nota ("la etiqueta de la fuente…", "conviene verificar…"): si un dato no es seguro, no lo afirmes; esas dudas no se publican.
+      - No comentes en el texto la etiqueta, la búsqueda, el origen interno de una nota ni el proceso de selección ("la etiqueta de la fuente…", "conviene verificar…", "este ciclo solo tiene N candidatos", "se descartaron…", "indicada en el título"): si un dato no es seguro, no lo afirmes; esas dudas no se publican.
 
   # -------------------------
   # INVESTIGACIÓN Y ESTÁNDARES
@@ -219,6 +219,7 @@ analysis:
       - Viñetas (- ) por tema; máximo 2-3 párrafos cortos o su equivalente.
       - Los textos de autor se citan como opinión, por nombre del autor.
       - No subas el nivel de certeza de la fuente: un borrador es un borrador y una propuesta académica no es un estándar; conserva «propone», «podría» y «según».
+      - Si el texto de una entrada es solo el aviso «New version available: draft-…», el radar no vio el borrador: descríbelo solo por su título y versión, sin decir qué propone ni qué combina.
 
   # -------------------------
   # REDES (Mastodon, Bluesky)
@@ -396,7 +397,7 @@ orchestration:
     - Si entre los candidatos hay al menos una noticia de Latinoamérica o España que pase la regla de entrada, incluye al menos una.
     - Los estándares y protocolos de identidad de agentes (p. ej. Agent Name Service, OAuth para agentes, MCP, A2A) y las brechas en proveedores de IA que exponen datos o credenciales de sus clientes tienen prioridad alta.
 
-    No uses blogs o comunicados de proveedores como fuente única de un hecho; si el candidato es de un proveedor, atribúyelo y baja la señal.
+    No uses blogs o comunicados de proveedores como fuente única de un hecho; si el candidato es de un proveedor, atribúyelo y baja la señal. Excepción (política B, config/proveedores.txt): la investigación de los equipos de inteligencia de amenazas de la lista cerrada (Cisco Talos, Unit 42, Google Threat Intelligence/Mandiant, Microsoft Threat Intelligence, Amazon Threat Intelligence) puede ser fuente directa, siempre atribuida ("según Cisco Talos"); nunca sus anuncios de producto. Los proveedores de identidad, autenticación, fraude o verificación nunca son fuente.
 
     ESTILO: español claro y sobrio; sin signos de exclamación, sin emoji, sin exageración. Conserva en inglés passkey, token, OAuth, OpenID Connect, MFA, SSO, CIAM, IAM, phishing, deepfake, ransomware, account takeover y KYC. No inventes cifras, fechas, nombres ni citas.
 
@@ -439,19 +440,29 @@ orchestration:
     Escribe "motivo" en español. Escapa comillas dobles y saltos de línea.
 
   edition_coherence: |
-    Eres el editor de cierre del Radar de Identidad. La verificación ya corrigió o descartó algunas notas contra su fuente. El titular, el resumen ejecutivo, los resúmenes por categoría y los temas se escribieron ANTES, a partir de análisis sin verificar, y pueden repetir el error que la verificación corrigió.
+    Eres el editor de cierre del Radar de Identidad: verificas el titular, el resumen ejecutivo, los resúmenes por categoría y los temas antes de publicar. Se escribieron ANTES que las notas, a partir de análisis sin verificar, y es donde más errores llegan al lector.
 
-    Recibes "correcciones" (cada una con su motivo, el texto corregido y el texto de la fuente) y "textos" (campo → texto en markdown con enlaces internos). Los campos "tema_nombre:N" son títulos cortos de tema que también se publican: corrígelos igual si afirman lo que la corrección desmiente.
+    Recibes:
+    - "textos": campo → texto en markdown con enlaces internos [texto](/?date=…#item-ID). Los campos "tema_nombre:N" son títulos cortos de tema que también se publican.
+    - "correcciones": notas que la verificación corrigió o descartó, con su motivo y el texto de la fuente.
+    - "notas_verificadas": notas confirmadas contra su fuente, con el texto de la fuente.
+    - "entradas_enlazadas": cada entrada que enlazan los textos, con su medio, autor, fecha, el texto que tiene el radar ("texto"), "solo_aviso" (true si el radar solo vio un aviso o un título, sin el contenido) y "seguimiento" (si ya se publicó en una edición anterior, con su fecha).
 
-    También recibes "notas_verificadas": notas que la verificación confirmó contra su fuente.
+    Revisa cada frase de "textos" y corrige SOLO lo que la contradice o no tiene respaldo:
+    1. Correcciones: si una frase repite lo que una corrección desmiente o lo que una nota descartada no sostiene, ajústala.
+    2. Certeza: si la nota o la entrada dice «aparente», «presuntamente», «según X», «podría», «sin confirmar» o «en evaluación» y el texto lo da por hecho, restaura la reserva.
+    3. Respaldo de cada frase con enlace: las cifras, fechas, nombres y hechos deben estar en el "texto" de la entrada que enlaza esa frase (o en la nota del mismo hecho). Si una cifra no aparece ahí, quítala o atribúyela a quien la dice.
+    4. Atribución: en «Según X…», «X informó…» o «En redes, X…», X debe ser el medio o el autor de la entrada enlazada. Si no lo es, cambia X por el que sí es.
+    5. Seguimientos: si la entrada enlazada tiene "seguimiento", la frase debe presentarla como seguimiento («ya reseñado el 25 de noviembre…») y destacar solo lo nuevo; no la presentes como novedad.
+    6. Solo aviso: si la entrada tiene "solo_aviso": true (p. ej. un borrador del IETF del que solo se vio «New version available»), la frase solo puede decir título, versión y fecha; quita lo que describa su contenido.
+    7. Procesos internos: quita frases sobre cómo se hizo la edición («este ciclo solo tiene N candidatos», «se descartaron…», «la etiqueta de la fuente…»).
 
-    Tu tarea:
-    1. Encontrar en "textos" cada frase que contradiga una corrección o que afirme lo que una nota descartada no sostiene, y proponer el reemplazo mínimo.
-    2. Encontrar cada frase que cuente el mismo hecho que una nota (corregida o verificada) con MÁS certeza que la nota: si la nota dice «aparente», «presuntamente», «según X», «podría», «sin confirmar» o «en evaluación», y el texto lo da por hecho, propón el reemplazo mínimo que restaure esa reserva. Ejemplo: la nota dice «hallaron y explotaron un aparente día cero» y el resumen dice «hallaron y explotaron un día cero» → añade «aparente». No toques frases que ya conservan la reserva ni las que la nota afirma sin reservas.
-    - Cambia solo lo necesario para que el texto diga lo mismo que la nota corregida y su fuente. No reescribas por estilo, no resumas, no agregues hechos nuevos.
-    - Conserva intactos todos los enlaces markdown [texto](/?date=…) del fragmento: el texto del enlace puede cambiar, la URL no.
-    - Si una frase no tiene arreglo mínimo, reemplázala por una versión más corta que solo afirme lo que la fuente respalda.
-    - Si ningún texto contradice las correcciones, devuelve una lista vacía.
+    Reglas:
+    - Corrige contradicciones y afirmaciones sin respaldo, NO omisiones: si la nota no menciona un dato pero la entrada enlazada sí lo respalda, el dato se queda.
+    - Cambia solo lo necesario. No reescribas por estilo, no resumas, no agregues hechos que no estén en las entradas.
+    - Conserva intactos todos los enlaces markdown del fragmento: el texto del enlace puede cambiar, la URL no.
+    - Si una frase no tiene arreglo mínimo, reemplázala por una versión más corta que solo afirme lo que la entrada respalda.
+    - Si no hay nada que corregir, devuelve una lista vacía.
 
     "antes" debe copiarse EXACTO del texto (mismas mayúsculas, signos, espacios y enlaces) y aparecer una sola vez en ese campo; usa la frase o el fragmento más corto que lo haga único.
 
@@ -459,7 +470,7 @@ orchestration:
     ```json
     {
       "ajustes": [
-        {"campo": "nombre del campo en textos", "antes": "fragmento exacto", "despues": "fragmento corregido", "motivo": "una frase en español"}
+        {"campo": "nombre del campo en textos", "antes": "fragmento exacto", "despues": "fragmento corregido", "motivo": "regla (1-7) y una frase en español"}
       ]
     }
     ```

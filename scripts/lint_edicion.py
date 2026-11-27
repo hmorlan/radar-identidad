@@ -24,16 +24,20 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from generators.source_names import GENERIC, HOSTS  # noqa: E402
+from generators.region import is_latam as _is_latam  # noqa: E402
 
 NOMBRES_OK = {v.lower() for v in HOSTS.values()} | {"pymnts.com", "eldiario.es"}
 
 CATEGORIAS = ("news", "research", "social")
 INGLES = re.compile(r"\b(yesterday|as first reported|also flagged|following yesterday|building on yesterday|"
                     r"continuing our coverage|according to)\b", re.I)
-INTERNOS = re.compile(r"(la etiqueta (de la fuente|del origen)|conviene verificar la jurisdicci|"
+INTERNOS = re.compile(r"(la etiqueta (de la fuente|del origen)|conviene verificar la jurisdicci|este ciclo|"
+                      r"solo tiene \*{0,2}\w+\*{0,2} candidatos|se descartaron|indicada en el t[ií]tulo|queda detr[aá]s de|"
                       r"el texto disponible solo contiene|empresa observada;|no guarda relaci[oó]n con el radar|"
                       r"\bnota sobre [A-ZÁÉÍÓÚ][^:]{2,60} \(empresa)", re.I)
-FUENTE_CRUDA = re.compile(r"(^page \d+\s*[-–|]|\s-\s*articles$|^www\.|^[a-z0-9-]+(\.[a-z0-9-]+)+$)", re.I)
+TITULO_SUFIJO = re.compile(r"(\s[-–|•]\s[A-ZÁÉÍÓÚ][\w .-]{1,30}$|\(\d{1,2}:\d{2}\s*h\)\s*$)")
+ENLACE = re.compile(r"/\?date=([0-9-]{10})&(?:amp;)?category=(\w+)#item-([0-9a-fA-F]+)")
+FUENTE_CRUDA = re.compile(r"(^page \d+\s*[-–|]|\s-\s*articles$|^www\.|^[a-z0-9-]+(\.[a-z0-9-]+)+$|\.(mx|com|org|net)$|[.:;,]$)", re.I)
 LATAM_TLD = {"mx", "es", "co", "ar", "cl", "pe", "cr", "gt", "do", "ec", "ve", "uy", "py", "bo",
              "pa", "hn", "sv", "ni", "cu", "pr", "br"}
 LATAM_MEDIOS = {"ciberseguridad latam", "el economista", "diario gestión", "la nación", "dpl news",
@@ -55,13 +59,6 @@ def _texts(obj: Any, path: str = "") -> Iterable[Tuple[str, str]]:
             yield from _texts(v, f"{path}[{i}]")
     elif isinstance(obj, str):
         yield path, obj
-
-
-def _is_latam(nota: Dict[str, Any]) -> bool:
-    host = (urlparse(nota.get("url") or "").hostname or "").lower()
-    tld = host.rsplit(".", 1)[-1] if "." in host else ""
-    text = " ".join(str(nota.get(k) or "") for k in ("title", "que_paso"))
-    return tld in LATAM_TLD or str(nota.get("source") or "").lower() in LATAM_MEDIOS or bool(LATAM_PAISES.search(text))
 
 
 def lint(day_dir: Path) -> List[Dict[str, str]]:
@@ -89,21 +86,32 @@ def lint(day_dir: Path) -> List[Dict[str, str]]:
                     add("fuente_cruda", f"{name}:{path}", value)
                 continue
             if path.endswith(".author"):
-                if value.strip().lower() in ("unknown", "desconocido"):
+                v = value.strip().lower()
+                if v in ("unknown", "desconocido", "newsletter", "admin", "staff", "editor", "redacción") or re.search(r"\S+@\S+\.\w+", v):
                     add("autor_generico", f"{name}:{path}", value)
                 continue
+            if path.endswith(".title") and TITULO_SUFIJO.search(value):
+                add("titulo_con_medio", f"{name}:{path}", value)
             if INGLES.search(value) and not path.endswith(("summary_en", "quote")):
                 add("ingles", f"{name}:{path}", INGLES.search(value).group(0) + " … " + value[:120])
-            if INTERNOS.search(value):
-                add("comentario_interno", f"{name}:{path}", value[:160])
+            m_int = INTERNOS.search(value)
+            if m_int:
+                add("comentario_interno", f"{name}:{path}", f"«{m_int.group(0)}» … {value[:120]}")
 
     notas = (summary.get("edition") or {}).get("notas") or []
     resumen = summary.get("executive_summary") or ""
-    latam = [n for n in notas if _is_latam(n)]
-    if latam and not any((f"#item-{n.get('item_id')}" in resumen) or (str(n.get("title") or "")[:40] and
-                         str(n.get("title"))[:40] in resumen) for n in latam):
-        add("latam_fuera_del_resumen", "summary.json:executive_summary",
-            "; ".join(str(n.get("title") or "")[:80] for n in latam))
+    # 27 nov: cada nota de la región debe estar en el resumen (antes bastaba una).
+    for n in notas:
+        if _is_latam(n) and f"#item-{n.get('item_id')}" not in resumen:
+            add("latam_fuera_del_resumen", "summary.json:executive_summary", str(n.get("title") or "")[:120])
+    # 27 nov: enlaces internos a entradas que no se publicaron.
+    ids = {cat: {str(it.get("id")) for it in (docs.get(f"{cat}.json") or {}).get("items") or []}
+           for cat in CATEGORIAS if f"{cat}.json" in docs}
+    fecha = day_dir.name
+    for path, value in _texts(summary):
+        for m in ENLACE.finditer(value):
+            if m.group(1) == fecha and m.group(2) in ids and m.group(3) not in ids[m.group(2)]:
+                add("enlace_roto", f"summary.json:{path}", m.group(0))
     for m in re.finditer(r"^#+\s*([^\n]*latinoam[^\n]*)$", resumen, re.I | re.M):
         start = m.end()
         nxt = re.search(r"^#+\s", resumen[start:], re.M)

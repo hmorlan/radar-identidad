@@ -168,7 +168,8 @@ class CoherenceTest(NoNetwork):
         edition = asyncio.run(en.build_edition(client, FakePrompts(), _reports(), "2026-11-06",
                                                derived=dict(self.DERIVED)))
         self.assertEqual(client.calls[-1]["caller"], "orchestrator.edition_coherence")
-        self.assertEqual(client.calls[-1]["profile"], ThinkingLevel.QUICK)
+        # 27 nov: la fase 4.4 verifica el resumen con Opus (DEEP).
+        self.assertEqual(client.calls[-1]["profile"], ThinkingLevel.DEEP)
         self.assertEqual(len(edition.ajustes), 1)
         self.assertEqual(edition.degradations, [])
         again = en.Edition.from_dict(edition.to_dict())

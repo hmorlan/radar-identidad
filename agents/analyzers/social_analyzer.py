@@ -215,6 +215,13 @@ The summary should capture the pulse of AI community discussions."""
 
         # Merge batch results
         analyzed_items, themes, cross_signals = self._merge_batch_results(batch_results, items)
+        # 27 nov: el corte de Redes (generators/social_filter.py) se aplicaba al
+        # generar el JSON, después de que ranking, temas y resúmenes ya citaban las
+        # publicaciones descartadas (26 enlaces rotos). Ahora se corta aquí, antes del
+        # REDUCE, y todo lo que sigue solo ve lo que se publica.
+        analyzed_items, themes = publishable_social(analyzed_items, themes)
+        if not analyzed_items:
+            return self._empty_report()
 
         # Collect thinking from batches for logging
         batch_thinking = "\n---\n".join(
@@ -246,3 +253,27 @@ The summary should capture the pulse of AI community discussions."""
 
     # Note: _build_analyzed_items, _build_themes, and _empty_report
     # are now provided by BaseAnalyzer via map-reduce methods
+
+
+def publishable_social(analyzed_items, themes):
+    """Deja solo las publicaciones que se van a publicar y recalcula los temas."""
+    from generators import social_filter
+
+    kept = [a for a in analyzed_items if not social_filter.reason_to_drop({
+        "themes": a.themes, "importance_score": a.importance_score,
+        "title": a.item.title, "title_original": a.item.title})]
+    dropped = len(analyzed_items) - len(kept)
+    if dropped:
+        logger.info(f"Redes: {len(kept)} de {len(analyzed_items)} publicaciones pasan el corte "
+                    f"(ajenas, puntaje bajo o sin texto) antes del ranking")
+    out_themes = []
+    for t in themes:
+        if "ajen" in (t.name or "").lower():
+            continue
+        name = (t.name or "").strip().lower()
+        n = sum(1 for a in kept if any(name == str(x).strip().lower() for x in (a.themes or [])))
+        if n == 0:
+            continue
+        t.item_count = n
+        out_themes.append(t)
+    return kept, out_themes

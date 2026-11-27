@@ -80,3 +80,48 @@ _SPONSORED_RE = re.compile(
 
 def is_sponsored(title: str) -> bool:
     return bool(_SPONSORED_RE.search(title or ""))
+
+
+# 27 nov (política B de proveedores, config/proveedores.txt): fuera de las listas lo
+# que publica un proveedor de identidad, fraude o verificación (por dominio) y las
+# tribunas que firma la empresa (autor = nombre del proveedor).
+_PROVEEDORES = None
+
+
+def _load_proveedores():
+    global _PROVEEDORES
+    if _PROVEEDORES is not None:
+        return _PROVEEDORES
+    import os
+    from pathlib import Path
+    path = Path(os.getenv("PROVEEDORES_CONFIG") or Path(__file__).resolve().parents[2] / "config" / "proveedores.txt")
+    dominios, nombres, seccion = set(), set(), ""
+    try:
+        for raw in path.read_text(encoding="utf-8").splitlines():
+            line = raw.split("#", 1)[0].strip()
+            if not line:
+                continue
+            if line.startswith("[") and line.endswith("]"):
+                seccion = line[1:-1].strip().lower()
+                continue
+            if seccion != "identidad" or "|" not in line:
+                continue
+            dom, names = (x.strip() for x in line.split("|", 1))
+            dominios.add(dom.lower().removeprefix("www."))
+            nombres.update(n.strip().lower() for n in names.split(",") if n.strip())
+    except OSError:
+        pass
+    _PROVEEDORES = (dominios, nombres)
+    return _PROVEEDORES
+
+
+def is_identity_vendor(url: str = "", author: str = "") -> bool:
+    """True si el enlace es de un proveedor de identidad/fraude/verificación o si la
+    entrada la firma uno de ellos."""
+    from urllib.parse import urlparse
+    dominios, nombres = _load_proveedores()
+    host = (urlparse(url or "").hostname or "").lower().removeprefix("www.")
+    if host and any(host == d or host.endswith("." + d) for d in dominios):
+        return True
+    a = (author or "").strip().lower()
+    return bool(a) and a in nombres

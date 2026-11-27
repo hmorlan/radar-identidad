@@ -195,10 +195,15 @@ def is_press_wire(title: str) -> bool:
 PRESS_RELEASE_HOSTS = (
     "openpr.com", "einpresswire.com", "prnewswire.com", "globenewswire.com", "businesswire.com",
     "accesswire.com", "accessnewswire.com", "newsfilecorp.com", "prweb.com", "prlog.org",
-    "issuewire.com", "newswire.com", "tradersunion.com", "explainx.ai",
+    "issuewire.com", "newswire.com", "tradersunion.com", "explainx.ai", "ffnews.com",
 )
 PRESS_RELEASE_PATH_RE = re.compile(
     r"/(?:press-?releases?|news-?releases?|pressemitteilung|sponsored|partner-content|brandpost)(?:/|-|$)", re.I)
+
+
+def identity_filter_vendor(url: str) -> bool:
+    from .identity_filter import is_identity_vendor
+    return is_identity_vendor(url)
 
 
 def is_press_release_url(url: str) -> bool:
@@ -495,6 +500,9 @@ def collect(
                 continue
             # Los reguladores sí pueden ser fuente de su propio comunicado; las
             # empresas observadas, no (regla de agnosticismo de proveedores).
+            if spec.query and identity_filter_vendor(url):
+                logger.info(f"Empresas: sitio de un proveedor de identidad, se omite: {url[:100]}")
+                continue
             if spec.query and is_press_release_url(url):
                 logger.info(f"Empresas: comunicado o nota pagada, se omite: {url[:100]}")
                 continue

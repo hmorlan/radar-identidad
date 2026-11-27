@@ -99,8 +99,11 @@
 			<p>
 				<strong>Declaración de interés:</strong> el autor trabaja en la industria de identidad digital.
 				Este es un proyecto personal; las opiniones son propias. El radar es agnóstico: no usa
-				blogs ni comunicados de proveedores de identidad, seguridad o fraude como fuente, y
-				esas empresas solo aparecen cuando las cubre una fuente independiente. Los bancos,
+				blogs ni comunicados de proveedores de identidad, autenticación, fraude o verificación
+				como fuente, y esas empresas solo aparecen cuando las cubre una fuente independiente. La
+				única excepción es la investigación de algunos equipos de inteligencia de amenazas de
+				grandes empresas (como Cisco Talos o Unit 42), siempre atribuida y nunca sus anuncios de
+				producto. Los bancos,
 				comercios y plataformas que adoptan estas tecnologías pueden ser tema de una nota; lo
 				que afirman va siempre atribuido.
 			</p>
