@@ -105,5 +105,15 @@ class MecanicosTest(unittest.TestCase):
         self.assertEqual(display_source("Meganoticias.mx", "https://www.meganoticias.mx/x"), "Meganoticias")
 
 
+class FeriadoArxivTest(unittest.TestCase):
+    def test_vacio_esperado(self):
+        from agents.gatherers.research_gatherer import ResearchGatherer
+        g = ResearchGatherer.__new__(ResearchGatherer)
+        for fecha, esperado in [("2026-11-27", "2026-11-26"), ("2026-11-25", ""),
+                                ("2026-11-12", "2026-11-11"), ("2026-12-28", "")]:
+            g.report_date = fecha
+            self.assertEqual(g._arxiv_holiday_gap(), esperado, fecha)
+
+
 if __name__ == "__main__":
     unittest.main()

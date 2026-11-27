@@ -47,6 +47,17 @@ ARXIV_REQUEST_DELAY = 3.5  # seconds
 RESEARCH_FEED_TIMEOUT = float(os.getenv('RESEARCH_FEED_TIMEOUT', '20'))
 
 
+
+# Feriados de arXiv (https://info.arxiv.org/help/availability.html, consultado el
+# 27 nov 2026). Revisar cada diciembre.
+ARXIV_HOLIDAYS = frozenset({
+    "2026-01-01", "2026-01-19", "2026-06-19", "2026-07-03", "2026-09-07",
+    "2026-10-12", "2026-11-11", "2026-11-26", "2026-12-25",
+    "2027-01-01", "2027-01-18", "2027-02-15", "2027-05-31", "2027-06-18",
+    "2027-07-05", "2027-09-06", "2027-10-11", "2027-11-11", "2027-11-25",
+    "2027-12-24", "2027-12-31",
+})
+
 class ResearchGatherer(BaseGatherer):
     """Gathers research content from arXiv and research blogs."""
 
@@ -122,6 +133,21 @@ class ResearchGatherer(BaseGatherer):
         # RSS only has today's announcements, which cover yesterday's submissions
         # So RSS is valid when report_date == today
         return self.report_date == today
+
+    def _arxiv_holiday_gap(self) -> str:
+        """Feriado de arXiv que deja vacía esta edición, o ''.
+
+        arXiv no publica el anuncio de las 20:00 ET de un día feriado de lunes a
+        jueves (https://info.arxiv.org/help/availability.html), así que la edición
+        del día siguiente no tiene papers. El 27 nov 2026 (feriado del 26) se marcó
+        la corrida como "partial" por un vacío esperado.
+        """
+        from datetime import timedelta
+        prev = datetime.strptime(self.report_date, '%Y-%m-%d') - timedelta(days=1)
+        key = prev.strftime('%Y-%m-%d')
+        if key in ARXIV_HOLIDAYS and prev.weekday() <= 3:
+            return key
+        return ''
 
     def _get_arxiv_collection_mode(self) -> tuple:
         """
@@ -276,7 +302,10 @@ class ResearchGatherer(BaseGatherer):
         # arXiv going quiet on a day it should have papers is the failure mode that
         # published green on 2026-08-17. Say so, so the orchestrator can mark the
         # source degraded instead of reporting success with an empty shelf.
-        if not unique_papers:
+        holiday = self._arxiv_holiday_gap()
+        if not unique_papers and holiday:
+            logger.info(f"arXiv: 0 papers, esperado por el feriado de arXiv del {holiday}")
+        elif not unique_papers:
             self._arxiv_problems.append(
                 f"arXiv returned 0 papers on a {mode} day ({self.report_date}); "
                 "this weekday normally has papers"
